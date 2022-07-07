@@ -1,0 +1,46 @@
+@ Define my Raspberry Pi
+.cpu    cortex-a7
+.fpu    neon-vfpv4
+.syntax unified         @ modern syntax
+
+@ Program code
+.text
+.align  2
+.global _start
+
+_start:
+	bl      main		@ call main
+
+main:
+	bl	getchar
+	bl	putchar
+	mov	r0,#15		@ set return value
+	bl	exit		@ call exit function
+
+exit:
+	mov	r7, #1		@ syscall code
+	svc	0
+	bx	lr
+
+getchar:
+	push	{r0,r1,r2,r7,lr}
+	mov	r7, #3		@ read syscall code
+	mov	r0, #0		@ fd 0
+	ldr	r1, =cbuf	@ char buffer
+	mov	r2, #1		@ count
+	svc	0
+	pop	{r0,r1,r2,r7,lr}
+	bx	lr
+
+putchar:
+	push	{r0,r1,r2,r7,lr}
+	mov	r7, #4		@ write syscall code
+	mov	r0, #1		@ fd 1
+	ldr	r1, =cbuf	@ char buffer
+	mov	r2, #1		@ count
+	svc	0
+	pop	{r0,r1,r2,r7,lr}
+	bx	lr
+
+.data
+cbuf: .byte 0,0
