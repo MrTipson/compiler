@@ -1,46 +1,48 @@
-@ Define my Raspberry Pi
-.cpu    cortex-a7
-.fpu    neon-vfpv4
-.syntax unified         @ modern syntax
-
-@ Program code
-.text
-.align  2
-.global _start
+.include "src/header.s"
 
 _start:
-	bl      main		@ call main
+	bl	main
 
 main:
+	mov	r6,#0		@ comment flag
+	mov	r7,#0		@ label counter (if, while)
+	b	_loop1_cond	@ while check cond
+_loop1_start:
+	cmp	r0,#9		@ tab character
+	beq	_loop1_cond
+	cmp	r0,#32		@ space character
+	beq	_loop1_cond
+	cmp	r0,#10		@ line feed
+	moveq	r6,#0		@ turn comment mode off
+	@beq	_loop1_cond
+	cmp	r6,#1		@ ? is comment mode on
+	beq	_loop1_cond
+	cmp	r0,#35		@ # (begin comment)
+	moveq	r6,#1
+	beq	_loop1_cond
+	cmp	r0,#58		@ :
+	bleq	special		@ one of special functions (getchar, putchar, if, while, exit)
+	blne	assign		@ any of the assign statements
+_loop1_cond:
 	bl	getchar
-	bl	putchar
+	cmp	r0,#0		@ check if we read any characters
+	bne	_loop1_start
+_loop_1_end:
 	mov	r0,#15		@ set return value
 	bl	exit		@ call exit function
 
-exit:
-	mov	r7, #1		@ syscall code
-	svc	0
+special:
+	push	{lr}
+	bl	putchar
+	pop	{lr}
 	bx	lr
 
-getchar:
-	push	{r0,r1,r2,r7,lr}
-	mov	r7, #3		@ read syscall code
-	mov	r0, #0		@ fd 0
-	ldr	r1, =cbuf	@ char buffer
-	mov	r2, #1		@ count
-	svc	0
-	pop	{r0,r1,r2,r7,lr}
-	bx	lr
-
-putchar:
-	push	{r0,r1,r2,r7,lr}
-	mov	r7, #4		@ write syscall code
-	mov	r0, #1		@ fd 1
-	ldr	r1, =cbuf	@ char buffer
-	mov	r2, #1		@ count
-	svc	0
-	pop	{r0,r1,r2,r7,lr}
+assign:
+	push	{lr}
+	bl	putchar
+	pop	{lr}
 	bx	lr
 
 .data
 cbuf: .byte 0,0
+heap: .word 0
