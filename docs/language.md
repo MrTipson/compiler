@@ -2,7 +2,7 @@
 GNU assembler language (same as .s).
 
 ## .p1
-All variables global (.data segment) and of size 1 word.
+Variables a-z (.data segment) of size 1 word.
 
 ### Statements:
  - *var* = const
@@ -12,11 +12,11 @@ All variables global (.data segment) and of size 1 word.
  - *var* = *var* / *var*
  - *var* = *var* % *var*
  - *var* = *var* > *var*
- - *var* = *var* >= *var*
+ - *var* = *var* => *var*
  - *var* = *var* < *var*
- - *var* = *var* <= *var*
+ - *var* = *var* =< *var*
  - *var* = *var* == *var*
- - *var* = *var* != *var*
+ - *var* = *var* =! *var*
  - *var* = *var* & *var*
  - *var* = *var* | *var*
 
