@@ -3,3 +3,4 @@
 #ghi
 :getchar(a)
 :putchar(a)
+:exit(a)

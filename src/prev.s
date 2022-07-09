@@ -100,6 +100,18 @@ _special_switch_w:
 	b _special_switch_end
 @ e(xit)
 _special_switch_e:
+	mov	r7,#4		@ write syscall code
+	mov	r0,#1		@ fd 1
+	ldr	r1,=__exit_str1 @ char buffer
+	ldr	r2,=__exit_len1 @ count
+	svc	0
+	bl	getchar		@ var
+	bl	putchar
+	mov	r7,#4		@ write syscall code
+	mov	r0,#1		@ fd 1
+	ldr	r1,=__exit_str2 @ char buffer
+	ldr	r2,=__exit_len2 @ count
+	svc	0
 	b _special_switch_end
 @ l(oad)
 _special_switch_l:
@@ -165,9 +177,9 @@ _dataseg_loop:
 
 .data
 cbuf: .byte 0,0
-__header_str: .ascii ".include \"src/header.s\"\n\n_start:\n\tbl\tmain\n\nmain:\n"
+__header_str: .ascii ".include \"src/header.s\"\n\n_start:\n\tbl\tmain\n\tbl\texit\n\nmain:\n"
 __header_len = .-__header_str
-__dataseg_str: .ascii "\tbl\texit\n\n.data\ncbuf: .byte 0,0\n"
+__dataseg_str: .ascii "\n.data\ncbuf: .byte 0,0\n"
 __dataseg_len = .-__dataseg_str
 __getchar_str1: .ascii "\tbl\tgetchar\n\tldr\tr1,="
 __getchar_len1 = .-__getchar_str1
@@ -177,6 +189,10 @@ __putchar_str1: .ascii "\tldr\tr0,="
 __putchar_len1 = .-__putchar_str1
 __putchar_str2: .ascii "\n\tldr\tr1,=cbuf\n\tldrb\tr0,[r0]\n\tstrb\tr0,[r1]\n\tbl\tputchar\n"
 __putchar_len2 = .-__putchar_str2
+__exit_str1: .ascii "\tldr\tr0,="
+__exit_len1 = .-__exit_str1
+__exit_str2: .ascii "\n\tldrb\tr0,[r0]\n\tbl\texit\n"
+__exit_len2 = .-__exit_str2
 __variable_str: .ascii ": .word 0\n"
 __variable_len = .-__variable_str
 __heap_str: .ascii "heap: .word 0\n"
