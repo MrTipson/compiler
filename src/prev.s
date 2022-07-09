@@ -76,6 +76,18 @@ _special_switch_g:
 	b _special_switch_end
 @ p(utchar)
 _special_switch_p:
+	mov	r7,#4		@ write syscall code
+	mov	r0,#1		@ fd 1
+	ldr	r1,=__putchar_str1 @ char buffer
+	ldr	r2,=__putchar_len1 @ count
+	svc	0
+	bl	getchar		@ var
+	bl	putchar
+	mov	r7,#4		@ write syscall code
+	mov	r0,#1		@ fd 1
+	ldr	r1,=__putchar_str2 @ char buffer
+	ldr	r2,=__putchar_len2 @ count
+	svc	0
 	b _special_switch_end
 @ c(string)
 _special_switch_c:
@@ -161,6 +173,10 @@ __getchar_str1: .ascii "\tbl\tgetchar\n\tldr\tr1,="
 __getchar_len1 = .-__getchar_str1
 __getchar_str2: .ascii "\n\tstrb\tr0,[r1]\n"
 __getchar_len2 = .-__getchar_str2
+__putchar_str1: .ascii "\tldr\tr0,="
+__putchar_len1 = .-__putchar_str1
+__putchar_str2: .ascii "\n\tldr\tr1,=cbuf\n\tldrb\tr0,[r0]\n\tstrb\tr0,[r1]\n\tbl\tputchar\n"
+__putchar_len2 = .-__putchar_str2
 __variable_str: .ascii ": .word 0\n"
 __variable_len = .-__variable_str
 __heap_str: .ascii "heap: .word 0\n"

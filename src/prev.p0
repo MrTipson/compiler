@@ -2,3 +2,4 @@
 #def
 #ghi
 :getchar(a)
+:putchar(a)
