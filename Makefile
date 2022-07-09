@@ -10,7 +10,7 @@ bin/p0: bin/p0.o
 bin/p0.o: src/prev.s
 	as -o $@ $<
 
-bin/p1.s: bin/p0
+bin/p1.s: bin/p0 src/prev.p0
 	bin/p0 < src/prev.p0 > bin/p1.s
 
 bin/p1: bin/p1.s
