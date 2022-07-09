@@ -1,7 +1,7 @@
-## .p0
-GNU assembler language (same as .s).
+## Initial language (.s)
+GNU assembler language.
 
-## .p1
+## .p0
 Variables a-z (.data segment) of size 1 word.
 
 ### Statements:
