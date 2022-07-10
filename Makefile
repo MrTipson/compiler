@@ -7,7 +7,7 @@ p1:	bin/p1
 bin/p0: bin/p0.o
 	ld -o $@ $+
 
-bin/p0.o: src/prev.s
+bin/p0.o: src/prev.s src/header.s src/stdlib.s
 	as -o $@ $<
 
 bin/p1.s: bin/p0 src/prev.p0
