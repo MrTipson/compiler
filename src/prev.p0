@@ -3,4 +3,6 @@
 #ghi
 :getchar(a)
 :putchar(a)
+:cstring("abc\n")
+:cstring("defg\n")
 :exit(a)
