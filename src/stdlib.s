@@ -17,9 +17,10 @@ getchar:
 
 putchar:
 	push	{r1,r2,r7,lr}
+	ldr	r1,=cbuf	@ char buffer
+	strb	r0,[r1]	@ store arg to buffer
 	mov	r7,#4		@ write syscall code
 	mov	r0,#1		@ fd 1
-	ldr	r1,=cbuf	@ char buffer
 	mov	r2,#1		@ count
 	svc	0
 	pop	{r1,r2,r7,lr}

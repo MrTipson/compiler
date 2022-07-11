@@ -196,9 +196,8 @@ dataseg:
 @ dataseg header end
 @ variables
 	mov	r3,#97		@ a
-	ldr	r4,=cbuf
 _dataseg_loop:
-	strb	r3,[r4]
+	mov	r0,r3
 	bl	putchar
 	mov	r0,#1		@ fd 1
 	ldr	r1,=__variable_str @ char buffer
@@ -216,7 +215,6 @@ _dataseg_string_loop:
 	cmp	r3,r2
 	bge	_dataseg_string_end
 	mov	r0,#115		@ s
-	strb	r0,[r4]
 	bl	putchar
 	mov	r0,r3
 	bl	putint
@@ -230,7 +228,6 @@ _dataseg_str_literal:
 	ldr	r0,[r1],#4
 	cmp	r0,#0		@ is char null
 	beq	_dataseg_str_literal_end
-	strb	r0,[r4]
 	bl	putchar
 	b	_dataseg_str_literal
 _dataseg_str_literal_end:
@@ -248,9 +245,7 @@ _dataseg_str_literal_end:
 	svc	0
 	mov	r0,r3
 	bl	putint
-	ldr	r0,=cbuf
-	mov	r1,#10		@ \n
-	strb	r1,[r0]
+	mov	r0,#10		@ \n
 	bl	putchar
 	pop	{r1,r2}		@ retrieve r2 (string count)
 	add	r3,r3,#1	@ increment string index
@@ -282,7 +277,7 @@ putint_unroll:
 putint_unroll_loop:
 	pop	{r1}
 	add	r1,r1,#48	@ offset remainder by ascii 0
-	strb	r1,[r3]
+	mov	r0,r1
 	bl	putchar
 	sub	r2,r2,#1
 	cmp	r2,#0
@@ -303,7 +298,7 @@ __getchar_str2: .ascii "\n\tstrb\tr0,[r1]\n"
 __getchar_len2 = .-__getchar_str2
 __putchar_str1: .ascii "\tldr\tr0,="
 __putchar_len1 = .-__putchar_str1
-__putchar_str2: .ascii "\n\tldr\tr1,=cbuf\n\tldrb\tr0,[r0]\n\tstrb\tr0,[r1]\n\tbl\tputchar\n"
+__putchar_str2: .ascii "\n\tldrb\tr0,[r0]\n\tbl\tputchar\n"
 __putchar_len2 = .-__putchar_str2
 __cstring_str1: .ascii "\tmov\tr7,#4\n\tmov\tr0,#1\n\tldr\tr1,=s"
 __cstring_len1 = .-__cstring_str1
