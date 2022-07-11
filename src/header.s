@@ -9,3 +9,4 @@
 .global _start
 
 .include "src/stdlib.s"
+.include "src/div.s"

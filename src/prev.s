@@ -1,5 +1,4 @@
 .include "src/header.s"
-.global _dataseg_string_loop
 
 _start:
 	bl	main
@@ -267,30 +266,28 @@ _dataseg_string_end:
 
  @ r0 has arg
 putint:
-	push	{r1,r2,lr}
-	ldr	r1,=cbuf
-	add	r0,r0,#48
-	strb	r0,[r1]
+	push	{r1,r2,r3,lr}
+	mov	r2,#0
+putint_div:
+	mov	r1,#10		@ divisor
+	bl	div
+	cmp	r0,#0
+	beq	putint_unroll
+	add	r2,r2,#1	@ counter
+	push	{r1}
+	b	putint_div
+putint_unroll:
+	push	{r1}
+	ldr	r3,=cbuf
+putint_unroll_loop:
+	pop	{r1}
+	add	r1,r1,#48	@ offset remainder by ascii 0
+	strb	r1,[r3]
 	bl	putchar
-@	mov	r1,#10		@ divisor
-@	mov	r2,#0
-@putint_div:
-@	bl	div
-@	cmp	r0,#0
-@	beq	putint_unroll
-@	add	r2,r2,#1	@ counter
-@	push	{r1}
-@	b	putint_div
-@putint_unroll:
-@	push	{r1}
-@	ldr	r3,=cbuf
-@putint_unroll_loop:
-@	pop	{r1}
-@	strb	r1,[r3]
-@	sub	r2,r2,#1
-@	cmp	r2,#0
-@	bge	putint_unroll_loop
-	pop	{r1,r2,lr}
+	sub	r2,r2,#1
+	cmp	r2,#0
+	bge	putint_unroll_loop
+	pop	{r1,r2,r3,lr}
 	bx	lr
 
 .data
