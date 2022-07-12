@@ -4,17 +4,6 @@
 :getchar(a)
 :putchar(a)
 :cstring("abc\n")
-:cstring("defg\n")
-:cstring("hi\n")
-:cstring("jk\n")
-:cstring("lm\n")
-:cstring("no\n")
-:cstring("pq\n")
-:cstring("rs\n")
-:cstring("tu\n")
-:cstring("vz\n")
-:cstring("xy\n")
-:cstring("w\n")
 :if(a){
 	:cstring("true\n")
 } else {
@@ -22,7 +11,11 @@
 }
 :getchar(b)
 :while(b){
+	:store(b,c)
 	:putchar(b)
 	:getchar(b)
 }
+:cstring("endwhile\n")
+:load(a,c)
+:putchar(a)
 :exit(a)

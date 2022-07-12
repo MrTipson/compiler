@@ -218,9 +218,73 @@ _special_switch_e:
 	b	_special_switch_end
 @ l(oad)
 _special_switch_l:
+	bl	skipspaces
+	mov	r3,r0		@ :load 1st arg
+	bl	skipspaces
+	cmp	r0,#44		@ ,
+	movne	r0,#44
+	bne	exit		@ error 44 - missing ,
+	bl	skipspaces
+	mov	r4,r0		@ :load 2nd arg
+@ load index
+	mov	r7,#4		@ write syscall
+	mov	r0,#1		@ fd 1
+	ldr	r1,=__load_var_str1	@ ldr r0,=
+	ldr	r2,=__load_var_len1
+	svc	0
+	mov	r0,r4		@ index
+	bl	putchar
+	mov	r0,#1		@ fd 1
+	ldr	r1,=__load_var_str2	@ ldr r0,[r0]
+	ldr	r2,=__load_var_len2
+	svc	0
+@ end
+@ load memory at index and store variable
+	mov	r0,#1		@ fd 1
+	ldr	r1,=__load_str1	@ ldr r1,=
+	ldr	r2,=__load_len1
+	svc	0
+	mov	r0,r3		@ dst
+	bl	putchar
+	mov	r0,#1		@ fd 1
+	ldr	r1,=__load_str2	@ ldr r0,[r0, LSL #2]   str r0,[r1]
+	ldr	r2,=__load_len2
+	svc	0
 	b	_special_switch_end
 @ s(tore)
 _special_switch_s:
+	bl	skipspaces
+	mov	r3,r0		@ :load 1st arg
+	bl	skipspaces
+	cmp	r0,#44		@ ,
+	movne	r0,#44
+	bne	exit		@ error 44 - missing ,
+	bl	skipspaces
+	mov	r4,r0		@ :load 2nd arg
+@ load index
+	mov	r7,#4		@ write syscall
+	mov	r0,#1		@ fd 1
+	ldr	r1,=__load_var_str1	@ ldr r0,=
+	ldr	r2,=__load_var_len1
+	svc	0
+	mov	r0,r4		@ index
+	bl	putchar
+	mov	r0,#1		@ fd 1
+	ldr	r1,=__load_var_str2	@ ldr r0,[r0]
+	ldr	r2,=__load_var_len2
+	svc	0
+@ end
+@ store variable to memory at index
+	mov	r0,#1		@ fd 1
+	ldr	r1,=__store_str1@ ldr r1,=
+	ldr	r2,=__store_len1
+	svc	0
+	mov	r0,r3		@ dst
+	bl	putchar
+	mov	r0,#1		@ fd 1
+	ldr	r1,=__store_str2@ ldr r0,[r0, LSL #2]   str r0,[r1]
+	ldr	r2,=__store_len2
+	svc	0
 	b	_special_switch_end
 _special_switch_end:
 	bl	getchar
@@ -390,8 +454,8 @@ _dataseg_str_literal_end:
 _dataseg_string_end:
 @ heap label
 	mov	r0,#1		@ fd 1
-	ldr	r1,=__heap_str	@ char buffer
-	ldr	r2,=__heap_len	@ count
+	ldr	r1,=__mem_str	@ char buffer
+	ldr	r2,=__mem_len	@ count
 	svc	0
 	pop	{r0,r1,r2,r3,r4,r7,lr}
 	bx	lr
@@ -443,11 +507,11 @@ __dataseg_str: .ascii "\n.data\ncbuf: .byte 0,0\n"
 __dataseg_len = .-__dataseg_str
 __getchar_str1: .ascii "\tbl\tgetchar\n\tldr\tr1,="
 __getchar_len1 = .-__getchar_str1
-__getchar_str2: .ascii "\n\tstrb\tr0,[r1]\n"
+__getchar_str2: .ascii "\n\tstr\tr0,[r1]\n"
 __getchar_len2 = .-__getchar_str2
 __putchar_str1: .ascii "\tldr\tr0,="
 __putchar_len1 = .-__putchar_str1
-__putchar_str2: .ascii "\n\tldrb\tr0,[r0]\n\tbl\tputchar\n"
+__putchar_str2: .ascii "\n\tldr\tr0,[r0]\n\tbl\tputchar\n"
 __putchar_len2 = .-__putchar_str2
 __cstring_str1: .ascii "\tmov\tr7,#4\n\tmov\tr0,#1\n\tldr\tr1,=s"
 __cstring_len1 = .-__cstring_str1
@@ -479,7 +543,7 @@ __load_var_str1: .ascii "\tldr\tr0,="
 __load_var_len1 = .-__load_var_str1
 __load_var_str2: .ascii "\n\tldr\tr0,[r0]\n"
 __load_var_len2 = .-__load_var_str2
-__while_str1: .ascii "\tLloop"
+__while_str1: .ascii "Lloop"
 __while_len1 = .-__while_str1
 __while_str2: .ascii "\tcmp\tr0,#0\n\tbeq\tLloop_end"
 __while_len2 = .-__while_str2
@@ -487,6 +551,14 @@ __while_str3: .ascii "\tb\tLloop"
 __while_len3 = .-__while_str3
 __while_str4: .ascii "\nLloop_end"
 __while_len4 = .-__while_str4
-__heap_str: .ascii "heap: .space 4000\n"
-__heap_len = .-__heap_str
+__load_str1: .ascii "\tldr\tr1,="
+__load_len1 = .-__load_str1
+__load_str2: .ascii "\n\tldr\tr2,=mem\n\tldr\tr0,[r2, r0, LSL #2]\n\tstr\tr0,[r1]\n"
+__load_len2 = .-__load_str2
+__store_str1: .ascii "\tldr\tr1,="
+__store_len1 = .-__store_str1
+__store_str2: .ascii "\n\tldr\tr1,[r1]\n\tldr\tr2,=mem\n\tstr\tr1,[r2,r0, LSL #2]\n"
+__store_len2 = .-__store_str2
+__mem_str: .ascii "mem: .space 4000\n"
+__mem_len = .-__mem_str
 heap: .space 4000
