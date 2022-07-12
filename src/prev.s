@@ -165,6 +165,41 @@ _special_switch_i_skip:
 	b	_special_switch_end
 @ w(hile)
 _special_switch_w:
+	ldr	r4,=labelcnt
+	ldr	r3,[r4]
+	mov	r7,#4		@ write syscall code
+	mov	r0,#1		@ fd 1
+	ldr	r1,=__while_str1	@ Lloop
+	ldr	r2,=__while_len1
+	svc	0
+	mov	r0,r3		@ id
+	bl	putint
+	mov	r0,#58		@ :
+	bl	putchar
+	mov	r0,#10		@ \n
+	bl	putchar
+	mov	r0,#1		@ fd 1
+	ldr	r1,=__load_var_str1	@ ldr r0,=
+	ldr	r2,=__load_var_len1
+	svc	0
+	bl	getchar
+	bl	putchar
+	mov	r0,#1		@ fd 1
+	ldr	r1,=__load_var_str2	@ ldr r0,[r0]
+	ldr	r2,=__load_var_len2
+	svc	0
+	mov	r0,#1		@ fd 1
+	ldr	r1,=__while_str2	@ cmp r0,#0  beq Lloop_end
+	ldr	r2,=__while_len2
+	svc	0
+	mov	r0,r3		@ id
+	bl	putint
+	mov	r0,#10		@ \n
+	bl	putchar
+	mov	r0,#3
+	push	{r0,r3}
+	add	r3,r3,#1
+	str	r3,[r4]
 	b	_special_switch_end
 @ e(xit)
 _special_switch_e:
@@ -250,6 +285,23 @@ rcurly_else:
 	bl	putchar
 	b	rcurly_end
 rcurly_while:
+	mov	r7,#4		@ write syscall code
+	mov	r0,#1		@ fd 1
+	ldr	r1,=__while_str3 @ b Lloop
+	ldr	r2,=__while_len3 @ count
+	svc	0
+	mov	r0,r4		@ id
+	bl	putint
+	mov	r0,#1		@ fd 1
+	ldr	r1,=__while_str4 @ Lloop_end
+	ldr	r2,=__while_len4 @ count
+	svc	0
+	mov	r0,r4		@ id
+	bl	putint
+	mov	r0,#58		@ :
+	bl	putchar
+	mov	r0,#10		@ \n
+	bl	putchar
 	b	rcurly_end
 rcurly_end:
 	b	_loop1_cond
@@ -427,6 +479,14 @@ __load_var_str1: .ascii "\tldr\tr0,="
 __load_var_len1 = .-__load_var_str1
 __load_var_str2: .ascii "\n\tldr\tr0,[r0]\n"
 __load_var_len2 = .-__load_var_str2
+__while_str1: .ascii "\tLloop"
+__while_len1 = .-__while_str1
+__while_str2: .ascii "\tcmp\tr0,#0\n\tbeq\tLloop_end"
+__while_len2 = .-__while_str2
+__while_str3: .ascii "\tb\tLloop"
+__while_len3 = .-__while_str3
+__while_str4: .ascii "\nLloop_end"
+__while_len4 = .-__while_str4
 __heap_str: .ascii "heap: .space 4000\n"
 __heap_len = .-__heap_str
 heap: .space 4000

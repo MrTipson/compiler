@@ -20,4 +20,9 @@
 } else {
 	:cstring("false\n")
 }
+:getchar(b)
+:while(b){
+	:putchar(b)
+	:getchar(b)
+}
 :exit(a)
