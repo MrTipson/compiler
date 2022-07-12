@@ -15,4 +15,9 @@
 :cstring("vz\n")
 :cstring("xy\n")
 :cstring("w\n")
+:if(a){
+	:cstring("true\n")
+} else {
+	:cstring("false\n")
+}
 :exit(a)

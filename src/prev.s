@@ -1,12 +1,11 @@
 .include "src/header.s"
-
+.global _special_switch_i
 _start:
 	bl	main
 
 main:
 	ldr	r5,=heap	@ heap pointer
 	mov	r6,#0		@ comment flag
-	mov	r7,#0		@ label counter (if, while)
 	bl	header		@ print out header
 	b	_loop1_cond	@ while check cond
 _loop1_start:
@@ -22,8 +21,10 @@ _loop1_start:
 	cmp	r0,#35		@ # (begin comment)
 	moveq	r6,#1
 	beq	_loop1_cond
+	cmp	r0,#125		@ }
+	beq	rcurly
 	cmp	r0,#58		@ :
-	bleq	special		@ one of special functions (getchar, putchar, if, while, exit)
+	beq	special		@ one of special functions (getchar, putchar, if, while, exit)
 	blne	assign		@ any of the assign statements
 _loop1_cond:
 	bl	getchar
@@ -35,7 +36,6 @@ _loop_1_end:
 	bl	exit		@ call exit function
 
 special:
-	push	{r0,r1,r2,r7,lr}
 	bl	getchar
 	mov	r1,r0		@ save first character of keyword
 _loop2:
@@ -133,6 +133,35 @@ _special_switch_c_loop_end:
 	b	_special_switch_end
 @ i(f)
 _special_switch_i:
+	mov	r7,#4		@ write syscall code
+	mov	r0,#1		@ fd 1
+	ldr	r1,=__load_var_str1	@ ldr r0,=
+	ldr	r2,=__load_var_len1
+	svc	0
+	bl	getchar
+	bl	putchar
+	mov	r0,#1		@ fd 1
+	ldr	r1,=__load_var_str2	@ ldr r0,[r0]
+	ldr	r2,=__load_var_len2
+	svc	0
+	mov	r0,#1
+	ldr	r1,=__if_str1		@ cmp r0,#0   beq Lneg
+	ldr	r2,=__if_len1
+	svc	0
+	ldr	r2,=labelcnt
+	ldr	r1,[r2]
+	mov	r0,r1
+	bl	putint
+	mov	r0,10		@ \n
+	bl	putchar
+	mov	r0,#1
+	push	{r0,r1}
+	add	r1,r1,#1
+	str	r1,[r2]
+_special_switch_i_skip:
+	bl	getchar
+	cmp	r0,#123
+	bne	_special_switch_i_skip
 	b	_special_switch_end
 @ w(hile)
 _special_switch_w:
@@ -166,8 +195,64 @@ _special_switch_end:
 	beq	_special_endskip
 	b	_special_switch_end
 _special_endskip:
-	pop	{r0,r1,r2,r7,lr}
-	bx	lr
+	b	_loop1_cond
+
+rcurly:		@ not a function
+	pop	{r3,r4}		@ get current state (if 1/else 2/while 3) and label number
+	cmp	r3,#1		@ if
+	beq	rcurly_if
+	cmp	r3,#2		@ else
+	beq	rcurly_else
+	cmp	r3,#3		@ while
+	beq	rcurly_while
+	mov	r0,#11		@ error 11 - misplaced }
+	bl	exit
+rcurly_if:
+	mov	r7,#4		@ write syscall code
+	mov	r0,#1		@ fd 1
+	ldr	r1,=__if_str3 @ char buffer
+	ldr	r2,=__if_len3 @ count
+	svc	0
+	mov	r0,r4		@ id
+	bl	putint
+	mov	r7,#4		@ write syscall code
+	mov	r0,#1		@ fd 1
+	ldr	r1,=__if_str4 @ char buffer
+	ldr	r2,=__if_len4 @ count
+	svc	0
+	mov	r0,r4		@ id
+	bl	putint
+	mov	r0,#58		@ :
+	bl	putchar
+	mov	r0,#10		@ \n
+	bl	putchar
+	bl	skipspaces
+	cmp	r0,#101		@ e
+	bne	rcurly_else
+rcurly_if_skip:
+	bl	getchar
+	cmp	r0,#123		@ {
+	bne	rcurly_if_skip
+	mov	r3,#2		@ set else mode
+	push	{r3,r4}
+	b	rcurly_end
+rcurly_else:
+	mov	r7,#4		@ write syscall code
+	mov	r0,#1		@ fd 1
+	ldr	r1,=__if_str5 @ Lend
+	ldr	r2,=__if_len5 @ count
+	svc	0
+	mov	r0,r4		@ id
+	bl	putint
+	mov	r0,#58		@ :
+	bl	putchar
+	mov	r0,#10		@ \n
+	bl	putchar
+	b	rcurly_end
+rcurly_while:
+	b	rcurly_end
+rcurly_end:
+	b	_loop1_cond
 
 assign:
 	push	{lr}
@@ -285,9 +370,21 @@ putint_unroll_loop:
 	pop	{r1,r2,r3,lr}
 	bx	lr
 
+skipspaces:	@ returns read character in r0
+	push	{lr}
+skipspaces_l:
+	bl	getchar
+	cmp	r0,#32		@ space
+	beq	skipspaces_l
+	cmp	r0,#9		@ tab
+	beq	skipspaces_l
+	pop	{lr}
+	bx	lr
+
 .data
 cbuf: .byte 0,0
 stringcnt: .word 0
+labelcnt: .word 0
 __header_str: .ascii ".include \"src/header.s\"\n\n_start:\n\tbl\tmain\n\tbl\texit\n\nmain:\n"
 __header_len = .-__header_str
 __dataseg_str: .ascii "\n.data\ncbuf: .byte 0,0\n"
@@ -318,6 +415,18 @@ __exit_str2: .ascii "\n\tldrb\tr0,[r0]\n\tbl\texit\n"
 __exit_len2 = .-__exit_str2
 __variable_str: .ascii ": .word 0\n"
 __variable_len = .-__variable_str
-__heap_str: .ascii "heap: .word 0\n"
+__if_str1: .ascii "\tcmp\tr0,#0\n\tbeq\tLneg"
+__if_len1 = .-__if_str1
+__if_str3: .ascii "\tb\tLend"
+__if_len3 = .-__if_str3
+__if_str4: .ascii "\nLneg"
+__if_len4 = .-__if_str4
+__if_str5: .ascii "Lend"
+__if_len5 = .-__if_str5
+__load_var_str1: .ascii "\tldr\tr0,="
+__load_var_len1 = .-__load_var_str1
+__load_var_str2: .ascii "\n\tldr\tr0,[r0]\n"
+__load_var_len2 = .-__load_var_str2
+__heap_str: .ascii "heap: .space 4000\n"
 __heap_len = .-__heap_str
 heap: .space 4000
