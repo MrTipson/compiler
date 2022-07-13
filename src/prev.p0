@@ -18,4 +18,15 @@
 :cstring("endwhile\n")
 :load(a,c)
 :putchar(a)
+d = 66
+c = 1
+e = 75
+o = 1
+l = 10
+:while(c){
+	:putchar(d)
+	:putchar(l)
+	d = d + o
+	c = d =< e
+}
 :exit(a)

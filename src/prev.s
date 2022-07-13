@@ -372,9 +372,198 @@ rcurly_end:
 
 assign:
 	push	{lr}
+	push	{r0}		@ destination
+	bl	skipspaces
+	cmp	r0,61		@ =
+	bne	exit		@ error 61 - missing =
+	bl	skipspaces
+	mov	r3,r0		@ operand 1
+	cmp	r0,#45		@ -
+	beq	assign_const
+	cmp	r0,#48		@ 0
+	movlt	r0,#4		@ error 4 - invalid char in assign stmt
+	blt	exit
+	cmp	r0,#57		@ 9
+	bgt	assign_binop
+assign_const:
+	mov	r7,#4		@ write syscall code
+	mov	r0,#1		@ fd 1
+	ldr	r1,=__stmt_const_str1 @ char buffer
+	ldr	r2,=__stmt_const_len1 @ count
+	svc	0
+	mov	r0,r3
+assign_const_loop:
 	bl	putchar
+	bl	getchar
+	cmp	r0,#48		@ 0
+	ble	assign_const_end
+	cmp	r0,#57		@ 9
+	bgt	assign_const_end
+	b	assign_const_loop
+assign_const_end:
+	mov	r0,#1		@ fd 1
+	ldr	r1,=__stmt_const_str2 @ char buffer
+	ldr	r2,=__stmt_const_len2 @ count
+	svc	0
+	pop	{r0}
+	bl	putchar
+	mov	r0,#1		@ fd 1
+	ldr	r1,=__stmt_const_str3 @ char buffer
+	ldr	r2,=__stmt_const_len3 @ count
+	svc	0
 	pop	{lr}
 	bx	lr
+assign_binop:
+	bl	skipspaces	@ operation
+	cmp	r0,#43		@ +
+	beq	assign_add
+	cmp	r0,#45		@ -
+	beq	assign_sub
+	cmp	r0,#42		@ *
+	beq	assign_mul
+	cmp	r0,#47		@ /
+	beq	assign_div
+	cmp	r0,#37		@ %
+	beq	assign_mod
+	cmp	r0,#62		@ >
+	beq	assign_gt
+	cmp	r0,#60		@ <
+	beq	assign_lt
+	cmp	r0,#38		@ &
+	beq	assign_and
+	cmp	r0,#124		@ |
+	beq	assign_or
+	cmp	r0,#61		@ =
+	bne	assign_badop
+	bl	getchar
+	cmp	r0,#61		@ ==
+	beq	assign_eq
+	cmp	r0,#60		@ =<
+	beq	assign_leq
+	cmp	r0,#62		@ =>
+	beq	assign_geq
+	cmp	r0,33		@ =!
+	beq	assign_neq
+assign_badop:
+	mov	r0,#7
+	bl	exit		@ error 7 - bad op
+assign_binop_end:
+	bl	skipspaces
+	mov	r4,r0
+	mov	r7,#4		@ write syscall
+	mov	r0,#1		@ fd 1
+	ldr	r1,=__load_var_str1
+	ldr	r2,=__load_var_len1
+	svc	0
+	mov	r0,r3		@ operand 1
+	bl	putchar
+	mov	r0,#1		@ fd 1
+	ldr	r1,=__load_var_str2
+	ldr	r2,=__load_var_len2
+	svc	0
+	mov	r0,#1		@ fd 1
+	ldr	r1,=__load_var_str1_r1
+	ldr	r2,=__load_var_len1_r1
+	svc	0
+	mov	r0,r4		@ operand 1
+	bl	putchar
+	mov	r0,#1		@ fd 1
+	ldr	r1,=__load_var_str2_r1
+	ldr	r2,=__load_var_len2_r1
+	svc	0
+	pop	{r1,r2}
+	mov	r0,#1		@ fd 1
+	svc	0
+	mov	r0,#1		@ fd 1
+	ldr	r1,=__stmt_store_str1
+	ldr	r2,=__stmt_store_len1
+	svc	0
+	pop	{r0}
+	bl	putchar
+	mov	r0,#1		@ fd 1
+	ldr	r1,=__stmt_store_str2
+	ldr	r2,=__stmt_store_len2
+	svc	0
+	pop	{lr}
+	bx	lr
+
+assign_add:
+	ldr	r1,=__stmt_add_str
+	ldr	r2,=__stmt_add_len
+	push	{r1,r2}
+	b	assign_binop_end
+
+assign_sub:
+	ldr	r1,=__stmt_sub_str
+	ldr	r2,=__stmt_sub_len
+	push	{r1,r2}
+	b	assign_binop_end
+
+assign_mul:
+	ldr	r1,=__stmt_mul_str
+	ldr	r2,=__stmt_mul_len
+	push	{r1,r2}
+	b	assign_binop_end
+
+assign_div:
+	ldr	r1,=__stmt_div_str
+	ldr	r2,=__stmt_div_len
+	push	{r1,r2}
+	b	assign_binop_end
+
+assign_mod:
+	ldr	r1,=__stmt_mod_str
+	ldr	r2,=__stmt_mod_len
+	push	{r1,r2}
+	b	assign_binop_end
+
+assign_gt:
+	ldr	r1,=__stmt_gt_str
+	ldr	r2,=__stmt_gt_len
+	push	{r1,r2}
+	b	assign_binop_end
+
+assign_geq:
+	ldr	r1,=__stmt_geq_str
+	ldr	r2,=__stmt_geq_len
+	push	{r1,r2}
+	b	assign_binop_end
+
+assign_lt:
+	ldr	r1,=__stmt_lt_str
+	ldr	r2,=__stmt_lt_len
+	push	{r1,r2}
+	b	assign_binop_end
+
+assign_leq:
+	ldr	r1,=__stmt_leq_str
+	ldr	r2,=__stmt_leq_len
+	push	{r1,r2}
+	b	assign_binop_end
+
+assign_eq:
+	ldr	r1,=__stmt_eq_str
+	ldr	r2,=__stmt_eq_len
+	push	{r1,r2}
+	b	assign_binop_end
+
+assign_neq:
+	ldr	r1,=__stmt_neq_str
+	ldr	r2,=__stmt_neq_len
+	push	{r1,r2}
+	b	assign_binop_end
+
+assign_and:
+	ldr	r1,=__stmt_and_str
+	ldr	r2,=__stmt_and_len
+	push	{r1,r2}
+	b	assign_binop_end
+
+assign_or:
+	ldr	r1,=__stmt_or_str
+	ldr	r2,=__stmt_or_len
+	push	{r1,r2}
+	b	assign_binop_end
 
 header:
 	push	{r0,r1,r2,r7,lr}
@@ -543,6 +732,10 @@ __load_var_str1: .ascii "\tldr\tr0,="
 __load_var_len1 = .-__load_var_str1
 __load_var_str2: .ascii "\n\tldr\tr0,[r0]\n"
 __load_var_len2 = .-__load_var_str2
+__load_var_str1_r1: .ascii "\tldr\tr1,="
+__load_var_len1_r1 = .-__load_var_str1_r1
+__load_var_str2_r1: .ascii "\n\tldr\tr1,[r1]\n"
+__load_var_len2_r1 = .-__load_var_str2_r1
 __while_str1: .ascii "Lloop"
 __while_len1 = .-__while_str1
 __while_str2: .ascii "\tcmp\tr0,#0\n\tbeq\tLloop_end"
@@ -559,6 +752,42 @@ __store_str1: .ascii "\tldr\tr1,="
 __store_len1 = .-__store_str1
 __store_str2: .ascii "\n\tldr\tr1,[r1]\n\tldr\tr2,=mem\n\tstr\tr1,[r2,r0, LSL #2]\n"
 __store_len2 = .-__store_str2
+__stmt_const_str1: .ascii "\tmov\tr0,#"
+__stmt_const_len1 = .-__stmt_const_str1
+__stmt_const_str2: .ascii "\n\tldr\tr1,="
+__stmt_const_len2 = .-__stmt_const_str2
+__stmt_const_str3: .ascii "\n\tstr\tr0,[r1]\n"
+__stmt_const_len3 = .-__stmt_const_str3
+__stmt_add_str: .ascii "\tadd\tr0,r0,r1\n"
+__stmt_add_len = .-__stmt_add_str
+__stmt_sub_str: .ascii "\tsub\tr0,r0,r1\n"
+__stmt_sub_len = .-__stmt_sub_str
+__stmt_mul_str: .ascii "\tmul\tr0,r0,r1\n"
+__stmt_mul_len = .-__stmt_mul_str
+__stmt_div_str: .ascii "\tbl\tdiv\n"
+__stmt_div_len = .-__stmt_div_str
+__stmt_mod_str: .ascii "\tbl\tdiv\n\tmov\tr0,r1\n"
+__stmt_mod_len = .-__stmt_mod_str
+__stmt_gt_str: .ascii "\tcmp\tr0,r1\n\tmovgt\tr0,#1\n\tmovle\tr0,#0\n"
+__stmt_gt_len = .-__stmt_gt_str
+__stmt_geq_str: .ascii "\tcmp\tr0,r1\n\tmovge\tr0,#1\n\tmovlt\tr0,#0\n"
+__stmt_geq_len = .-__stmt_geq_str
+__stmt_lt_str: .ascii "\tcmp\tr0,r1\n\tmovlt\tr0,#1\n\tmovge\tr0,#0\n"
+__stmt_lt_len = .-__stmt_lt_str
+__stmt_leq_str: .ascii "\tcmp\tr0,r1\n\tmovle\tr0,#1\n\tmovgt\tr0,#0\n"
+__stmt_leq_len = .-__stmt_leq_str
+__stmt_eq_str: .ascii "\tcmp\tr0,r1\n\tmoveq\tr0,#1\n\tmovne\tr0,#0\n"
+__stmt_eq_len = .-__stmt_eq_str
+__stmt_neq_str: .ascii "\tcmp\tr0,r1\n\tmovne\tr0,#1\n\tmoveq\tr0,#0\n"
+__stmt_neq_len = .-__stmt_neq_str
+__stmt_and_str: .ascii "\tand\tr0,r0,r1\n"
+__stmt_and_len = .-__stmt_and_str
+__stmt_or_str: .ascii "\torr\tr0,r0,r1\n"
+__stmt_or_len = .-__stmt_or_str
+__stmt_store_str1: .ascii "\tldr\tr1,="
+__stmt_store_len1 = .-__stmt_store_str1
+__stmt_store_str2: .ascii "\n\tstr\tr0,[r1]\n"
+__stmt_store_len2 = .-__stmt_store_str2
 __mem_str: .ascii "mem: .space 4000\n"
 __mem_len = .-__mem_str
 heap: .space 4000
