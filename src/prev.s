@@ -379,40 +379,69 @@ assign:
 	bl	skipspaces
 	mov	r3,r0		@ operand 1
 	cmp	r0,#45		@ -
-	beq	assign_const
+	bleq	assign_const1
 	cmp	r0,#48		@ 0
 	movlt	r0,#4		@ error 4 - invalid char in assign stmt
-	blt	exit
+	bllt	exit
 	cmp	r0,#57		@ 9
-	bgt	assign_binop
-assign_const:
+	bgt	assign_binop_pre
+	bl	assign_const1
+	cmp	r0,#10		@ \n
+	beq	assign_write_mem
+	b	assign_binop
+@ const 1st operand
+assign_const1:
+	push	{r1,r2,r3,r7,lr}
+	mov	r3,r0
 	mov	r7,#4		@ write syscall code
 	mov	r0,#1		@ fd 1
-	ldr	r1,=__stmt_const_str1 @ char buffer
-	ldr	r2,=__stmt_const_len1 @ count
+	ldr	r1,=__stmt_const1_str @ char buffer
+	ldr	r2,=__stmt_const1_len @ count
 	svc	0
 	mov	r0,r3
-assign_const_loop:
+assign_const1_loop:
 	bl	putchar
 	bl	getchar
 	cmp	r0,#48		@ 0
-	ble	assign_const_end
+	ble	assign_const1_end
 	cmp	r0,#57		@ 9
-	bgt	assign_const_end
-	b	assign_const_loop
-assign_const_end:
-	mov	r0,#1		@ fd 1
-	ldr	r1,=__stmt_const_str2 @ char buffer
-	ldr	r2,=__stmt_const_len2 @ count
-	svc	0
-	pop	{r0}
+	bgt	assign_const1_end
+	b	assign_const1_loop
+assign_const1_end:
+	mov	r3,r0
+	mov	r0,#10		@ \n
 	bl	putchar
-	mov	r0,#1		@ fd 1
-	ldr	r1,=__stmt_const_str3 @ char buffer
-	ldr	r2,=__stmt_const_len3 @ count
-	svc	0
-	pop	{lr}
+	mov	r0,r3
+	pop	{r1,r2,r3,r7,lr}
 	bx	lr
+@ const 2nd operand
+assign_const2:
+	push	{r1,r2,r3,r7,lr}
+	mov	r3,r0
+	mov	r7,#4		@ write syscall code
+	mov	r0,#1		@ fd 1
+	ldr	r1,=__stmt_const2_str @ char buffer
+	ldr	r2,=__stmt_const2_len @ count
+	svc	0
+	mov	r0,r3
+assign_const2_loop:
+	bl	putchar
+	bl	getchar
+	cmp	r0,#48		@ 0
+	ble	assign_const2_end
+	cmp	r0,#57		@ 9
+	bgt	assign_const2_end
+	b	assign_const2_loop
+assign_const2_end:
+	mov	r3,r0
+	mov	r0,#10		@ \n
+	bl	putchar
+	mov	r0,r3
+	pop	{r1,r2,r3,r7,lr}
+	bx	lr
+
+assign_binop_pre:
+	bl	loadvar_r0
 assign_binop:
 	bl	skipspaces	@ operation
 	cmp	r0,#43		@ +
@@ -434,7 +463,7 @@ assign_binop:
 	cmp	r0,#124		@ |
 	beq	assign_or
 	cmp	r0,#61		@ =
-	bne	assign_badop
+	bne	assign_write_mem
 	bl	getchar
 	cmp	r0,#61		@ ==
 	beq	assign_eq
@@ -449,31 +478,14 @@ assign_badop:
 	bl	exit		@ error 7 - bad op
 assign_binop_end:
 	bl	skipspaces
-	mov	r4,r0
-	mov	r7,#4		@ write syscall
-	mov	r0,#1		@ fd 1
-	ldr	r1,=__load_var_str1
-	ldr	r2,=__load_var_len1
-	svc	0
-	mov	r0,r3		@ operand 1
-	bl	putchar
-	mov	r0,#1		@ fd 1
-	ldr	r1,=__load_var_str2
-	ldr	r2,=__load_var_len2
-	svc	0
-	mov	r0,#1		@ fd 1
-	ldr	r1,=__load_var_str1_r1
-	ldr	r2,=__load_var_len1_r1
-	svc	0
-	mov	r0,r4		@ operand 1
-	bl	putchar
-	mov	r0,#1		@ fd 1
-	ldr	r1,=__load_var_str2_r1
-	ldr	r2,=__load_var_len2_r1
-	svc	0
+	cmp	r0,#95
+	blgt	loadvar_r1
+	blle	assign_const2
+	mov	r7,#4
 	pop	{r1,r2}
 	mov	r0,#1		@ fd 1
 	svc	0
+assign_write_mem:
 	mov	r0,#1		@ fd 1
 	ldr	r1,=__stmt_store_str1
 	ldr	r2,=__stmt_store_len1
@@ -485,6 +497,38 @@ assign_binop_end:
 	ldr	r2,=__stmt_store_len2
 	svc	0
 	pop	{lr}
+	bx	lr
+
+loadvar_r0:
+	push	{r1,r2,r3,lr}
+	mov	r3,r0
+	mov	r0,#1		@ fd 1
+	ldr	r1,=__load_var_str1
+	ldr	r2,=__load_var_len1
+	svc	0
+	mov	r0,r3
+	bl	putchar
+	mov	r0,#1		@ fd 1
+	ldr	r1,=__load_var_str2
+	ldr	r2,=__load_var_len2
+	svc	0
+	pop	{r1,r2,r3,lr}
+	bx	lr
+
+loadvar_r1:
+	push	{r1,r2,r3,lr}
+	mov	r3,r0
+	mov	r0,#1		@ fd 1
+	ldr	r1,=__load_var_str1_r1
+	ldr	r2,=__load_var_len1_r1
+	svc	0
+	mov	r0,r3
+	bl	putchar
+	mov	r0,#1		@ fd 1
+	ldr	r1,=__load_var_str2_r1
+	ldr	r2,=__load_var_len2_r1
+	svc	0
+	pop	{r1,r2,r3,lr}
 	bx	lr
 
 assign_add:
@@ -752,12 +796,10 @@ __store_str1: .ascii "\tldr\tr1,="
 __store_len1 = .-__store_str1
 __store_str2: .ascii "\n\tldr\tr1,[r1]\n\tldr\tr2,=mem\n\tstr\tr1,[r2,r0, LSL #2]\n"
 __store_len2 = .-__store_str2
-__stmt_const_str1: .ascii "\tmov\tr0,#"
-__stmt_const_len1 = .-__stmt_const_str1
-__stmt_const_str2: .ascii "\n\tldr\tr1,="
-__stmt_const_len2 = .-__stmt_const_str2
-__stmt_const_str3: .ascii "\n\tstr\tr0,[r1]\n"
-__stmt_const_len3 = .-__stmt_const_str3
+__stmt_const1_str: .ascii "\tmov\tr0,#"
+__stmt_const1_len = .-__stmt_const1_str
+__stmt_const2_str: .ascii "\tmov\tr1,#"
+__stmt_const2_len = .-__stmt_const2_str
 __stmt_add_str: .ascii "\tadd\tr0,r0,r1\n"
 __stmt_add_len = .-__stmt_add_str
 __stmt_sub_str: .ascii "\tsub\tr0,r0,r1\n"

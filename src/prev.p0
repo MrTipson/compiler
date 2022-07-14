@@ -19,14 +19,12 @@
 :load(a,c)
 :putchar(a)
 d = 66
-c = 1
-e = 75
-o = 1
+c = d =< 75
 l = 10
 :while(c){
 	:putchar(d)
 	:putchar(l)
-	d = d + o
-	c = d =< e
+	d = d + 1
+	c = d =< 75
 }
 :exit(a)
