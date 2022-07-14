@@ -1,30 +1,35 @@
 #abc
 #def
 #ghi
-:getchar(a)
-:putchar(a)
-:cstring("abc\n")
-:if(a){
-	:cstring("true\n")
-} else {
-	:cstring("false\n")
-}
-:getchar(b)
-:while(b){
-	:store(b,c)
-	:putchar(b)
+:fun(main){
+	:getchar(a)
+	:putchar(a)
+	:call(abc)
+	:if(a){
+		:raw("true\n")
+	} else {
+		:raw("false\n")
+	}
 	:getchar(b)
-}
-:cstring("endwhile\n")
-:load(a,c)
-:putchar(a)
-d = 66
-c = d =< 75
-l = 10
-:while(c){
-	:putchar(d)
-	:putchar(l)
-	d = d + 1
+	:while(b){
+		:store(b,c)
+		:putchar(b)
+		:getchar(b)
+	}
+	:raw("endwhile\n")
+	:load(a,c)
+	:putchar(a)
+	d = 66
 	c = d =< 75
+	l = 10
+	:while(c){
+		:putchar(d)
+		:putchar(l)
+		d = d + 1
+		c = d =< 75
+	}
+	:exit(a)
 }
-:exit(a)
+:fun(abc){
+	:raw("abc\n")
+}

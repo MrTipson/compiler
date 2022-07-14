@@ -20,10 +20,12 @@ Variables a-z (.data segment) of size 1 word.
  - *var* = *var* & *var*
  - *var* = *var* | *var*
 
+Support was added for constants in all of the binary expressions.
+
 ### I/O:
  - :getchar(*var*)
  - :putchar(*var*)
- - :cstring(*constant string*)
+ - :raw(*constant string*)
 
 *var* is destination/source, always read stdin and write stdout.
 cstring is utility function that prints out a string constant.
@@ -39,3 +41,10 @@ cstring is utility function that prints out a string constant.
 1st arg variable, 2nd arg index in memory (as if it was an array of words).
  - :load(*var*,*var*)
  - :store(*var*,*var*)
+
+### Functions:
+Definition
+ - :fun(*name*){}
+
+Call
+ - :call(*name*)

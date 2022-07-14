@@ -47,8 +47,8 @@ _special_switch:
 	beq	_special_switch_g
 	cmp	r1,#112		@ p
 	beq	_special_switch_p
-	cmp	r1,#99		@ c
-	beq	_special_switch_c
+	cmp	r1,#114		@ r
+	beq	_special_switch_r
 	cmp	r1,#105		@ i
 	beq	_special_switch_i
 	cmp	r1,#119		@ w
@@ -59,6 +59,10 @@ _special_switch:
 	beq	_special_switch_l
 	cmp	r1,#115		@ s
 	beq	_special_switch_s
+	cmp	r1,#99		@ c
+	beq	_special_switch_c
+	cmp	r1,#102		@ f
+	beq	_special_switch_f
 @ g(etchar)
 _special_switch_g:
 	mov	r7,#4		@ write syscall code
@@ -89,42 +93,42 @@ _special_switch_p:
 	ldr	r2,=__putchar_len2 @ count
 	svc	0
 	b	_special_switch_end
-@ c(string)
-_special_switch_c:
+@ raw(string)
+_special_switch_r:
 	bl	getchar
 	cmp	r0,#34		@ "
-	bne	_special_switch_c @ skip all chars until "
-_special_switch_c_loop:
+	bne	_special_switch_r @ skip all chars until "
+_special_switch_r_loop:
 	bl	getchar
 	cmp	r0,#34		@ "
-	beq	_special_switch_c_loop_end
+	beq	_special_switch_r_loop_end
 	str	r0,[r5],#4	@ store char on the heap and increment hp
 	cmp	r0,#92		@ \
-	bne	_special_switch_c_loop
+	bne	_special_switch_r_loop
 	bl	getchar
 	str	r0,[r5],#4	@ store escaped char and increment hp
-	b	_special_switch_c_loop
-_special_switch_c_loop_end:
+	b	_special_switch_r_loop
+_special_switch_r_loop_end:
 	mov	r0,#0
 	strb	r0,[r5],#4	@ null seperated strings
 	mov	r7,#4		@ write syscall code
 	mov	r0,#1		@ fd 1
-	ldr	r1,=__cstring_str1 @ mov r7,#4  mov r0,#1  ldr r1,=s
-	ldr	r2,=__cstring_len1 @ count
+	ldr	r1,=__rstring_str1 @ mov r7,#4  mov r0,#1  ldr r1,=s
+	ldr	r2,=__rstring_len1 @ count
 	svc	0
 	ldr	r0,=stringcnt
 	ldr	r0,[r0]
 	bl	putint		@ write string id
 	mov	r0,#1		@ fd 1
-	ldr	r1,=__cstring_str2 @ char buffer
-	ldr	r2,=__cstring_len2 @ count
+	ldr	r1,=__rstring_str2 @ char buffer
+	ldr	r2,=__rstring_len2 @ count
 	svc	0
 	ldr	r0,=stringcnt
 	ldr	r0,[r0]
 	bl	putint		@ write string id
 	mov	r0,#1		@ fd 1
-	ldr	r1,=__cstring_str3 @ char buffer
-	ldr	r2,=__cstring_len3 @ count
+	ldr	r1,=__rstring_str3 @ char buffer
+	ldr	r2,=__rstring_len3 @ count
 	svc	0
 	ldr	r1,=stringcnt
 	ldr	r2,[r1]		@ read string count
@@ -216,6 +220,39 @@ _special_switch_e:
 	ldr	r2,=__exit_len2 @ count
 	svc	0
 	b	_special_switch_end
+@ c(all)
+_special_switch_c:
+	mov	r7,#4		@ write syscall code
+	mov	r0,#1		@ fd 1
+	ldr	r1,=__call_str @ char buffer
+	ldr	r2,=__call_len @ count
+	svc	0
+	bl	getchar
+_special_switch_c_loop:
+	bl	putchar
+	bl	getchar
+	cmp	r0,#41		@ )
+	bne	_special_switch_c_loop
+	mov	r0,#10		@ \n
+	bl	putchar
+	b	_special_switch_end
+@ f(un)
+_special_switch_f:
+	bl	getchar
+_special_switch_f_loop:
+	bl	putchar
+	bl	getchar
+	cmp	r0,#41		@ )
+	bne	_special_switch_f_loop
+	mov	r7,#4		@ write syscall code
+	mov	r0,#1		@ fd 1
+	ldr	r1,=__fun_str1 @ char buffer
+	ldr	r2,=__fun_len1 @ count
+	svc	0
+	mov	r0,#4
+	mov	r1,#-1
+	push	{r0,r1}
+	b	_special_switch_end
 @ l(oad)
 _special_switch_l:
 	bl	skipspaces
@@ -297,13 +334,15 @@ _special_endskip:
 	b	_loop1_cond
 
 rcurly:		@ not a function
-	pop	{r3,r4}		@ get current state (if 1/else 2/while 3) and label number
+	pop	{r3,r4}		@ get current state (if 1/else 2/while 3/fun 4) and label number
 	cmp	r3,#1		@ if
 	beq	rcurly_if
 	cmp	r3,#2		@ else
 	beq	rcurly_else
 	cmp	r3,#3		@ while
 	beq	rcurly_while
+	cmp	r3,#4		@ fun
+	beq	rcurly_fun
 	mov	r0,#11		@ error 11 - misplaced }
 	bl	exit
 rcurly_if:
@@ -366,6 +405,13 @@ rcurly_while:
 	bl	putchar
 	mov	r0,#10		@ \n
 	bl	putchar
+	b	rcurly_end
+rcurly_fun:
+	mov	r7,#4		@ write syscall code
+	mov	r0,#1		@ fd 1
+	ldr	r1,=__fun_str2 @ b Lloop
+	ldr	r2,=__fun_len2 @ count
+	svc	0
 	b	rcurly_end
 rcurly_end:
 	b	_loop1_cond
@@ -654,8 +700,8 @@ _dataseg_string_loop:
 	bl	putint
 	push	{r1,r2}
 	mov	r0,#1		@ fd 1
-	ldr	r1,=__cstrdata_str1 @ `: .ascii "`
-	ldr	r2,=__cstrdata_len1 @ count
+	ldr	r1,=__rstrdata_str1 @ `: .ascii "`
+	ldr	r2,=__rstrdata_len1 @ count
 	svc	0
 	pop	{r1,r2}
 _dataseg_str_literal:
@@ -668,14 +714,14 @@ _dataseg_str_literal_end:
 @ close string literal
 	push	{r1,r2}		@ save r2 (string count)
 	mov	r0,#1		@ fd 1
-	ldr	r1,=__cstrdata_str2 @ char buffer
-	ldr	r2,=__cstrdata_len2 @ count
+	ldr	r1,=__rstrdata_str2 @ char buffer
+	ldr	r2,=__rstrdata_len2 @ count
 	svc	0
 	mov	r0,r3
 	bl	putint
 	mov	r0,#1		@ fd 1
-	ldr	r1,=__cstrdata_str3 @ char buffer
-	ldr	r2,=__cstrdata_len3 @ count
+	ldr	r1,=__rstrdata_str3 @ char buffer
+	ldr	r2,=__rstrdata_len3 @ count
 	svc	0
 	mov	r0,r3
 	bl	putint
@@ -734,7 +780,7 @@ skipspaces_l:
 cbuf: .byte 0,0
 stringcnt: .word 0
 labelcnt: .word 0
-__header_str: .ascii ".include \"src/header.s\"\n\n_start:\n\tbl\tmain\n\tbl\texit\n\nmain:\n"
+__header_str: .ascii ".include \"src/header.s\"\n\n_start:\n\tbl\tmain\n\tbl\texit\n\n"
 __header_len = .-__header_str
 __dataseg_str: .ascii "\n.data\ncbuf: .byte 0,0\n"
 __dataseg_len = .-__dataseg_str
@@ -746,18 +792,18 @@ __putchar_str1: .ascii "\tldr\tr0,="
 __putchar_len1 = .-__putchar_str1
 __putchar_str2: .ascii "\n\tldr\tr0,[r0]\n\tbl\tputchar\n"
 __putchar_len2 = .-__putchar_str2
-__cstring_str1: .ascii "\tmov\tr7,#4\n\tmov\tr0,#1\n\tldr\tr1,=s"
-__cstring_len1 = .-__cstring_str1
-__cstring_str2: .ascii "\n\tldr\tr2,=slen"
-__cstring_len2 = .-__cstring_str2
-__cstring_str3: .ascii "\n\tsvc\t0\n"
-__cstring_len3 = .-__cstring_str3
-__cstrdata_str1: .ascii ": .ascii \""
-__cstrdata_len1 = .-__cstrdata_str1
-__cstrdata_str2: .ascii "\"\nslen"
-__cstrdata_len2 = .-__cstrdata_str2
-__cstrdata_str3: .ascii " = .-s"
-__cstrdata_len3 = .-__cstrdata_str3
+__rstring_str1: .ascii "\tmov\tr7,#4\n\tmov\tr0,#1\n\tldr\tr1,=s"
+__rstring_len1 = .-__rstring_str1
+__rstring_str2: .ascii "\n\tldr\tr2,=slen"
+__rstring_len2 = .-__rstring_str2
+__rstring_str3: .ascii "\n\tsvc\t0\n"
+__rstring_len3 = .-__rstring_str3
+__rstrdata_str1: .ascii ": .ascii \""
+__rstrdata_len1 = .-__rstrdata_str1
+__rstrdata_str2: .ascii "\"\nslen"
+__rstrdata_len2 = .-__rstrdata_str2
+__rstrdata_str3: .ascii " = .-s"
+__rstrdata_len3 = .-__rstrdata_str3
 __exit_str1: .ascii "\tldr\tr0,="
 __exit_len1 = .-__exit_str1
 __exit_str2: .ascii "\n\tldrb\tr0,[r0]\n\tbl\texit\n"
@@ -830,6 +876,12 @@ __stmt_store_str1: .ascii "\tldr\tr1,="
 __stmt_store_len1 = .-__stmt_store_str1
 __stmt_store_str2: .ascii "\n\tstr\tr0,[r1]\n"
 __stmt_store_len2 = .-__stmt_store_str2
+__call_str: .ascii "\tbl\t"
+__call_len = .-__call_str
+__fun_str1: .ascii ":\n\tpush\t{lr}\n"
+__fun_len1 = .-__fun_str1
+__fun_str2: .ascii "\tpop\t{lr}\n\tbx\tlr\n"
+__fun_len2 = .-__fun_str2
 __mem_str: .ascii "mem: .space 4000\n"
 __mem_len = .-__mem_str
 heap: .space 4000
