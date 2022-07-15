@@ -745,7 +745,10 @@ putint:
 	mov	r2,#0
 putint_div:
 	mov	r1,#10		@ divisor
-	bl	div
+	sdiv	r3,r0,r1
+	mul	r1,r1,r3
+	sub	r1,r0,r1
+	mov	r0,r3
 	cmp	r0,#0
 	beq	putint_unroll
 	add	r2,r2,#1	@ counter
@@ -852,9 +855,9 @@ __stmt_sub_str: .ascii "\tsub\tr0,r0,r1\n"
 __stmt_sub_len = .-__stmt_sub_str
 __stmt_mul_str: .ascii "\tmul\tr0,r0,r1\n"
 __stmt_mul_len = .-__stmt_mul_str
-__stmt_div_str: .ascii "\tbl\tdiv\n"
+__stmt_div_str: .ascii "\tsdiv\tr0,r0,r1\n"
 __stmt_div_len = .-__stmt_div_str
-__stmt_mod_str: .ascii "\tbl\tdiv\n\tmov\tr0,r1\n"
+__stmt_mod_str: .ascii "\tsdiv\tr2,r0,r1\n\tmul\tr1,r1,r2\n\tsub\tr0,r0,r1\n"
 __stmt_mod_len = .-__stmt_mod_str
 __stmt_gt_str: .ascii "\tcmp\tr0,r1\n\tmovgt\tr0,#1\n\tmovle\tr0,#0\n"
 __stmt_gt_len = .-__stmt_gt_str
