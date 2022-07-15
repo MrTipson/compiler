@@ -2,34 +2,30 @@
 #def
 #ghi
 :fun(main){
-	:getchar(a)
-	:putchar(a)
-	:call(abc)
-	:if(a){
-		:raw("true\n")
-	} else {
-		:raw("false\n")
-	}
-	:getchar(b)
-	:while(b){
-		:store(b,c)
-		:putchar(b)
-		:getchar(b)
-	}
-	:raw("endwhile\n")
-	:load(a,c)
-	:putchar(a)
-	d = 66
-	c = d =< 75
-	l = 10
-	:while(c){
-		:putchar(d)
-		:putchar(l)
-		d = d + 1
-		c = d =< 75
-	}
+	i = 15
+	:call(putint)
 	:exit(a)
 }
 :fun(abc){
 	:raw("abc\n")
+}
+:fun(putint){
+	y = 10
+	x = i / y
+	z = x > 0
+	:while(z){
+		y = y * 10
+		x = i / y
+		z = x > 0
+	}
+	y = y / 10
+	:while(y){
+		x = i / y
+		x = x % 10
+		x = x + 48
+		:putchar(x)
+		y = y / 10
+	}
+	x = 10
+	:putchar(x)
 }

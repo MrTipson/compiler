@@ -449,7 +449,7 @@ assign_const1_loop:
 	bl	putchar
 	bl	getchar
 	cmp	r0,#48		@ 0
-	ble	assign_const1_end
+	blt	assign_const1_end
 	cmp	r0,#57		@ 9
 	bgt	assign_const1_end
 	b	assign_const1_loop
@@ -474,7 +474,7 @@ assign_const2_loop:
 	bl	putchar
 	bl	getchar
 	cmp	r0,#48		@ 0
-	ble	assign_const2_end
+	blt	assign_const2_end
 	cmp	r0,#57		@ 9
 	bgt	assign_const2_end
 	b	assign_const2_loop
