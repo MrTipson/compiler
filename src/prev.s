@@ -893,7 +893,7 @@ __call_str: .ascii "\tbl\t"
 __call_len = .-__call_str
 __fun_str1: .ascii ":\n\tpush\t{lr}\n"
 __fun_len1 = .-__fun_str1
-__fun_str2: .ascii "\tpop\t{lr}\n\tbx\tlr\n"
+__fun_str2: .ascii "\tpop\t{lr}\n\tbx\tlr\n.pool\n"
 __fun_len2 = .-__fun_str2
 __mem_str: .ascii "mem: .space 4000\n"
 __mem_len = .-__mem_str
