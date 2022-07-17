@@ -2,13 +2,81 @@
 #def
 #ghi
 :fun(main){
-	i = 15
-	:call(putint)
+	a = 0
+	:call(readFile)
+	b = m
+	:call(tokenize)
 	:exit(a)
 }
-:fun(abc){
-	:raw("abc\n")
+#
+# Phase 1 - Tokenize
+#
+:fun(tokenize){
+	l = 1 # line count
+	i = 0 # file index
+	c = i < b # read through the file
+	:while(c){
+		r = 1 # flag for matches ( 0 => stop trying to match)
+		:call(tokenize_isComment)
+		:if(r){
+			:call(tokenize_isWhitespace)
+			:if(r){
+				:load(x,i)
+				:putchar(x)
+				i = i + 1
+			}
+		}
+		c = i < b # Update condition
+	}
 }
+# Match comment
+:fun(tokenize_isComment){
+	:load(x,i)
+	y = x == 35 # '#'
+	:if(y){
+		r = 0 # set match flag
+		i = i + 1 # increment file index
+		:load(x,i)
+		y = x =! 10 # skip characters until end of line
+		:while(y){
+			i = i + 1 # increment file index
+			:load(x,i)
+			y = x =! 10 # newline
+		}
+	}
+}
+# Match whitespace
+:fun(tokenize_isWhitespace){
+	:load(x,i)
+	y = x == 10 # \n
+	z = x == 9 # \t
+	y = y | z
+	z = x == 32 # space
+	y = y | z
+	:while(y){
+		i = i + 1
+		:load(x,i)
+		y = x == 10 # \n
+		z = x == 9 # \t
+		y = y | z
+		z = x == 32 # space
+		y = y | z
+	}
+}
+#
+# Phase 0 - Read file
+#
+:fun(readFile){
+	:getchar(x)
+	:while(x){
+		:store(x,m)
+		m = m + 1
+		:getchar(x)
+	}
+}
+#
+# Utility functions
+#
 :fun(putint){
 	y = 10
 	x = i / y
@@ -29,3 +97,6 @@
 	x = 10
 	:putchar(x)
 }
+#
+# Errors
+#
