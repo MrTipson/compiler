@@ -1,2 +1,5 @@
 ## Description of target language (.p1)
-TODO
+### Keywords
+int, char, bool, void, if, else, while
+
+*for tokenization implementation details, see [tokenization](tokenization.md)*

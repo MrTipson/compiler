@@ -2,6 +2,7 @@
 #def
 #ghi
 :fun(main){
+	d = 1 # debug
 	a = 0
 	:call(readFile)
 	b = m
@@ -16,14 +17,17 @@
 	i = 0 # file index
 	c = i < b # read through the file
 	:while(c){
-		r = 1 # flag for matches ( 0 => stop trying to match)
+		f = 1 # flag for matches ( 0 => stop trying to match)
 		:call(tokenize_isComment)
-		:if(r){
+		:if(f){
 			:call(tokenize_isWhitespace)
-			:if(r){
-				:load(x,i)
-				:putchar(x)
-				i = i + 1
+			:if(f){
+				:call(tokenize_isKeyword)
+				:if(f){
+					:load(x,i)
+					:putchar(x)
+					i = i + 1
+				}
 			}
 		}
 		c = i < b # Update condition
@@ -34,7 +38,7 @@
 	:load(x,i)
 	y = x == 35 # '#'
 	:if(y){
-		r = 0 # set match flag
+		f = 0 # set match flag
 		i = i + 1 # increment file index
 		:load(x,i)
 		y = x =! 10 # skip characters until end of line
@@ -49,18 +53,261 @@
 :fun(tokenize_isWhitespace){
 	:load(x,i)
 	y = x == 10 # \n
+	:if(y){
+		l = l + 1 # increment line counter
+	}
 	z = x == 9 # \t
 	y = y | z
 	z = x == 32 # space
 	y = y | z
-	:while(y){
-		i = i + 1
-		:load(x,i)
-		y = x == 10 # \n
-		z = x == 9 # \t
-		y = y | z
-		z = x == 32 # space
-		y = y | z
+	:if(y){
+		f = 0 # set match flag
+		:while(y){
+			i = i + 1
+			:load(x,i)
+			y = x == 10 # \n
+			:if(y){
+				l = l + 1 # increment line counter
+			}
+			z = x == 9 # \t
+			y = y | z
+			z = x == 32 # space
+			y = y | z
+		}
+	}
+}
+# Match keywords
+:fun(tokenize_isKeyword){
+	w = i # save file index if match fails
+	# Preload 4 characters in t,u,v,z
+	:load(p,i)
+	i = i + 1
+	:load(q,i)
+	i = i + 1
+	:load(r,i)
+	i = i + 1
+	:load(s,i)
+	i = i + 1
+	:load(t,i)
+	:call(tokenize_isKeyword_bool)
+	:if(f){
+		:call(tokenize_isKeyword_char)
+		:if(f){
+			:call(tokenize_isKeyword_int)
+			:if(f){
+				:call(tokenize_isKeyword_void)
+				:if(f){
+					:call(tokenize_isKeyword_if)
+					:if(f){
+						:call(tokenize_isKeyword_else)
+						:if(f){
+							:call(tokenize_isKeyword_while)
+						}
+					}
+				}
+			}
+		}
+	}
+	:if(f){
+		i = w # restore file index if no match was found
+	}
+}
+# input x
+# output y
+# writes: u,v,y
+:fun(tokenize_isKeyword_helper){ # check if char is not identifier
+	y = x < 48 # 0
+	u = x > 57 # 9
+	v = x < 65 # A
+	u = u & v
+	y = y | u
+	u = x > 90 # Z
+	v = x < 97 # a
+	u = u & v
+	v = x =! 95 # _
+	u = u & v
+	y = y | u
+	u = x > 122 # z
+	y = y | u
+}
+# input: loaded p,q,r,s,t
+# output: sets r, writes memory
+# write: x,y,m
+# calls: tokenize_isKeyword_helper
+:fun(tokenize_isKeyword_bool){
+	x = t # 5th character should be non-identifier
+	:call(tokenize_isKeyword_helper) # y contains result
+	x = p == 98 # b
+	y = y & x
+	x = q == 111 # o
+	y = y & x
+	x = r == 111 # o
+	y = y & x
+	x = s == 108 # l
+	y = y & x
+	:if(y){ # match
+		f = 0 # set match flag
+		x = 0 # type 0
+		:store(x,m)
+		m = m + 1
+		x = 2 # id 2 (bool)
+		:store(x,m)
+		m = m + 1
+		m = m + 1 # skip optional field
+		:if(d){
+			:raw("BOOL ")
+		}
+	}
+}
+:fun(tokenize_isKeyword_char){
+	x = t # 5th character should be non-identifier
+	:call(tokenize_isKeyword_helper) # y contains result
+	x = p == 99 # c
+	y = y & x
+	x = q == 104 # h
+	y = y & x
+	x = r == 97 # a
+	y = y & x
+	x = s == 114 # r
+	y = y & x
+	:if(y){ # match
+		f = 0 # set match flag
+		x = 0 # type 0
+		:store(x,m)
+		m = m + 1
+		x = 1 # id 1 (char)
+		:store(x,m)
+		m = m + 1
+		m = m + 1 # skip optional field
+		:if(d){
+			:raw("CHAR ")
+		}
+	}
+}
+:fun(tokenize_isKeyword_int){
+	x = s # 4th character should be non-identifier
+	:call(tokenize_isKeyword_helper) # y contains result
+	x = p == 105 # i
+	y = y & x
+	x = q == 110 # n
+	y = y & x
+	x = r == 116 # t
+	y = y & x
+	:if(y){ # match
+		f = 0 # set match flag
+		x = 0 # type 0
+		:store(x,m)
+		m = m + 1
+		x = 0 # id 0 (int)
+		:store(x,m)
+		m = m + 1
+		m = m + 1 # skip optional field
+		# i is too far
+		i = i - 1
+		:if(d){
+			:raw("INT ")
+		}
+	}
+}
+:fun(tokenize_isKeyword_void){
+	x = t # 5th character should be non-identifier
+	:call(tokenize_isKeyword_helper) # y contains result
+	x = p == 118 # v
+	y = y & x
+	x = q == 111 # o
+	y = y & x
+	x = r == 105 # i
+	y = y & x
+	x = s == 100 # d
+	y = y & x
+	:if(y){ # match
+		f = 0 # set match flag
+		x = 0 # type 0
+		:store(x,m)
+		m = m + 1
+		x = 3 # id 3 (void)
+		:store(x,m)
+		m = m + 1
+		m = m + 1 # skip optional field
+		:if(d){
+			:raw("VOID ")
+		}
+	}
+}
+:fun(tokenize_isKeyword_if){
+	x = r # 3rd character should be non-identifier
+	:call(tokenize_isKeyword_helper) # y contains result
+	x = p == 105 # i
+	y = y & x
+	x = q == 102 # f
+	y = y & x
+	:if(y){ # match
+		f = 0 # set match flag
+		x = 1 # type 1
+		:store(x,m)
+		m = m + 1
+		x = 0 # id 0 (if)
+		:store(x,m)
+		m = m + 1
+		m = m + 1 # skip optional field
+		# i is too far since most keywords are 4 chars long
+		i = i - 2
+		:if(d){
+			:raw("IF ")
+		}
+	}
+}
+:fun(tokenize_isKeyword_else){
+	x = t # 5th character should be non-identifier
+	:call(tokenize_isKeyword_helper) # y contains result
+	x = p == 101 # e
+	y = y & x
+	x = q == 108 # l
+	y = y & x
+	x = r == 115 # s
+	y = y & x
+	x = s == 101 # e
+	y = y & x
+	:if(y){ # match
+		f = 0 # set match flag
+		x = 1 # type 1
+		:store(x,m)
+		m = m + 1
+		x = 1 # id 1 (else)
+		:store(x,m)
+		m = m + 1
+		m = m + 1 # skip optional field
+		:if(d){
+			:raw("ELSE ")
+		}
+	}
+}
+:fun(tokenize_isKeyword_while){
+	:load(x,i) # 6th character should be non-identifier
+	:call(tokenize_isKeyword_helper) # y contains result
+	x = p == 119 # w
+	y = y & x
+	x = q == 104 # h
+	y = y & x
+	x = r == 105 # i
+	y = y & x
+	x = s == 108 # l
+	y = y & x
+	x = t == 101 # e
+	y = y & x
+	:if(y){ # match
+		f = 0 # set match flag
+		x = 1 # type 1
+		:store(x,m)
+		m = m + 1
+		x = 2 # id 2 (while)
+		:store(x,m)
+		m = m + 1
+		m = m + 1 # skip optional field
+		i = i + 1 # increment file (we loaded but didnt increment)
+		:if(d){
+			:raw("WHILE ")
+		}
 	}
 }
 #
