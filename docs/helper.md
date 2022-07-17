@@ -1,7 +1,4 @@
-## Initial language (.s)
-GNU assembler language.
-
-## .p0
+## Description of helper language (.p0)
 Variables a-z (.data segment) of size 1 word.
 
 ### Statements:
@@ -48,3 +45,6 @@ Definition
 
 Call
  - :call(*name*)
+
+### Parsing
+: is at the beginning of all special functions, after which only the first character is checked (:call and :c behave the same).
