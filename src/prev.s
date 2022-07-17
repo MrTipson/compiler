@@ -458,6 +458,8 @@ assign_const1_end:
 	mov	r0,#10		@ \n
 	bl	putchar
 	mov	r0,r3
+	cmp	r0,#35		@ #
+	moveq	r6,#1
 	pop	{r1,r2,r3,r7,lr}
 	bx	lr
 @ const 2nd operand
@@ -483,6 +485,8 @@ assign_const2_end:
 	mov	r0,#10		@ \n
 	bl	putchar
 	mov	r0,r3
+	cmp	r0,#35		@ #
+	moveq	r6,#1
 	pop	{r1,r2,r3,r7,lr}
 	bx	lr
 
@@ -508,6 +512,8 @@ assign_binop:
 	beq	assign_and
 	cmp	r0,#124		@ |
 	beq	assign_or
+	cmp	r0,#35		@ #
+	beq	assign_comment
 	cmp	r0,#61		@ =
 	bne	assign_write_mem
 	bl	getchar
@@ -517,7 +523,7 @@ assign_binop:
 	beq	assign_leq
 	cmp	r0,#62		@ =>
 	beq	assign_geq
-	cmp	r0,33		@ =!
+	cmp	r0,#33		@ =!
 	beq	assign_neq
 assign_badop:
 	mov	r0,#7
@@ -576,6 +582,10 @@ loadvar_r1:
 	svc	0
 	pop	{r1,r2,r3,lr}
 	bx	lr
+
+assign_comment:
+	mov	r6,#1
+	b	assign_write_mem
 
 assign_add:
 	ldr	r1,=__stmt_add_str
@@ -783,7 +793,7 @@ skipspaces_l:
 cbuf: .byte 0,0
 stringcnt: .word 0
 labelcnt: .word 0
-__header_str: .ascii ".include \"src/header.s\"\n\n_start:\n\tbl\tmain\n\tbl\texit\n\n"
+__header_str: .ascii ".include \"src/header.s\"\n\n_start:\n\tbl\tmain\n\tmov\tr0,#0\n\tbl\texit\n\n"
 __header_len = .-__header_str
 __dataseg_str: .ascii "\n.data\ncbuf: .byte 0,0\n"
 __dataseg_len = .-__dataseg_str
