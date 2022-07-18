@@ -26,9 +26,12 @@
 				:if(f){
 					:call(tokenize_isSymbol)
 					:if(f){
-						:load(x,i)
-						:putchar(x)
-						i = i + 1
+						:call(tokenize_isConstant)
+						:if(f){
+							:load(x,i)
+							:putchar(x)
+							i = i + 1
+						}
 					}
 				}
 			}
@@ -972,6 +975,155 @@
 		}
 	}
 }
+:fun(tokenize_isConstant){
+	:call(tokenize_isConstant_false)
+	:if(f){
+		:call(tokenize_isConstant_true)
+		:if(f){
+			:call(tokenize_isConstant_char)
+		}
+	}
+}
+:fun(tokenize_isConstant_true){
+	:load(p,i)
+	z = i + 1
+	:load(q,z)
+	z = z + 1
+	:load(r,z)
+	z = z + 1
+	:load(s,z)
+	z = z + 1
+	:load(x,z)
+	:call(tokenize_isKeyword_helper)
+	z = p == 116 # t 
+	y = y & z
+	z = q == 114 # r
+	y = y & z
+	z = r == 117 # u
+	y = y & z
+	z = s == 101 # e
+	y = y & z
+	:if(y){
+		i = i + 4
+		f = 0 # set flag
+		x = 3 # type 0
+		:store(x,m)
+		m = m + 1
+		x = 2 # id 2 (constant(bool))
+		:store(x,m)
+		m = m + 1
+		x = 1
+		:store(x,m)
+		m = m + 1 # skip optional field
+		:if(d){
+			:raw("CBOOL(1) ")
+		}
+	}
+}
+:fun(tokenize_isConstant_false){
+	:load(p,i)
+	z = i + 1
+	:load(q,z)
+	z = z + 1
+	:load(r,z)
+	z = z + 1
+	:load(s,z)
+	z = z + 1
+	:load(t,z)
+	z = z + 1
+	:load(x,z)
+	:call(tokenize_isKeyword_helper)
+	z = p == 102 # f 
+	y = y & z
+	z = q == 97 # a
+	y = y & z
+	z = r == 108 # l
+	y = y & z
+	z = s == 115 # s
+	y = y & z
+	z = t == 101 # e
+	y = y & z
+	:if(y){
+		i = i + 5
+		f = 0 # set flag
+		x = 3 # type 0
+		:store(x,m)
+		m = m + 1
+		x = 2 # id 2 (constant(bool))
+		:store(x,m)
+		m = m + 1
+		x = 0
+		:store(x,m)
+		m = m + 1 # skip optional field
+		:if(d){
+			:raw("CBOOL(0) ")
+		}
+	}
+}
+:fun(tokenize_isConstant_char){
+	:load(p,i)
+	z = i + 1
+	:load(q,z)
+	x = q
+	:call(isValidChar)
+	x = p == 39 # '
+	y = y & x
+	:if(y){
+		z = z + 1
+		y = q == 92 # \
+		:if(y){
+			:load(x,z)
+			:call(convertEscapableChar)
+			w = y
+			z = z + 1
+			:load(p,z)
+			y = p == 39 # '
+			:if(y){
+				i = i + 4
+				f = 0 # set flag
+				x = 3 # type 0
+				:store(x,m)
+				m = m + 1
+				x = 1 # id 1 (constant(char))
+				:store(x,m)
+				m = m + 1
+				x = w
+				:store(x,m)
+				m = m + 1 # skip optional field
+				:if(d){
+					:raw("CCHAR(")
+					:call(putint)
+					:raw(") ")
+				}
+			} else {
+				:call(errorInvalidCharConstant)
+			}
+		} else {
+			:load(r,z)
+			y = r == 39 # '
+			:if(y){
+				i = i + 3
+				f = 0 # set flag
+				x = 3 # type 0
+				:store(x,m)
+				m = m + 1
+				x = 1 # id 1 (constant(char))
+				:store(x,m)
+				m = m + 1
+				x = q
+				:store(x,m)
+				m = m + 1 # skip optional field
+				:if(d){
+					:raw("CCHAR(")
+					:call(putint)
+					:raw(") ")
+				}
+			} else {
+				:call(errorInvalidCharConstant)
+			}
+		}
+	}
+}
 #
 # Phase 0 - Read file
 #
@@ -987,25 +1139,67 @@
 # Utility functions
 #
 :fun(putint){
+	w = x
 	y = 10
-	x = i / y
+	x = w / y
 	z = x > 0
 	:while(z){
 		y = y * 10
-		x = i / y
+		x = w / y
 		z = x > 0
 	}
 	y = y / 10
 	:while(y){
-		x = i / y
+		x = w / y
 		x = x % 10
 		x = x + 48
 		:putchar(x)
 		y = y / 10
 	}
-	x = 10
-	:putchar(x)
+}
+# input: x
+# writes: y,u
+:fun(convertEscapableChar){
+	y = x == 110 # n
+	:if(y){
+		y = 10 # newline
+	} else {
+		y = x == 116
+		:if(y){
+			y = 9 # tab
+		} else {
+			y = x == 39 # '
+			:if(y){
+				y = 39
+			} else {
+				y = x == 34 # "
+				:if(y){
+					y = 34
+				} else {
+					:raw("Invalid escape sequence. Line ")
+					x = l
+					:call(putint)
+					:raw("\n")
+					x = 1
+					:exit(x)
+				}
+			}
+		}
+	}
+}
+:fun(isValidChar){
+	y = q => 32 # space
+	x = q =< 126 # ~
+	y = y & x
 }
 #
 # Errors
 #
+:fun(errorInvalidCharConstant){
+	:raw("Invalid char constant. Line ")
+	x = l
+	:call(putint)
+	:raw("\n")
+	x = 1
+	:exit(x)
+}
