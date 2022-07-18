@@ -24,9 +24,12 @@
 			:if(f){
 				:call(tokenize_isKeyword)
 				:if(f){
-					:load(x,i)
-					:putchar(x)
-					i = i + 1
+					:call(tokenize_isSymbol)
+					:if(f){
+						:load(x,i)
+						:putchar(x)
+						i = i + 1
+					}
 				}
 			}
 		}
@@ -243,13 +246,9 @@
 	y = y & x
 	:if(y){ # match
 		f = 0 # set match flag
-		x = 1 # type 1
+		x = 11 # type 11
 		:store(x,m)
-		m = m + 1
-		x = 0 # id 0 (if)
-		:store(x,m)
-		m = m + 1
-		m = m + 1 # skip optional field
+		m = m + 3 # skip optional field
 		# i is too far since most keywords are 4 chars long
 		i = i - 2
 		:if(d){
@@ -270,13 +269,9 @@
 	y = y & x
 	:if(y){ # match
 		f = 0 # set match flag
-		x = 1 # type 1
+		x = 12 # type 1
 		:store(x,m)
-		m = m + 1
-		x = 1 # id 1 (else)
-		:store(x,m)
-		m = m + 1
-		m = m + 1 # skip optional field
+		m = m + 3 # skip optional field
 		:if(d){
 			:raw("ELSE ")
 		}
@@ -297,16 +292,683 @@
 	y = y & x
 	:if(y){ # match
 		f = 0 # set match flag
-		x = 1 # type 1
+		x = 13 # type 1
 		:store(x,m)
-		m = m + 1
-		x = 2 # id 2 (while)
-		:store(x,m)
-		m = m + 1
-		m = m + 1 # skip optional field
+		m = m + 3 # skip optional field
 		i = i + 1 # increment file (we loaded but didnt increment)
 		:if(d){
 			:raw("WHILE ")
+		}
+	}
+}
+:fun(tokenize_isSymbol){
+	:load(x,i)
+	g = 1 # flag for use in isSymbol
+	:call(tokenize_isSymbol_ADDEQ)
+	:if(g){
+		:call(tokenize_isSymbol_SUBEQ)
+		:if(g){
+			:call(tokenize_isSymbol_DIVEQ)
+			:if(g){
+				:call(tokenize_isSymbol_MULEQ)
+				:if(g){
+					:call(tokenize_isSymbol_INC)
+					:if(g){
+						:call(tokenize_isSymbol_DEC)
+						:if(g){
+							:call(tokenize_isSymbol_EQ)
+							:if(g){
+								:call(tokenize_isSymbol_NEQ)
+								:if(g){
+									:call(tokenize_isSymbol_LEQ)
+									:if(g){
+										:call(tokenize_isSymbol_GEQ)
+										:if(g){
+											:call(tokenize_isSymbol_AND)
+											:if(g){
+												:call(tokenize_isSymbol_OR)
+												:if(g){
+													:call(tokenize_isSymbol_LPARENT)
+													:if(g){
+														:call(tokenize_isSymbol_RPARENT)
+														:if(g){
+															:call(tokenize_isSymbol_LCURLY)
+															:if(g){
+																:call(tokenize_isSymbol_RCURLY)
+																:if(g){
+																	:call(tokenize_isSymbol_LBRACK)
+																	:if(g){
+																		:call(tokenize_isSymbol_RBRACK)
+																		:if(g){
+																			:call(tokenize_isSymbol_PERIOD)
+																			:if(g){
+																				:call(tokenize_isSymbol_COMMA)
+																				:if(g){
+																					:call(tokenize_isSymbol_SEMICOLON)
+																					:if(g){
+																						:call(tokenize_isSymbol_COLON)
+																						:if(g){
+																							:call(tokenize_isSymbol_EXCL)
+																							:if(g){
+																								:call(tokenize_isSymbol_ASSIGN)
+																								:if(g){
+																									:call(tokenize_isSymbol_BITAND)
+																									:if(g){
+																										:call(tokenize_isSymbol_BITOR)
+																										:if(g){
+																											:call(tokenize_isSymbol_LT)
+																											:if(g){
+																												:call(tokenize_isSymbol_GT)
+																												:if(g){
+																													:call(tokenize_isSymbol_MUL)
+																													:if(g){
+																														:call(tokenize_isSymbol_DIV)
+																														:if(g){
+																															:call(tokenize_isSymbol_MOD)
+																															:if(g){
+																																:call(tokenize_isSymbol_ADD)
+																																:if(g){
+																																	:call(tokenize_isSymbol_SUB)
+																																}
+																															}
+																														}
+																													}
+																												}
+																											}
+																										}
+																									}
+																								}
+																							}
+																						}
+																					}
+																				}
+																			}
+																		}
+																	}
+																}
+															}
+														}
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+:fun(tokenize_isSymbol_ADDEQ){
+	y = x == 43 # +
+	z = i + 1
+	:load(z,z)
+	z = z == 61 # =
+	y = y & z
+	:if(y){
+		i = i + 2
+		f = 0 # set match flag
+		g = 0
+		x = 1 # type 4
+		:store(x,m)
+		m = m + 1
+		x = 1 # id 1 (+=)
+		:store(x,m)
+		m = m + 2 # skip optional field
+		:if(d){
+			:raw("ADDEQ ")
+		}
+	}
+}
+:fun(tokenize_isSymbol_SUBEQ){
+	y = x == 45 # -
+	z = i + 1
+	:load(z,z)
+	z = z == 61 # =
+	y = y & z
+	:if(y){
+		i = i + 2
+		f = 0 # set match flag
+		g = 0
+		x = 1 # type 1
+		:store(x,m)
+		m = m + 1
+		x = 2 # id 2 (-=)
+		:store(x,m)
+		m = m + 2 # skip optional field
+		:if(d){
+			:raw("SUBEQ ")
+		}
+	}
+}
+:fun(tokenize_isSymbol_DIVEQ){
+	y = x == 47 # /
+	z = i + 1
+	:load(z,z)
+	z = z == 61 # =
+	y = y & z
+	:if(y){
+		i = i + 2
+		f = 0 # set match flag
+		g = 0
+		x = 1 # type 1
+		:store(x,m)
+		m = m + 1
+		x = 3 # id 3 (/=)
+		:store(x,m)
+		m = m + 2 # skip optional field
+		:if(d){
+			:raw("DIVEQ ")
+		}
+	}
+}
+:fun(tokenize_isSymbol_MULEQ){
+	y = x == 42 # *
+	z = i + 1
+	:load(z,z)
+	z = z == 61 # =
+	y = y & z
+	:if(y){
+		i = i + 2
+		f = 0 # set match flag
+		g = 0
+		x = 1 # type 1
+		:store(x,m)
+		m = m + 1
+		x = 4 # id 4 (*=)
+		:store(x,m)
+		m = m + 2 # skip optional field
+		:if(d){
+			:raw("MULEQ ")
+		}
+	}
+}
+:fun(tokenize_isSymbol_INC){
+	y = x == 43 # +
+	z = i + 1
+	:load(z,z)
+	z = z == 43 # +
+	y = y & z
+	:if(y){
+		i = i + 2
+		f = 0 # set match flag
+		g = 0
+		x = 25 # type 25
+		:store(x,m)
+		m = m + 3 # skip optional field
+		:if(d){
+			:raw("INC ")
+		}
+	}
+}
+:fun(tokenize_isSymbol_DEC){
+	y = x == 45 # -
+	z = i + 1
+	:load(z,z)
+	z = z == 45 # -
+	y = y & z
+	:if(y){
+		i = i + 2
+		f = 0 # set match flag
+		g = 0
+		x = 26 # type 26
+		:store(x,m)
+		m = m + 3 # skip optional field
+		:if(d){
+			:raw("DEC ")
+		}
+	}
+}
+:fun(tokenize_isSymbol_EQ){
+	y = x == 61 # =
+	z = i + 1
+	:load(z,z)
+	z = z == 61 # =
+	y = y & z
+	:if(y){
+		i = i + 2
+		f = 0 # set match flag
+		g = 0
+		x = 4 # type 4
+		:store(x,m)
+		m = m + 1
+		x = 2 # id 2 (==)
+		:store(x,m)
+		m = m + 2 # skip optional field
+		:if(d){
+			:raw("EQ ")
+		}
+	}
+}
+:fun(tokenize_isSymbol_NEQ){
+	y = x == 33 # !
+	z = i + 1
+	:load(z,z)
+	z = z == 61 # =
+	y = y & z
+	:if(y){
+		i = i + 2
+		f = 0 # set match flag
+		g = 0
+		x = 4 # type 4
+		:store(x,m)
+		m = m + 1
+		x = 3 # id 3 (!=)
+		:store(x,m)
+		m = m + 2 # skip optional field
+		:if(d){
+			:raw("NEQ ")
+		}
+	}
+}
+:fun(tokenize_isSymbol_LEQ){
+	y = x == 60 # <
+	z = i + 1
+	:load(z,z)
+	z = z == 61 # =
+	y = y & z
+	:if(y){
+		i = i + 2
+		f = 0 # set match flag
+		g = 0
+		x = 4 # type 4
+		:store(x,m)
+		m = m + 1
+		x = 6 # id 6 (<=)
+		:store(x,m)
+		m = m + 2 # skip optional field
+		:if(d){
+			:raw("LEQ ")
+		}
+	}
+}
+:fun(tokenize_isSymbol_GEQ){
+	y = x == 62 # >
+	z = i + 1
+	:load(z,z)
+	z = z == 61 # =
+	y = y & z
+	:if(y){
+		i = i + 2
+		f = 0 # set match flag
+		g = 0
+		x = 4 # type 4
+		:store(x,m)
+		m = m + 1
+		x = 7 # id 7 (>=)
+		:store(x,m)
+		m = m + 2 # skip optional field
+		:if(d){
+			:raw("GEQ ")
+		}
+	}
+}
+:fun(tokenize_isSymbol_AND){
+	y = x == 38 # &
+	z = i + 1
+	:load(z,z)
+	z = z == 38 # &
+	y = y & z
+	:if(y){
+		i = i + 2
+		f = 0 # set match flag
+		g = 0
+		x = 4 # type 4
+		:store(x,m)
+		m = m + 1
+		x = 13 # id 13 (&&)
+		:store(x,m)
+		m = m + 2 # skip optional field
+		:if(d){
+			:raw("AND ")
+		}
+	}
+}
+:fun(tokenize_isSymbol_OR){
+	y = x == 124 # |
+	z = i + 1
+	:load(z,z)
+	z = z == 124 # |
+	y = y & z
+	:if(y){
+		i = i + 2
+		f = 0 # set match flag
+		g = 0
+		x = 4 # type 4
+		:store(x,m)
+		m = m + 1
+		x = 14 # id 14 (||)
+		:store(x,m)
+		m = m + 2 # skip optional field
+		:if(d){
+			:raw("OR ")
+		}
+	}
+}
+:fun(tokenize_isSymbol_LPARENT){
+	y = x == 40 # (
+	:if(y){
+		i = i + 1
+		f = 0 # set match flag
+		g = 0
+		x = 14 # type 14
+		:store(x,m)
+		m = m + 3 # skip optional field
+		:if(d){
+			:raw("LPARENT ")
+		}
+	}
+}
+:fun(tokenize_isSymbol_RPARENT){
+	y = x == 41 # )
+	:if(y){
+		i = i + 1
+		f = 0 # set match flag
+		g = 0
+		x = 15 # type 15
+		:store(x,m)
+		m = m + 3 # skip optional field
+		:if(d){
+			:raw("RPARENT ")
+		}
+	}
+}
+:fun(tokenize_isSymbol_LCURLY){
+	y = x == 123 # {
+	:if(y){
+		i = i + 1
+		f = 0 # set match flag
+		g = 0
+		x = 16 # type 16
+		:store(x,m)
+		m = m + 3 # skip optional field
+		:if(d){
+			:raw("LCURLY ")
+		}
+	}
+}
+:fun(tokenize_isSymbol_RCURLY){
+	y = x == 125 # {
+	:if(y){
+		i = i + 1
+		f = 0 # set match flag
+		g = 0
+		x = 17 # type 17
+		:store(x,m)
+		m = m + 3 # skip optional field
+		:if(d){
+			:raw("RCURLY ")
+		}
+	}
+}
+:fun(tokenize_isSymbol_LBRACK){
+	y = x == 91 # [
+	:if(y){
+		i = i + 1
+		f = 0 # set match flag
+		g = 0
+		x = 18 # type 18
+		:store(x,m)
+		m = m + 3 # skip optional field
+		:if(d){
+			:raw("LBRACK ")
+		}
+	}
+}
+:fun(tokenize_isSymbol_RBRACK){
+	y = x == 93 # ]
+	:if(y){
+		i = i + 1
+		f = 0 # set match flag
+		g = 0
+		x = 19 # type 19
+		:store(x,m)
+		m = m + 3 # skip optional field
+		:if(d){
+			:raw("RBRACK ")
+		}
+	}
+}
+:fun(tokenize_isSymbol_PERIOD){
+	y = x == 46 # .
+	:if(y){
+		i = i + 1
+		f = 0 # set match flag
+		g = 0
+		x = 20 # type 20
+		:store(x,m)
+		m = m + 3 # skip optional field
+		:if(d){
+			:raw("PERIOD ")
+		}
+	}
+}
+:fun(tokenize_isSymbol_COMMA){
+	y = x == 44 # ,
+	:if(y){
+		i = i + 1
+		f = 0 # set match flag
+		g = 0
+		x = 21 # type 16
+		:store(x,m)
+		m = m + 3 # skip optional field
+		:if(d){
+			:raw("COMMA ")
+		}
+	}
+}
+:fun(tokenize_isSymbol_SEMICOLON){
+	y = x == 59 # ;
+	:if(y){
+		i = i + 1
+		f = 0 # set match flag
+		g = 0
+		x = 22 # type 22
+		:store(x,m)
+		m = m + 3 # skip optional field
+		:if(d){
+			:raw("SEMICOLON ")
+		}
+	}
+}
+:fun(tokenize_isSymbol_COLON){
+	y = x == 58 # :
+	:if(y){
+		i = i + 1
+		f = 0 # set match flag
+		g = 0
+		x = 23 # type 23
+		:store(x,m)
+		m = m + 3 # skip optional field
+		:if(d){
+			:raw("COLON ")
+		}
+	}
+}
+:fun(tokenize_isSymbol_ASSIGN){
+	y = x == 61 # =
+	:if(y){
+		i = i + 1
+		f = 0 # set match flag
+		g = 0
+		x = 1 # type 1
+		:store(x,m)
+		m = m + 1
+		x = 0 # id 0
+		:store(x,m)
+		m = m + 2 # skip optional field
+		:if(d){
+			:raw("ASSIGN ")
+		}
+	}
+}
+:fun(tokenize_isSymbol_EXCL){
+	y = x == 33 # !
+	:if(y){
+		i = i + 1
+		f = 0 # set match flag
+		g = 0
+		x = 24 # type 24
+		:store(x,m)
+		m = m + 3 # skip optional field
+		:if(d){
+			:raw("EXCL ")
+		}
+	}
+}
+:fun(tokenize_isSymbol_BITAND){
+	y = x == 38 # &
+	:if(y){
+		i = i + 1
+		f = 0 # set match flag
+		g = 0
+		x = 4 # type 4
+		:store(x,m)
+		m = m + 1
+		x = 0 # id 0
+		:store(x,m)
+		m = m + 2 # skip optional field
+		:if(d){
+			:raw("BITAND ")
+		}
+	}
+}
+:fun(tokenize_isSymbol_BITOR){
+	y = x == 124 # |
+	:if(y){
+		i = i + 1
+		f = 0 # set match flag
+		g = 0
+		x = 4 # type 4
+		:store(x,m)
+		m = m + 1
+		x = 1 # id 1
+		:store(x,m)
+		m = m + 2 # skip optional field
+		:if(d){
+			:raw("BITOR ")
+		}
+	}
+}
+:fun(tokenize_isSymbol_LT){
+	y = x == 60 # <
+	:if(y){
+		i = i + 1
+		f = 0 # set match flag
+		g = 0
+		x = 4 # type 4
+		:store(x,m)
+		m = m + 1
+		x = 4 # id 4
+		:store(x,m)
+		m = m + 2 # skip optional field
+		:if(d){
+			:raw("LT ")
+		}
+	}
+}
+:fun(tokenize_isSymbol_GT){
+	y = x == 62 # >
+	:if(y){
+		i = i + 1
+		f = 0 # set match flag
+		g = 0
+		x = 4 # type 4
+		:store(x,m)
+		m = m + 1
+		x = 5 # id 5
+		:store(x,m)
+		m = m + 2 # skip optional field
+		:if(d){
+			:raw("GT ")
+		}
+	}
+}
+:fun(tokenize_isSymbol_MUL){
+	y = x == 42 # *
+	:if(y){
+		i = i + 1
+		f = 0 # set match flag
+		g = 0
+		x = 4 # type 4
+		:store(x,m)
+		m = m + 1
+		x = 8 # id 8
+		:store(x,m)
+		m = m + 2 # skip optional field
+		:if(d){
+			:raw("MUL ")
+		}
+	}
+}
+:fun(tokenize_isSymbol_DIV){
+	y = x == 47 # /
+	:if(y){
+		i = i + 1
+		f = 0 # set match flag
+		g = 0
+		x = 4 # type 4
+		:store(x,m)
+		m = m + 1
+		x = 9 # id 9
+		:store(x,m)
+		m = m + 2 # skip optional field
+		:if(d){
+			:raw("DIV ")
+		}
+	}
+}
+:fun(tokenize_isSymbol_MOD){
+	y = x == 37 # %
+	:if(y){
+		i = i + 1
+		f = 0 # set match flag
+		g = 0
+		x = 4 # type 4
+		:store(x,m)
+		m = m + 1
+		x = 10 # id 10
+		:store(x,m)
+		m = m + 2 # skip optional field
+		:if(d){
+			:raw("MOD ")
+		}
+	}
+}
+:fun(tokenize_isSymbol_ADD){
+	y = x == 43 # +
+	:if(y){
+		i = i + 1
+		f = 0 # set match flag
+		g = 0
+		x = 4 # type 4
+		:store(x,m)
+		m = m + 1
+		x = 11 # id 11
+		:store(x,m)
+		m = m + 2 # skip optional field
+		:if(d){
+			:raw("ADD ")
+		}
+	}
+}
+:fun(tokenize_isSymbol_SUB){
+	y = x == 45 # -
+	:if(y){
+		i = i + 1
+		f = 0 # set match flag
+		g = 0
+		x = 4 # type 4
+		:store(x,m)
+		m = m + 1
+		x = 12 # id 12
+		:store(x,m)
+		m = m + 2 # skip optional field
+		:if(d){
+			:raw("SUB ")
 		}
 	}
 }
