@@ -13,6 +13,9 @@
 # Phase 1 - Tokenize
 #
 :fun(tokenize){
+	:if(d){
+		:raw("Phase 1 - Tokenization\n")
+	}
 	l = 1 # line count
 	i = 0 # file index
 	c = i < b # read through the file
@@ -983,6 +986,9 @@
 			:call(tokenize_isConstant_char)
 			:if(f){
 				:call(tokenize_isConstant_int)
+				:if(f){
+					:call(tokenize_isConstant_string)
+				}
 			}
 		}
 	}
@@ -1182,6 +1188,66 @@
 		i = w
 	}
 }
+:fun(tokenize_isConstant_string){
+	:load(x,i)
+	y = x == 34 # "
+	:if(y){
+		z = i
+		:while(y){
+			i = i + 1
+			:load(x,i)
+			y = x == 92 # \
+			:if(y){
+				i = i + 1
+				:load(x,i)
+				:call(convertEscapableChar)
+				y = 1
+			} else {
+				:call(isValidChar)
+				y = 1 - y
+				:if(y){
+					:call(errorInvalidCharInString)
+				}
+				y = x =! 34 # "
+			}
+		}
+		i = i + 1 # move past "
+		f = 0 # set flag
+		x = 3 # type 3
+		:store(x,m)
+		m = m + 1
+		x = 3 # id 3 (constant(int))
+		:store(x,m)
+		m = m + 1
+		x = z
+		:store(x,m)
+		m = m + 1
+		:if(d){
+			:raw("CSTRING(")
+			:load(x,z)
+			:putchar(x)
+			z = z + 1
+			y = 1
+			:while(y){
+				:load(x,z)
+				z = z + 1
+				:putchar(x)
+				w = x == 92 # \
+				:if(w){
+					:load(x,z)
+					z = z + 1
+					:putchar(x)
+				} else {
+					w = x == 34 # "
+					:if(w){
+						y = 0
+					}
+				}
+			}
+			:raw(") ")
+		}
+	}
+}
 #
 # Phase 0 - Read file
 #
@@ -1222,13 +1288,13 @@
 	}
 }
 # input: x
-# writes: y,u
+# writes: y
 :fun(convertEscapableChar){
 	y = x == 110 # n
 	:if(y){
 		y = 10 # newline
 	} else {
-		y = x == 116
+		y = x == 116 # t
 		:if(y){
 			y = 9 # tab
 		} else {
@@ -1240,21 +1306,26 @@
 				:if(y){
 					y = 34
 				} else {
-					:raw("Invalid escape sequence. Line ")
-					x = l
-					:call(putint)
-					:raw("\n")
-					x = 1
-					:exit(x)
+					y = x == 92 # \
+					:if(y){
+						y = 92
+					} else {
+						:raw("Invalid escape sequence. Line ")
+						x = l
+						:call(putint)
+						:raw("\n")
+						x = 1
+						:exit(x)
+					}
 				}
 			}
 		}
 	}
 }
 :fun(isValidChar){
-	y = q => 32 # space
-	x = q =< 126 # ~
-	y = y & x
+	y = x => 32 # space
+	u = x =< 126 # ~
+	y = y & u
 }
 #
 # Errors
@@ -1269,6 +1340,10 @@
 }
 :fun(errorConstantTooBig){
 	:raw("Invalid int constant (too big). ")
+	:call(errorPrintLine)
+}
+:fun(errorInvalidCharInString){
+	:raw("Invalid char encountered in string literal. ")
 	:call(errorPrintLine)
 }
 :fun(errorPrintLine){
