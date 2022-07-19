@@ -309,71 +309,70 @@
 }
 :fun(tokenize_isSymbol){
 	:load(x,i)
-	g = 1 # flag for use in isSymbol
 	:call(tokenize_isSymbol_ADDEQ)
-	:if(g){
+	:if(f){
 		:call(tokenize_isSymbol_SUBEQ)
-		:if(g){
+		:if(f){
 			:call(tokenize_isSymbol_DIVEQ)
-			:if(g){
+			:if(f){
 				:call(tokenize_isSymbol_MULEQ)
-				:if(g){
+				:if(f){
 					:call(tokenize_isSymbol_INC)
-					:if(g){
+					:if(f){
 						:call(tokenize_isSymbol_DEC)
-						:if(g){
+						:if(f){
 							:call(tokenize_isSymbol_EQ)
-							:if(g){
+							:if(f){
 								:call(tokenize_isSymbol_NEQ)
-								:if(g){
+								:if(f){
 									:call(tokenize_isSymbol_LEQ)
-									:if(g){
+									:if(f){
 										:call(tokenize_isSymbol_GEQ)
-										:if(g){
+										:if(f){
 											:call(tokenize_isSymbol_AND)
-											:if(g){
+											:if(f){
 												:call(tokenize_isSymbol_OR)
-												:if(g){
+												:if(f){
 													:call(tokenize_isSymbol_LPARENT)
-													:if(g){
+													:if(f){
 														:call(tokenize_isSymbol_RPARENT)
-														:if(g){
+														:if(f){
 															:call(tokenize_isSymbol_LCURLY)
-															:if(g){
+															:if(f){
 																:call(tokenize_isSymbol_RCURLY)
-																:if(g){
+																:if(f){
 																	:call(tokenize_isSymbol_LBRACK)
-																	:if(g){
+																	:if(f){
 																		:call(tokenize_isSymbol_RBRACK)
-																		:if(g){
+																		:if(f){
 																			:call(tokenize_isSymbol_PERIOD)
-																			:if(g){
+																			:if(f){
 																				:call(tokenize_isSymbol_COMMA)
-																				:if(g){
+																				:if(f){
 																					:call(tokenize_isSymbol_SEMICOLON)
-																					:if(g){
+																					:if(f){
 																						:call(tokenize_isSymbol_COLON)
-																						:if(g){
+																						:if(f){
 																							:call(tokenize_isSymbol_EXCL)
-																							:if(g){
+																							:if(f){
 																								:call(tokenize_isSymbol_ASSIGN)
-																								:if(g){
+																								:if(f){
 																									:call(tokenize_isSymbol_BITAND)
-																									:if(g){
+																									:if(f){
 																										:call(tokenize_isSymbol_BITOR)
-																										:if(g){
+																										:if(f){
 																											:call(tokenize_isSymbol_LT)
-																											:if(g){
+																											:if(f){
 																												:call(tokenize_isSymbol_GT)
-																												:if(g){
+																												:if(f){
 																													:call(tokenize_isSymbol_MUL)
-																													:if(g){
+																													:if(f){
 																														:call(tokenize_isSymbol_DIV)
-																														:if(g){
+																														:if(f){
 																															:call(tokenize_isSymbol_MOD)
-																															:if(g){
+																															:if(f){
 																																:call(tokenize_isSymbol_ADD)
-																																:if(g){
+																																:if(f){
 																																	:call(tokenize_isSymbol_SUB)
 																																}
 																															}
@@ -417,7 +416,6 @@
 	:if(y){
 		i = i + 2
 		f = 0 # set match flag
-		g = 0
 		x = 1 # type 4
 		:store(x,m)
 		m = m + 1
@@ -438,7 +436,6 @@
 	:if(y){
 		i = i + 2
 		f = 0 # set match flag
-		g = 0
 		x = 1 # type 1
 		:store(x,m)
 		m = m + 1
@@ -459,7 +456,6 @@
 	:if(y){
 		i = i + 2
 		f = 0 # set match flag
-		g = 0
 		x = 1 # type 1
 		:store(x,m)
 		m = m + 1
@@ -480,7 +476,6 @@
 	:if(y){
 		i = i + 2
 		f = 0 # set match flag
-		g = 0
 		x = 1 # type 1
 		:store(x,m)
 		m = m + 1
@@ -501,7 +496,6 @@
 	:if(y){
 		i = i + 2
 		f = 0 # set match flag
-		g = 0
 		x = 25 # type 25
 		:store(x,m)
 		m = m + 3 # skip optional field
@@ -519,7 +513,6 @@
 	:if(y){
 		i = i + 2
 		f = 0 # set match flag
-		g = 0
 		x = 26 # type 26
 		:store(x,m)
 		m = m + 3 # skip optional field
@@ -537,7 +530,6 @@
 	:if(y){
 		i = i + 2
 		f = 0 # set match flag
-		g = 0
 		x = 4 # type 4
 		:store(x,m)
 		m = m + 1
@@ -558,7 +550,6 @@
 	:if(y){
 		i = i + 2
 		f = 0 # set match flag
-		g = 0
 		x = 4 # type 4
 		:store(x,m)
 		m = m + 1
@@ -579,7 +570,6 @@
 	:if(y){
 		i = i + 2
 		f = 0 # set match flag
-		g = 0
 		x = 4 # type 4
 		:store(x,m)
 		m = m + 1
@@ -600,7 +590,6 @@
 	:if(y){
 		i = i + 2
 		f = 0 # set match flag
-		g = 0
 		x = 4 # type 4
 		:store(x,m)
 		m = m + 1
@@ -621,7 +610,6 @@
 	:if(y){
 		i = i + 2
 		f = 0 # set match flag
-		g = 0
 		x = 4 # type 4
 		:store(x,m)
 		m = m + 1
@@ -642,7 +630,6 @@
 	:if(y){
 		i = i + 2
 		f = 0 # set match flag
-		g = 0
 		x = 4 # type 4
 		:store(x,m)
 		m = m + 1
@@ -659,7 +646,6 @@
 	:if(y){
 		i = i + 1
 		f = 0 # set match flag
-		g = 0
 		x = 14 # type 14
 		:store(x,m)
 		m = m + 3 # skip optional field
@@ -673,7 +659,6 @@
 	:if(y){
 		i = i + 1
 		f = 0 # set match flag
-		g = 0
 		x = 15 # type 15
 		:store(x,m)
 		m = m + 3 # skip optional field
@@ -687,7 +672,6 @@
 	:if(y){
 		i = i + 1
 		f = 0 # set match flag
-		g = 0
 		x = 16 # type 16
 		:store(x,m)
 		m = m + 3 # skip optional field
@@ -701,7 +685,6 @@
 	:if(y){
 		i = i + 1
 		f = 0 # set match flag
-		g = 0
 		x = 17 # type 17
 		:store(x,m)
 		m = m + 3 # skip optional field
@@ -715,7 +698,6 @@
 	:if(y){
 		i = i + 1
 		f = 0 # set match flag
-		g = 0
 		x = 18 # type 18
 		:store(x,m)
 		m = m + 3 # skip optional field
@@ -729,7 +711,6 @@
 	:if(y){
 		i = i + 1
 		f = 0 # set match flag
-		g = 0
 		x = 19 # type 19
 		:store(x,m)
 		m = m + 3 # skip optional field
@@ -743,7 +724,6 @@
 	:if(y){
 		i = i + 1
 		f = 0 # set match flag
-		g = 0
 		x = 20 # type 20
 		:store(x,m)
 		m = m + 3 # skip optional field
@@ -757,7 +737,6 @@
 	:if(y){
 		i = i + 1
 		f = 0 # set match flag
-		g = 0
 		x = 21 # type 16
 		:store(x,m)
 		m = m + 3 # skip optional field
@@ -771,7 +750,6 @@
 	:if(y){
 		i = i + 1
 		f = 0 # set match flag
-		g = 0
 		x = 22 # type 22
 		:store(x,m)
 		m = m + 3 # skip optional field
@@ -785,7 +763,6 @@
 	:if(y){
 		i = i + 1
 		f = 0 # set match flag
-		g = 0
 		x = 23 # type 23
 		:store(x,m)
 		m = m + 3 # skip optional field
@@ -799,7 +776,6 @@
 	:if(y){
 		i = i + 1
 		f = 0 # set match flag
-		g = 0
 		x = 1 # type 1
 		:store(x,m)
 		m = m + 1
@@ -816,7 +792,6 @@
 	:if(y){
 		i = i + 1
 		f = 0 # set match flag
-		g = 0
 		x = 24 # type 24
 		:store(x,m)
 		m = m + 3 # skip optional field
@@ -830,7 +805,6 @@
 	:if(y){
 		i = i + 1
 		f = 0 # set match flag
-		g = 0
 		x = 4 # type 4
 		:store(x,m)
 		m = m + 1
@@ -847,7 +821,6 @@
 	:if(y){
 		i = i + 1
 		f = 0 # set match flag
-		g = 0
 		x = 4 # type 4
 		:store(x,m)
 		m = m + 1
@@ -864,7 +837,6 @@
 	:if(y){
 		i = i + 1
 		f = 0 # set match flag
-		g = 0
 		x = 4 # type 4
 		:store(x,m)
 		m = m + 1
@@ -881,7 +853,6 @@
 	:if(y){
 		i = i + 1
 		f = 0 # set match flag
-		g = 0
 		x = 4 # type 4
 		:store(x,m)
 		m = m + 1
@@ -898,7 +869,6 @@
 	:if(y){
 		i = i + 1
 		f = 0 # set match flag
-		g = 0
 		x = 4 # type 4
 		:store(x,m)
 		m = m + 1
@@ -915,7 +885,6 @@
 	:if(y){
 		i = i + 1
 		f = 0 # set match flag
-		g = 0
 		x = 4 # type 4
 		:store(x,m)
 		m = m + 1
@@ -932,7 +901,6 @@
 	:if(y){
 		i = i + 1
 		f = 0 # set match flag
-		g = 0
 		x = 4 # type 4
 		:store(x,m)
 		m = m + 1
@@ -949,7 +917,6 @@
 	:if(y){
 		i = i + 1
 		f = 0 # set match flag
-		g = 0
 		x = 4 # type 4
 		:store(x,m)
 		m = m + 1
@@ -966,7 +933,6 @@
 	:if(y){
 		i = i + 1
 		f = 0 # set match flag
-		g = 0
 		x = 4 # type 4
 		:store(x,m)
 		m = m + 1
