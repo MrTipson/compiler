@@ -99,6 +99,7 @@
 	:load(s,i)
 	i = i + 1
 	:load(t,i)
+	i = i + 1
 	:call(tokenize_isKeyword_bool)
 	:if(f){
 		:call(tokenize_isKeyword_char)
@@ -112,6 +113,9 @@
 						:call(tokenize_isKeyword_else)
 						:if(f){
 							:call(tokenize_isKeyword_while)
+							:if(f){
+								:call(tokenize_isKeyword_return)
+							}
 						}
 					}
 				}
@@ -305,6 +309,34 @@
 		i = i + 1 # increment file (we loaded but didnt increment)
 		:if(d){
 			:raw("WHILE ")
+		}
+	}
+}
+:fun(tokenize_isKeyword_return){
+	:load(z,i) # 6th character
+	i = i + 1
+	:load(x,i) # 7th character should be non-identifier
+	:call(tokenize_isKeyword_helper) # y contains result
+	x = p == 114 # r
+	y = y & x
+	x = q == 101 # e
+	y = y & x
+	x = r == 116 # t
+	y = y & x
+	x = s == 117 # u
+	y = y & x
+	x = t == 114 # r
+	y = y & x
+	x = z == 110 # n
+	y = y & x
+	:if(y){ # match
+		f = 0 # set match flag
+		x = 27 # type 27
+		:store(x,m)
+		m = m + 3 # skip optional field
+		i = i + 1 # increment file (we loaded but didnt increment)
+		:if(d){
+			:raw("RETURN ")
 		}
 	}
 }

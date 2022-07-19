@@ -8,6 +8,7 @@ void | 0 | 3 | -
 if | 11 | - | -
 else | 12 | - | -
 while | 13 | - | -
+return | 27 | - | -
 *identifier* | 2 | start | length
 constant(int) | 3 | 0 | value
 constant(char) | 3 | 1 | value
