@@ -31,9 +31,10 @@
 					:if(f){
 						:call(tokenize_isSymbol)
 						:if(f){
-							:load(x,i)
-							:putchar(x)
-							i = i + 1
+							:call(tokenize_isIdentifier)
+							:if(f){
+								:call(errorUnmatchedChar)
+							}
 						}
 					}
 				}
@@ -1214,6 +1215,52 @@
 		}
 	}
 }
+:fun(tokenize_isIdentifier){
+	:load(x,i)
+	z = i
+	w = 0 # length
+	y = x == 95 # _
+	u = x => 65 # A
+	v = x =< 90 # Z
+	u = u & v
+	y = y | u
+	u = x => 97 # a
+	v = x =< 122 # z
+	u = u & v
+	y = y | u
+	:if(y){
+		f = 0 # set match flag
+		:while(y){
+			w = w + 1
+			i = i + 1
+			:load(x,i)
+			:call(tokenize_isKeyword_helper) # returns 1 in y if its NOT an identifier char
+			y = 1 - y
+		}
+		f = 0 # set flag
+		x = 2 # type 2
+		:store(x,m)
+		m = m + 1
+		x = z # start of identifier
+		:store(x,m)
+		m = m + 1
+		x = w # length of identifier
+		:store(x,m)
+		m = m + 1
+		:if(d){
+			:raw("IDENT(")
+			w = z + w # end
+			y = z < w
+			:while(y){
+				:load(x,z)
+				:putchar(x)
+				z = z + 1
+				y = z < w
+			}
+			:raw(") ")
+		}
+	}
+}
 #
 # Phase 0 - Read file
 #
@@ -1310,6 +1357,13 @@
 }
 :fun(errorInvalidCharInString){
 	:raw("Invalid char encountered in string literal. ")
+	:call(errorPrintLine)
+}
+:fun(errorUnmatchedChar){
+	:raw("Unmatched char '")
+	:load(x,i)
+	:putchar(x)
+	:raw("' in file. ")
 	:call(errorPrintLine)
 }
 :fun(errorPrintLine){
