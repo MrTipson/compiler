@@ -425,12 +425,13 @@ assign:
 	bl	skipspaces
 	mov	r3,r0		@ operand 1
 	cmp	r0,#45		@ -
-	bleq	assign_const1
+	beq	assign_const
 	cmp	r0,#48		@ 0
 	movlt	r0,#4		@ error 4 - invalid char in assign stmt
 	bllt	exit
 	cmp	r0,#57		@ 9
 	bgt	assign_binop_pre
+assign_const:
 	bl	assign_const1
 	cmp	r0,#10		@ \n
 	beq	assign_write_mem
