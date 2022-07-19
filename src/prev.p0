@@ -24,9 +24,9 @@
 			:if(f){
 				:call(tokenize_isKeyword)
 				:if(f){
-					:call(tokenize_isSymbol)
+					:call(tokenize_isConstant)
 					:if(f){
-						:call(tokenize_isConstant)
+						:call(tokenize_isSymbol)
 						:if(f){
 							:load(x,i)
 							:putchar(x)
@@ -981,6 +981,9 @@
 		:call(tokenize_isConstant_true)
 		:if(f){
 			:call(tokenize_isConstant_char)
+			:if(f){
+				:call(tokenize_isConstant_int)
+			}
 		}
 	}
 }
@@ -1006,7 +1009,7 @@
 	:if(y){
 		i = i + 4
 		f = 0 # set flag
-		x = 3 # type 0
+		x = 3 # type 3
 		:store(x,m)
 		m = m + 1
 		x = 2 # id 2 (constant(bool))
@@ -1046,7 +1049,7 @@
 	:if(y){
 		i = i + 5
 		f = 0 # set flag
-		x = 3 # type 0
+		x = 3 # type 3
 		:store(x,m)
 		m = m + 1
 		x = 2 # id 2 (constant(bool))
@@ -1081,7 +1084,7 @@
 			:if(y){
 				i = i + 4
 				f = 0 # set flag
-				x = 3 # type 0
+				x = 3 # type 3
 				:store(x,m)
 				m = m + 1
 				x = 1 # id 1 (constant(char))
@@ -1124,6 +1127,61 @@
 		}
 	}
 }
+:fun(tokenize_isConstant_int){
+	w = i
+	:load(x,i)
+	s = 1
+	y = x == 45 # -
+	:if(y){
+		s = -1
+		i = i + 1
+		:load(x,i)
+	}
+	y = x => 48 # 0
+	u = x =< 57 # 9
+	y = y & u
+	v = x == 48 # 0
+	:if(y){
+		z = 0
+		:while(y){
+			z = z * 10
+			y = z < 0
+			:if(y){
+				:call(errorConstantTooBig)
+			}
+			x = x - 48
+			z = z + x
+			i = i + 1
+			:load(x,i)
+			y = x => 48 # 0
+			u = x =< 57 # 9
+			y = y & u
+			v = v & y
+			:if(v){
+				:call(errorLeadingZero)
+			}
+		}
+		z = z * s
+		f = 0 # set flag
+		x = 3 # type 3
+		:store(x,m)
+		m = m + 1
+		x = 0 # id 0 (constant(int))
+		:store(x,m)
+		m = m + 1
+		x = z
+		:store(x,m)
+		m = m + 1 # skip optional field
+		:if(d){
+			:raw("CINT(")
+			x = z
+			:call(putint)
+			:raw(") ")
+		}
+	} else {
+		i = w
+	}
+}
 #
 # Phase 0 - Read file
 #
@@ -1139,7 +1197,13 @@
 # Utility functions
 #
 :fun(putint){
-	w = x
+	y = x < 0
+	:if(y){
+		:raw("-")
+		w = x * -1
+	} else {
+		w = x
+	}
 	y = 10
 	x = w / y
 	z = x > 0
@@ -1196,7 +1260,19 @@
 # Errors
 #
 :fun(errorInvalidCharConstant){
-	:raw("Invalid char constant. Line ")
+	:raw("Invalid char constant. ")
+	:call(errorPrintLine)
+}
+:fun(errorLeadingZero){
+	:raw("Invalid int constant (leading zeros). ")
+	:call(errorPrintLine)
+}
+:fun(errorConstantTooBig){
+	:raw("Invalid int constant (too big). ")
+	:call(errorPrintLine)
+}
+:fun(errorPrintLine){
+	:raw("Line ")
 	x = l
 	:call(putint)
 	:raw("\n")
