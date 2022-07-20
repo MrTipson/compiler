@@ -1,13 +1,124 @@
-#abc
-#def
-#ghi
 :fun(main){
 	d = 1 # debug
 	a = 0
 	:call(readFile)
 	b = m
 	:call(tokenize)
+	# c = condition, d = debug, so next var is e
+	e = m
+	:call(syntax)
 	:exit(a)
+}
+#
+# Phase 2 - Syntax analisys
+#
+:fun(syntax){
+	:if(d){
+		:raw("\nPhase 2 - Syntax analisys\n")
+	}
+	i = b
+	c = i < e
+	:while(c){
+		f = 1
+		w = i # save old place of token parsing
+		o = m # save old memory pointer
+		:call(syntax_isDeclaration)
+		:if(f){
+			# restore if matching changed anything
+			i = w
+			m = o
+			:call(syntax_isFunction)
+			:if(f){
+				:call(errorUnmatchedToken)
+			}
+		}
+	}
+}
+:fun(syntax_isFunction){
+
+}
+:fun(syntax_isExpression){
+	:load(x,i)
+	y = x == 3 # const
+	:if(y){
+		:raw("expression matched")
+		i = i + 4
+		f = 0 # set match flag
+	}
+}
+:fun(syntax_isType){
+	:load(x,i)
+	y = x == 0
+	:if(y){
+		i = i + 4
+		f = 0 # set match flag
+	}
+}
+:fun(syntax_isDeclaration){
+	:call(syntax_isType)
+	y = f == 0 # match found
+	:load(x,i)
+	x = x == 2
+	y = y & x
+	:if(y){ # type ident
+		i = i + 4
+		:load(x,i)
+		:raw("type ident\n")
+		y = x == 22 # ;
+		:if(y){ # type ident;
+			i = i + 4
+			x = 0
+			:store(x,m)
+			x = m - 4 # type was written in last cell
+			m = m + 1
+			:store(x,m)
+			m = m + 1
+			x = -1
+			:store(x,m)
+			m = m + 2 # skip one
+			f = 0 # set match flag
+			:if(d){
+				:raw("DECL ")
+			}
+		} else {
+			y = x == 1 # any assignment
+			z = i + 1
+			:load(x,z) # load id
+			x = x == 0 # =
+			y = y & x
+			:if(y){ # type ident = 
+				:raw("type ident =\n")
+				i = i + 4
+				n = m - 4 # save type location
+				f = 1
+				:call(syntax_isExpression)
+				y = f == 0 # match found
+				:load(x,i)
+				x = x == 22 # ;
+				y = y & x
+				:if(y){ # type ident = expr ;
+					i = i + 4
+					x = 0
+					:store(x,m)
+					m = m + 1
+					:store(n,m) # type location was saved in n
+					m = m + 1
+					x = m - 6 # last cell (4) and the 2 we just added
+					:load(x,m)
+					m = m + 2 # skip one
+					:if(d){
+						:raw("INIT ")
+					}
+				} else {
+					f = 1 # no match
+				}
+			} else {
+				f = 1 # no match
+			}
+		}
+	} else {
+		f = 1 # no match
+	}
 }
 #
 # Phase 1 - Tokenize
@@ -1512,20 +1623,33 @@
 #
 # Errors
 #
+:fun(errorUnmatchedToken){
+	:raw("Unmatched token (type ")
+	:load(x,i)
+	:call(putint)
+	:raw("). ")
+	x = i + 3
+	:load(x,x)
+	:call(errorPrintLine)
+}
 :fun(errorInvalidCharConstant){
 	:raw("Invalid char constant. ")
+	x = l
 	:call(errorPrintLine)
 }
 :fun(errorLeadingZero){
 	:raw("Invalid int constant (leading zeros). ")
+	x = l
 	:call(errorPrintLine)
 }
 :fun(errorConstantTooBig){
 	:raw("Invalid int constant (too big). ")
+	x = l
 	:call(errorPrintLine)
 }
 :fun(errorInvalidCharInString){
 	:raw("Invalid char encountered in string literal. ")
+	x = l
 	:call(errorPrintLine)
 }
 :fun(errorUnmatchedChar){
@@ -1533,11 +1657,11 @@
 	:load(x,i)
 	:putchar(x)
 	:raw("' in file. ")
+	x = l
 	:call(errorPrintLine)
 }
 :fun(errorPrintLine){
 	:raw("Line ")
-	x = l
 	:call(putint)
 	:raw("\n")
 	x = 1
