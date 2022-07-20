@@ -166,8 +166,10 @@
 		m = m + 1
 		x = 2 # id 2 (bool)
 		:store(x,m)
-		m = m + 1
-		m = m + 1 # skip optional field
+		m = m + 2 # skip optional field
+		x = l # line number
+		:store(x,m)
+		m = m + 1 
 		:if(d){
 			:raw("BOOL ")
 		}
@@ -191,8 +193,10 @@
 		m = m + 1
 		x = 1 # id 1 (char)
 		:store(x,m)
+		m = m + 2 # skip optional field
+		x = l # line number
+		:store(x,m)
 		m = m + 1
-		m = m + 1 # skip optional field
 		:if(d){
 			:raw("CHAR ")
 		}
@@ -214,8 +218,10 @@
 		m = m + 1
 		x = 0 # id 0 (int)
 		:store(x,m)
+		m = m + 2 # skip optional field
+		x = l # line number
+		:store(x,m)
 		m = m + 1
-		m = m + 1 # skip optional field
 		# i is too far
 		i = i - 1
 		:if(d){
@@ -241,8 +247,10 @@
 		m = m + 1
 		x = 3 # id 3 (void)
 		:store(x,m)
+		m = m + 2 # skip optional field
+		x = l # line number
+		:store(x,m)
 		m = m + 1
-		m = m + 1 # skip optional field
 		:if(d){
 			:raw("VOID ")
 		}
@@ -260,6 +268,9 @@
 		x = 11 # type 11
 		:store(x,m)
 		m = m + 3 # skip optional field
+		x = l # line number
+		:store(x,m)
+		m = m + 1
 		# i is too far since most keywords are 4 chars long
 		i = i - 2
 		:if(d){
@@ -283,6 +294,9 @@
 		x = 12 # type 1
 		:store(x,m)
 		m = m + 3 # skip optional field
+		x = l
+		:store(x,m)
+		m = m + 1
 		:if(d){
 			:raw("ELSE ")
 		}
@@ -306,6 +320,9 @@
 		x = 13 # type 1
 		:store(x,m)
 		m = m + 3 # skip optional field
+		x = l
+		:store(x,m)
+		m = m + 1
 		i = i + 1 # increment file (we loaded but didnt increment)
 		:if(d){
 			:raw("WHILE ")
@@ -334,6 +351,9 @@
 		x = 27 # type 27
 		:store(x,m)
 		m = m + 3 # skip optional field
+		x = l
+		:store(x,m)
+		m = m + 1
 		i = i + 1 # increment file (we loaded but didnt increment)
 		:if(d){
 			:raw("RETURN ")
@@ -455,6 +475,9 @@
 		x = 1 # id 1 (+=)
 		:store(x,m)
 		m = m + 2 # skip optional field
+		x = l # line number
+		:store(x,m)
+		m = m + 1
 		:if(d){
 			:raw("ADDEQ ")
 		}
@@ -475,6 +498,9 @@
 		x = 2 # id 2 (-=)
 		:store(x,m)
 		m = m + 2 # skip optional field
+		x = l # line number
+		:store(x,m)
+		m = m + 1
 		:if(d){
 			:raw("SUBEQ ")
 		}
@@ -495,6 +521,9 @@
 		x = 3 # id 3 (/=)
 		:store(x,m)
 		m = m + 2 # skip optional field
+		x = l # line number
+		:store(x,m)
+		m = m + 1
 		:if(d){
 			:raw("DIVEQ ")
 		}
@@ -515,6 +544,9 @@
 		x = 4 # id 4 (*=)
 		:store(x,m)
 		m = m + 2 # skip optional field
+		x = l # line number
+		:store(x,m)
+		m = m + 1
 		:if(d){
 			:raw("MULEQ ")
 		}
@@ -532,6 +564,9 @@
 		x = 25 # type 25
 		:store(x,m)
 		m = m + 3 # skip optional field
+		x = l # line number
+		:store(x,m)
+		m = m + 1
 		:if(d){
 			:raw("INC ")
 		}
@@ -549,6 +584,9 @@
 		x = 26 # type 26
 		:store(x,m)
 		m = m + 3 # skip optional field
+		x = l # line number
+		:store(x,m)
+		m = m + 1
 		:if(d){
 			:raw("DEC ")
 		}
@@ -569,6 +607,9 @@
 		x = 2 # id 2 (==)
 		:store(x,m)
 		m = m + 2 # skip optional field
+		x = l # line number
+		:store(x,m)
+		m = m + 1
 		:if(d){
 			:raw("EQ ")
 		}
@@ -589,6 +630,9 @@
 		x = 3 # id 3 (!=)
 		:store(x,m)
 		m = m + 2 # skip optional field
+		x = l # line number
+		:store(x,m)
+		m = m + 1
 		:if(d){
 			:raw("NEQ ")
 		}
@@ -609,6 +653,9 @@
 		x = 6 # id 6 (<=)
 		:store(x,m)
 		m = m + 2 # skip optional field
+		x = l # line number
+		:store(x,m)
+		m = m + 1
 		:if(d){
 			:raw("LEQ ")
 		}
@@ -629,6 +676,9 @@
 		x = 7 # id 7 (>=)
 		:store(x,m)
 		m = m + 2 # skip optional field
+		x = l # line number
+		:store(x,m)
+		m = m + 1
 		:if(d){
 			:raw("GEQ ")
 		}
@@ -649,6 +699,9 @@
 		x = 13 # id 13 (&&)
 		:store(x,m)
 		m = m + 2 # skip optional field
+		x = l # line number
+		:store(x,m)
+		m = m + 1
 		:if(d){
 			:raw("AND ")
 		}
@@ -669,6 +722,9 @@
 		x = 14 # id 14 (||)
 		:store(x,m)
 		m = m + 2 # skip optional field
+		x = l # line number
+		:store(x,m)
+		m = m + 1
 		:if(d){
 			:raw("OR ")
 		}
@@ -682,6 +738,9 @@
 		x = 14 # type 14
 		:store(x,m)
 		m = m + 3 # skip optional field
+		x = l # line number
+		:store(x,m)
+		m = m + 1
 		:if(d){
 			:raw("LPARENT ")
 		}
@@ -695,6 +754,9 @@
 		x = 15 # type 15
 		:store(x,m)
 		m = m + 3 # skip optional field
+		x = l # line number
+		:store(x,m)
+		m = m + 1
 		:if(d){
 			:raw("RPARENT ")
 		}
@@ -708,6 +770,9 @@
 		x = 16 # type 16
 		:store(x,m)
 		m = m + 3 # skip optional field
+		x = l # line number
+		:store(x,m)
+		m = m + 1
 		:if(d){
 			:raw("LCURLY ")
 		}
@@ -721,6 +786,9 @@
 		x = 17 # type 17
 		:store(x,m)
 		m = m + 3 # skip optional field
+		x = l # line number
+		:store(x,m)
+		m = m + 1
 		:if(d){
 			:raw("RCURLY ")
 		}
@@ -734,6 +802,9 @@
 		x = 18 # type 18
 		:store(x,m)
 		m = m + 3 # skip optional field
+		x = l # line number
+		:store(x,m)
+		m = m + 1
 		:if(d){
 			:raw("LBRACK ")
 		}
@@ -747,6 +818,9 @@
 		x = 19 # type 19
 		:store(x,m)
 		m = m + 3 # skip optional field
+		x = l # line number
+		:store(x,m)
+		m = m + 1
 		:if(d){
 			:raw("RBRACK ")
 		}
@@ -760,6 +834,9 @@
 		x = 20 # type 20
 		:store(x,m)
 		m = m + 3 # skip optional field
+		x = l # line number
+		:store(x,m)
+		m = m + 1
 		:if(d){
 			:raw("PERIOD ")
 		}
@@ -773,6 +850,9 @@
 		x = 21 # type 16
 		:store(x,m)
 		m = m + 3 # skip optional field
+		x = l # line number
+		:store(x,m)
+		m = m + 1
 		:if(d){
 			:raw("COMMA ")
 		}
@@ -786,6 +866,9 @@
 		x = 22 # type 22
 		:store(x,m)
 		m = m + 3 # skip optional field
+		x = l # line number
+		:store(x,m)
+		m = m + 1
 		:if(d){
 			:raw("SEMICOLON ")
 		}
@@ -799,6 +882,9 @@
 		x = 23 # type 23
 		:store(x,m)
 		m = m + 3 # skip optional field
+		x = l # line number
+		:store(x,m)
+		m = m + 1
 		:if(d){
 			:raw("COLON ")
 		}
@@ -815,6 +901,9 @@
 		x = 0 # id 0
 		:store(x,m)
 		m = m + 2 # skip optional field
+		x = l # line number
+		:store(x,m)
+		m = m + 1
 		:if(d){
 			:raw("ASSIGN ")
 		}
@@ -828,6 +917,9 @@
 		x = 24 # type 24
 		:store(x,m)
 		m = m + 3 # skip optional field
+		x = l # line number
+		:store(x,m)
+		m = m + 1
 		:if(d){
 			:raw("EXCL ")
 		}
@@ -844,6 +936,9 @@
 		x = 0 # id 0
 		:store(x,m)
 		m = m + 2 # skip optional field
+		x = l # line number
+		:store(x,m)
+		m = m + 1
 		:if(d){
 			:raw("BITAND ")
 		}
@@ -860,6 +955,9 @@
 		x = 1 # id 1
 		:store(x,m)
 		m = m + 2 # skip optional field
+		x = l # line number
+		:store(x,m)
+		m = m + 1
 		:if(d){
 			:raw("BITOR ")
 		}
@@ -876,6 +974,9 @@
 		x = 4 # id 4
 		:store(x,m)
 		m = m + 2 # skip optional field
+		x = l # line number
+		:store(x,m)
+		m = m + 1
 		:if(d){
 			:raw("LT ")
 		}
@@ -892,6 +993,9 @@
 		x = 5 # id 5
 		:store(x,m)
 		m = m + 2 # skip optional field
+		x = l # line number
+		:store(x,m)
+		m = m + 1
 		:if(d){
 			:raw("GT ")
 		}
@@ -908,6 +1012,9 @@
 		x = 8 # id 8
 		:store(x,m)
 		m = m + 2 # skip optional field
+		x = l # line number
+		:store(x,m)
+		m = m + 1
 		:if(d){
 			:raw("MUL ")
 		}
@@ -924,6 +1031,9 @@
 		x = 9 # id 9
 		:store(x,m)
 		m = m + 2 # skip optional field
+		x = l # line number
+		:store(x,m)
+		m = m + 1
 		:if(d){
 			:raw("DIV ")
 		}
@@ -940,6 +1050,9 @@
 		x = 10 # id 10
 		:store(x,m)
 		m = m + 2 # skip optional field
+		x = l # line number
+		:store(x,m)
+		m = m + 1
 		:if(d){
 			:raw("MOD ")
 		}
@@ -956,6 +1069,9 @@
 		x = 11 # id 11
 		:store(x,m)
 		m = m + 2 # skip optional field
+		x = l # line number
+		:store(x,m)
+		m = m + 1
 		:if(d){
 			:raw("ADD ")
 		}
@@ -972,6 +1088,9 @@
 		x = 12 # id 12
 		:store(x,m)
 		m = m + 2 # skip optional field
+		x = l # line number
+		:store(x,m)
+		m = m + 1
 		:if(d){
 			:raw("SUB ")
 		}
@@ -1023,6 +1142,9 @@
 		x = 1
 		:store(x,m)
 		m = m + 1 # skip optional field
+		x = l # line number
+		:store(x,m)
+		m = m + 1
 		:if(d){
 			:raw("CBOOL(1) ")
 		}
@@ -1063,6 +1185,9 @@
 		x = 0
 		:store(x,m)
 		m = m + 1 # skip optional field
+		x = l # line number
+		:store(x,m)
+		m = m + 1
 		:if(d){
 			:raw("CBOOL(0) ")
 		}
@@ -1098,6 +1223,9 @@
 				x = w
 				:store(x,m)
 				m = m + 1 # skip optional field
+				x = l # line number
+				:store(x,m)
+				m = m + 1
 				:if(d){
 					:raw("CCHAR(")
 					:call(putint)
@@ -1177,6 +1305,9 @@
 		x = z
 		:store(x,m)
 		m = m + 1 # skip optional field
+		x = l # line number
+		:store(x,m)
+		m = m + 1
 		:if(d){
 			:raw("CINT(")
 			x = z
@@ -1219,6 +1350,9 @@
 		:store(x,m)
 		m = m + 1
 		x = z
+		:store(x,m)
+		m = m + 1
+		x = l # line number
 		:store(x,m)
 		m = m + 1
 		:if(d){
@@ -1277,6 +1411,9 @@
 		:store(x,m)
 		m = m + 1
 		x = w # length of identifier
+		:store(x,m)
+		m = m + 1
+		x = l # line number
 		:store(x,m)
 		m = m + 1
 		:if(d){

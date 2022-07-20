@@ -1,49 +1,49 @@
 # Tokenization
-Token | Type | ID | Optional
----- | ----------- | ------- | -
-int | 0 | 0 | -
-char | 0 | 1 | -
-bool | 0 | 2 | -
-void | 0 | 3 | -
-if | 11 | - | -
-else | 12 | - | -
-while | 13 | - | -
-return | 27 | - | -
-*identifier* | 2 | start | length
-constant(int) | 3 | 0 | value
-constant(char) | 3 | 1 | value
-constant(boolean) | 3 | 2 | value
-constant(string) | 3 | 3 | start
-( | 14 | - | -
-) | 15 | - | -
-{ | 16 | - | -
-} | 17 | - | -
-[ | 18 | - | -
-] | 19 | - | -
-. | 20 | - | -
-, | 21 | - | -
-; | 22 | - | -
-: | 23 | - | -
-! | 24 | - | -
-= | 1 | 0 | -
-+= | 1 | 1 | -
--= | 1 | 2 | -
-/= | 1 | 3 | -
-*= | 1 | 4 | -
-++ | 25 | - | -
--- | 26 | - | -
-& | 4 | 0 | -
-\| | 4 | 1 | -
-== | 4 | 2 | -
-!= | 4 | 3 | -
-< | 4 | 4 | -
-\> | 4 | 5 | -
-<= | 4 | 6 | -
-\>= | 4 | 7 | -
-\* | 4 | 8 | -
-/ | 4 | 9 | -
-% | 4 | 10 | -
-\+ | 4 | 11 | -
-\- | 4 | 12 | -
-&& | 4 | 13 | -
-\|\| | 4 | 14 | - 
+Token | Type | ID | Optional | Line 
+----- | ---- | -- | -------- | ----
+int | 0 | 0 | - | Line no.
+char | 0 | 1 | - | Line no.
+bool | 0 | 2 | - | Line no.
+void | 0 | 3 | - | Line no.
+if | 11 | - | - | Line no.
+else | 12 | - | - | Line no.
+while | 13 | - | - | Line no.
+return | 27 | - | - | Line no.
+*identifier* | 2 | start | length | Line no.
+constant(int) | 3 | 0 | value | Line no.
+constant(char) | 3 | 1 | value | Line no.
+constant(boolean) | 3 | 2 | value | Line no.
+constant(string) | 3 | 3 | start | Line no.
+( | 14 | - | - | Line no.
+) | 15 | - | - | Line no.
+{ | 16 | - | - | Line no.
+} | 17 | - | - | Line no.
+[ | 18 | - | - | Line no.
+] | 19 | - | - | Line no.
+. | 20 | - | - | Line no.
+, | 21 | - | - | Line no.
+; | 22 | - | - | Line no.
+: | 23 | - | - | Line no.
+! | 24 | - | - | Line no.
+= | 1 | 0 | - | Line no.
++= | 1 | 1 | - | Line no.
+-= | 1 | 2 | - | Line no.
+/= | 1 | 3 | - | Line no.
+*= | 1 | 4 | - | Line no.
+++ | 25 | - | - | Line no.
+-- | 26 | - | - | Line no.
+& | 4 | 0 | - | Line no.
+\| | 4 | 1 | - | Line no.
+== | 4 | 2 | - | Line no.
+!= | 4 | 3 | - | Line no.
+< | 4 | 4 | - | Line no.
+\> | 4 | 5 | - | Line no.
+<= | 4 | 6 | - | Line no.
+\>= | 4 | 7 | - | Line no.
+\* | 4 | 8 | - | Line no.
+/ | 4 | 9 | - | Line no.
+% | 4 | 10 | - | Line no.
+\+ | 4 | 11 | - | Line no.
+\- | 4 | 12 | - | Line no.
+&& | 4 | 13 | - | Line no.
+\|\| | 4 | 14 | -  | Line no.
