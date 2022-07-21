@@ -1,6 +1,6 @@
 :fun(main){
 	d = 1 # debug
-	a = 0
+	a = 1000 # stack pointer
 	:call(readFile)
 	b = m
 	:call(tokenize)
@@ -17,7 +17,8 @@
 		:raw("\nPhase 2 - Syntax analisys\n")
 	}
 	i = b
-	c = i < e
+	g = e - 4 # dont count safety token
+	c = i < g
 	:while(c){
 		f = 1
 		w = i # save old place of token parsing
@@ -32,16 +33,115 @@
 				:call(errorUnmatchedToken)
 			}
 		}
+		c = i < g
+	}
+}
+:fun(syntax_isParameter){
+	:call(syntax_isType)
+	y = f == 0 # match found
+	:load(x,i)
+	x = x == 2
+	y = y & x
+	:if(y){
+		i = i + 4
+		x = 4 # parameter
+		:store(x,m)
+		x = m - 4 # type was written in last cell
+		m = m + 1
+		:store(x,m)
+		m = m + 1
+		:store(i,m) # identifier is current token
+		m = m + 2 # skip one
+		:if(d){
+			:raw("PAR")
+		}
 	}
 }
 :fun(syntax_isFunction){
-
+	:call(syntax_isType)
+	y = f == 0 # match found
+	:load(x,i)
+	x = x == 2 # ident
+	y = y & x
+	:if(y){ # type ident
+		x = 3 # function
+		:store(x,m)
+		x = m - 4 # type was written in last cell
+		m = m + 1
+		:store(x,m)
+		m = m + 1
+		:store(i,m) # identifier is current token
+		m = m + 1
+		x = 0 # start of function block
+		:store(x,m)
+		m = m + 1
+		i = i + 4
+		:load(x,i)
+		y = x == 14 # (
+		:if(y){
+			i = i + 4
+			:load(x,i)
+			y = x =! 15 # )
+			:if(y){ # undo first increment of while loop
+				i = i - 4
+			}
+			:while(y){
+				i = i + 4
+				f = 1
+				:call(syntax_isParameter)
+				:if(f){
+					:call(errorUnmatchedToken)
+				}
+				:load(x,i)
+				y = x == 21 # ,
+			}
+			y = x =! 15 # )
+			:if(y){
+				:call(errorExpectedRPARENT)
+			}
+			i = i + 4
+			:load(x,i)
+			y = x =! 16 # {
+			:if(y){
+				:call(errorExpectedLCURLY)
+			}
+			i = i + 4
+			:load(x,i)
+			y = x =! 17 # }
+			:while(y){
+				f = 1
+				:call(syntax_isStatement)
+				:if(f){
+					:call(errorUnmatchedToken)
+				}
+				:load(x,i)
+				y = x =! 17 # }
+			}
+			i = i + 4
+			x = 3 # function
+			:store(x,m)
+			x = 1 # function end block
+			m = m + 3
+			:store(x,m)
+			m = m + 1
+			f = 0 # set match flag
+			:if(d){
+				:raw("FUN ")
+			} 
+		} else {
+			f = 1
+		}
+	} else {
+		f = 1
+	}
+}
+:fun(syntax_isStatement){
+	
 }
 :fun(syntax_isExpression){
 	:load(x,i)
 	y = x == 3 # const
 	:if(y){
-		:raw("expression matched")
 		i = i + 4
 		f = 0 # set match flag
 	}
@@ -63,7 +163,6 @@
 	:if(y){ # type ident
 		i = i + 4
 		:load(x,i)
-		:raw("type ident\n")
 		y = x == 22 # ;
 		:if(y){ # type ident;
 			i = i + 4
@@ -87,7 +186,6 @@
 			x = x == 0 # =
 			y = y & x
 			:if(y){ # type ident = 
-				:raw("type ident =\n")
 				i = i + 4
 				n = m - 4 # save type location
 				f = 1
@@ -153,6 +251,16 @@
 		}
 		c = i < b # Update condition
 	}
+	# End of tokens
+	x = -1
+	:store(x,m)
+	m = m + 1
+	:store(x,m)
+	m = m + 1
+	:store(x,m)
+	m = m + 1
+	:store(x,m)
+	m = m + 1
 }
 # Match comment
 :fun(tokenize_isComment){
@@ -1555,6 +1663,14 @@
 #
 # Utility functions
 #
+:fun(push){
+	:store(s,a)
+	a = a - 1
+}
+:fun(pop){
+	a = a + 1
+	:load(s,a)
+}
 :fun(putint){
 	y = x < 0
 	:if(y){
@@ -1623,6 +1739,24 @@
 #
 # Errors
 #
+:fun(errorExpectedLCURLY){
+	:raw("Expected {, found token type ")
+	:load(x,i)
+	:call(putint)
+	:raw(". ")
+	x = i + 3
+	:load(x,x)
+	:call(errorPrintLine)
+}
+:fun(errorExpectedRPARENT){
+	:raw("Expected ), found token type ")
+	:load(x,i)
+	:call(putint)
+	:raw(". ")
+	x = i + 3
+	:load(x,x)
+	:call(errorPrintLine)
+}
 :fun(errorUnmatchedToken){
 	:raw("Unmatched token (type ")
 	:load(x,i)
