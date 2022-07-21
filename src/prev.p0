@@ -53,7 +53,7 @@
 		:store(i,m) # identifier is current token
 		m = m + 2 # skip one
 		:if(d){
-			:raw("PAR")
+			:raw("PAR ")
 		}
 	}
 }
@@ -136,11 +136,159 @@
 	}
 }
 :fun(syntax_isStatement){
-	
+	s = w
+	:call(push)
+	s = o
+	:call(push)
+	w = i
+	o = m
+	:call(syntax_isDeclaration)
+	:if(f){
+		i = w
+		m = o
+		:call(syntax_isReturn)
+		:if(f){
+			i = w
+			m = o
+			:call(syntax_isAssign)
+			:if(f){
+				i = w
+				m = o
+				:call(syntax_isIf)
+				:if(f){
+					i = w
+					m = o
+					:call(syntax_isWhile)
+					:if(f){
+						i = w
+						m = o
+						:call(syntax_isExprStmt)
+						:if(f){
+							i = w
+							m = o
+						}
+					}
+				}
+			}
+		}
+	}
+	:call(pop)
+	o = s
+	:call(pop)
+	w = s
+}
+:fun(syntax_isReturn){
+	:load(x,i)
+	y = x == 27 # return
+	:if(y){
+		i = i + 4
+		:load(x,i)
+		y = x == 22 # ;
+		:if(y){
+			x = 5 # return
+			:store(x,m)
+			x = -1 # expression
+			m = m + 1
+			:store(x,m)
+			m = m + 3 # skip two
+			f = 0 # set match flag
+			:if(d){
+				:raw("RET ")
+			}
+		} else {
+			:call(syntax_isExpression)
+			y = f == 0
+			:load(x,i)
+			x = x == 22 # ;
+			y = y & x
+			:if(y){
+				i = i + 4
+				x = 5 # return
+				:store(x,m)
+				x = m - 4 # expression
+				m = m + 1
+				:store(x,m)
+				m = m + 3 # skip two
+				f = 0 # set match flag
+				:if(d){
+					:raw("RET ")
+				}
+			}
+		}
+	}
+}
+:fun(syntax_isAssign){
+	:call(syntax_isExpression)
+	y = f == 0
+	:load(x,i)
+	x = x == 1 # any of the assignments
+	y = y & x
+	f = 1
+	:if(y){
+		z = i + 1
+		:load(s,z)
+		:call(push)
+		s = m - 4
+		:call(push)
+		i = i + 4
+		:call(syntax_isExpression)
+		y = f == 0
+		:load(x,i)
+		x = x == 22 # ;
+		y = y & x
+		:call(pop) # expr1 mem
+		z = s
+		:call(pop) # assignment op
+		:if(y){
+			i = i + 4
+			x = 7 # assignment
+			:store(x,m)
+			u = m - 4 # expression2
+			m = m + 1
+			:store(s,m) # assignment op
+			m = m + 1
+			:store(z,m) # expression1
+			m = m + 1
+			:store(u,m) # expression 2
+			m = m + 1
+			f = 0 # set match flag
+			:if(d){
+				:raw("ASS ")
+			}
+		}
+	}
+}
+:fun(syntax_isIf){
+
+}
+:fun(syntax_isWhile){
+
+}
+:fun(syntax_isExprStmt){
+	:call(syntax_isExpression)
+	y = f == 0
+	:load(x,i)
+	x = x == 22 # ;
+	y = y & x
+	:if(y){
+		i = i + 4
+		x = 6 # expr stmt
+		:store(x,m)
+		x = m - 4 # expression
+		m = m + 1
+		:store(x,m)
+		m = m + 3 # skip two
+		f = 0 # set match flag
+		:if(d){
+			:raw("EXP ")
+		}
+	}
 }
 :fun(syntax_isExpression){
 	:load(x,i)
 	y = x == 3 # const
+	x = x == 2 # ident
+	y = y | x
 	:if(y){
 		i = i + 4
 		f = 0 # set match flag
@@ -1468,6 +1616,9 @@
 				x = q
 				:store(x,m)
 				m = m + 1 # skip optional field
+				x = l # line number
+				:store(x,m)
+				m = m + 1
 				:if(d){
 					:raw("CCHAR(")
 					:call(putint)
