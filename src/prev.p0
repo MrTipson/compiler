@@ -55,6 +55,8 @@
 		:if(d){
 			:raw("PAR ")
 		}
+	} else {
+		f = 1
 	}
 }
 :fun(syntax_isFunction){
@@ -213,6 +215,8 @@
 				:if(d){
 					:raw("RET ")
 				}
+			} else {
+				f = 1
 			}
 		}
 	}
@@ -255,11 +259,117 @@
 			:if(d){
 				:raw("ASS ")
 			}
+		} else {
+			f = 1
 		}
 	}
 }
 :fun(syntax_isIf){
-
+	:load(x,i)
+	y = x == 11 # if
+	:if(y){
+		i = i + 4
+		:load(x,i)
+		y = x == 14 # (
+		:if(y){
+			i = i + 4
+			f = 1
+			:call(syntax_isExpression)
+			y = f == 0
+			:load(x,i)
+			x = x == 15 # )
+			y = y & x
+			:if(y){
+				i = i + 4
+				x = 8 # if/else
+				:store(x,m)
+				u = m - 4 # expression is last cell
+				m = m + 1
+				x = 0 # if
+				:store(x,m)
+				m = m + 1
+				:store(u,m) # expression
+				m = m + 2 # skip one
+				:load(x,i)
+				y = x == 16 # {
+				:if(y){
+					i = i + 4
+					:while(y){
+						f = 1
+						:call(syntax_isStatement)
+						:if(f){
+							:call(errorUnmatchedToken)
+						}
+						:load(x,i)
+						y = x =! 17 # }
+					}
+					i = i + 4
+				} else {
+					f = 1
+					:call(syntax_isStatement)
+					:if(f){
+						:call(errorUnmatchedToken)
+					}
+				}
+				:load(x,i)
+				y = x == 12 # else
+				:if(y){
+					:if(d){
+						:raw("IF ")
+					}
+					x = 8 # if/else
+					:store(x,m)
+					m = m + 1
+					x = 1 # else
+					:store(x,m)
+					m = m + 3 # skip two
+					i = i + 4
+					:load(x,i)
+					y = x == 16 # {
+					:if(y){
+						i = i + 4
+						:while(y){
+							f = 1
+							:call(syntax_isStatement)
+							:if(f){
+								:call(errorUnmatchedToken)
+							}
+							:load(x,i)
+							y = x =! 17 # }
+						}
+						i = i + 4
+					} else {
+						f = 1
+						:call(syntax_isStatement)
+						:if(f){
+							:call(errorUnmatchedToken)
+						}
+					}
+					x = 8 # if/else
+					:store(x,m)
+					m = m + 1
+					x = 2 # end
+					:store(x,m)
+					m = m + 3 # skip two
+					:if(d){
+						:raw("ELSE ")
+					}
+				} else {
+					x = 8 # if/else
+					:store(x,m)
+					m = m + 1
+					x = 2 # end
+					:store(x,m)
+					m = m + 3 # skip two
+					:if(d){
+						:raw("IF ")
+					}
+				}
+			} else {
+				f = 1
+			}
+		}
+	}
 }
 :fun(syntax_isWhile){
 
@@ -282,6 +392,8 @@
 		:if(d){
 			:raw("EXP ")
 		}
+	} else {
+		f = 1
 	}
 }
 :fun(syntax_isExpression){
@@ -639,7 +751,7 @@
 		:store(x,m)
 		m = m + 1
 		# i is too far since most keywords are 4 chars long
-		i = i - 2
+		i = i - 3
 		:if(d){
 			:raw("IF ")
 		}
@@ -1633,13 +1745,6 @@
 :fun(tokenize_isConstant_int){
 	w = i
 	:load(x,i)
-	s = 1
-	y = x == 45 # -
-	:if(y){
-		s = -1
-		i = i + 1
-		:load(x,i)
-	}
 	y = x => 48 # 0
 	u = x =< 57 # 9
 	y = y & u
@@ -1664,7 +1769,6 @@
 				:call(errorLeadingZero)
 			}
 		}
-		z = z * s
 		f = 0 # set flag
 		x = 3 # type 3
 		:store(x,m)

@@ -25,3 +25,4 @@ Parameter | 4 | type | ident | -
 Return | 5 | expr (-1 if none) | - | -
 Expression statement | 6 | expr | - | -
 Assignment | 7 | 0=, 1+=, 2-=, 3/=,4*= | expr1 | expr2
+If/Else | 8 | 0if, 1else, 2end | expr(if) | -
