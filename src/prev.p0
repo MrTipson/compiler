@@ -372,7 +372,57 @@
 	}
 }
 :fun(syntax_isWhile){
-
+	:load(x,i)
+	y = x == 13 # while
+	:if(y){
+		i = i + 4
+		:call(syntax_isExpression)
+		y = f == 0
+		:load(x,i)
+		x = x == 15 # )
+		:if(y){
+			i = i + 4
+			x = 9 # while
+			:store(x,m)
+			u = m - 4 # expression is last cell
+			m = m + 1
+			x = 0 # start
+			:store(x,m)
+			m = m + 1
+			:store(u,m) # expression
+			m = m + 2 # skip one
+			:load(x,i)
+			y = x == 16 # {
+			:if(y){
+				i = i + 4
+				:while(y){
+					f = 1
+					:call(syntax_isStatement)
+					:if(f){
+						:call(errorUnmatchedToken)
+					}
+					:load(x,i)
+					y = x =! 17 # }
+				}
+				i = i + 4
+			} else {
+				f = 1
+				:call(syntax_isStatement)
+				:if(f){
+					:call(errorUnmatchedToken)
+				}
+			}
+			x = 9 # while
+			:store(x,m)
+			m = m + 1
+			x = 1 # end
+			:store(x,m)
+			m = m + 3 # skip two
+			:if(d){
+				:raw("WHILE ")
+			}
+		}
+	}
 }
 :fun(syntax_isExprStmt){
 	:call(syntax_isExpression)
