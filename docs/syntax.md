@@ -14,6 +14,21 @@ expr -> const | ident | (expr)
 
 expr -> expr ( & | | | == | != | && | || | < | > | <= | >= | * | / | % | + | - ) expr
 
+# Expression grammar
+a | b
+--|--
+E -> FE' | E'-> \|\| FE' \| ε
+F -> GF' | F' ->  && GF' \| ε
+G -> HG' | G' -> \| HG' \| ε
+H -> IH' | H' -> & IH' \| ε
+I -> JI' | I' -> == JI' \| != JI' \| ε
+J -> KJ' | J' -> < KJ' \| > KJ' \| <= KJ' \| >= KJ' \| ε
+K -> LK' | K' -> + LK' \| - LK' \| ε
+L -> ML' | L' -> * ML' \| / ML' \| % ML' \| ε
+M -> ++M \| --M \| +M \| -M \| !M \| N
+O -> O++ \| O-- \| P
+P -> ident \| const \| (E)
+
 ## Memory structure
 Type\Offset | 0 | 1 | 2 | 3
 ----------- | - | - | - | -
