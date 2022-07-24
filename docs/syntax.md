@@ -8,6 +8,7 @@ decl -> type ident = expr;
 decl -> type ident ([param {, param}]){[stmt {,stmt}]}
 
 param -> type ident
+
 type -> void | char | int | bool
 
 expr -> const | ident | (expr)
@@ -26,7 +27,7 @@ J -> KJ' | J' -> < KJ' \| > KJ' \| <= KJ' \| >= KJ' \| ε
 K -> LK' | K' -> + LK' \| - LK' \| ε
 L -> ML' | L' -> * ML' \| / ML' \| % ML' \| ε
 M -> ++M \| --M \| +M \| -M \| !M \| N
-N -> ON' | N' -> ++N' \| --N' \| ε
+N -> ON' | N' -> ++N' \| --N' \| [E]N' \| .identN' \| ε
 O -> ident \| const \| (E)
 
 ## Expression types
@@ -34,6 +35,8 @@ Operator | Id
 -------- | --
 Postf ++ | 0
 Postf -- | 1
+Postf arr| 24
+Post comp| 25
 Pref  ++ | 2
 Pref  -- | 3
 Pref  +  | 4

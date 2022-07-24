@@ -843,6 +843,59 @@
 		m = m + 2 # skip one
 		i = i + 4
 		:call(syntax_isExpression_nn)
+	} else {
+		y = x == 18 # [
+		:if(y){
+			s = m - 4
+			:call(push)
+			i = i + 4
+			f = 1
+			:call(syntax_isExpression)
+			y = f == 0
+			:call(pop)
+			:load(x,i)
+			x = x == 19 # ]
+			y = y & x
+			:if(y){
+				u = 2 # expression
+				:store(u,m)
+				u = m - 4 # save last cell
+				x = 24 # array access 
+				m = m + 1
+				:store(x,m) # type
+				m = m + 1
+				:store(s,m) # base expression
+				m = m + 1
+				:store(u,m) # offset
+				m = m + 1
+				i = i + 4
+				:call(syntax_isExpression_nn)
+			}
+		} else {
+			y = x == 20 # .
+			:if(y){
+				i = i + 4
+				:load(x,i)
+				y = x == 2 # ident
+				:if(y){
+					u = m - 4 # last expression
+					x = 2 # expression
+					:store(x,m)
+					m = m + 1
+					x = 25 # comp acess
+					:store(x,m) # type
+					m = m + 1
+					:store(u,m) # base expression
+					m = m + 1
+					:store(i,m) # token (component)
+					m = m + 1
+					i = i + 4
+					:call(syntax_isExpression_nn)
+				} else {
+					f = 1
+				}
+			}
+		}
 	}
 }
 :fun(syntax_isExpression_o){
@@ -2723,6 +2776,47 @@
 							u = x + 2
 							:load(x,u)
 							:call(putint)
+						} else {
+							y = u == 24
+							:if(y){ # array
+								:raw("(")
+								x = x + 2 # expr1
+								s = x + 1 # expr2
+								:call(push)
+								:load(x,x)
+								:call(debug_printExpression)
+								:raw("[")
+								:call(pop)
+								:load(x,s)
+								:call(debug_printExpression)
+								:raw("])")
+							} else {
+								y = u == 25
+								:if(y){ # component
+									:raw("(")
+									x = x + 2 # expr1
+									s = x + 1 # expr2
+									:call(push)
+									:load(x,x)
+									:call(debug_printExpression)
+									:raw(".")
+									:call(pop)
+									:load(x,s)
+									u = x + 1
+									:load(u,u) # start
+									v = x + 2
+									:load(v,v) # length
+									v = u + v
+									y = u < v
+									:while(y){
+										:load(x,u)
+										:putchar(x)
+										u = u + 1
+										y = u < v
+									}
+									:raw(")")
+								}
+							}
 						}
 					}
 				}

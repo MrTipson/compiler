@@ -19,6 +19,7 @@ int main(){
 	} else if(++b++ % 2 == 1){
 		"def\n";
 	}
-	while(a)
-		b;
+	while(abc)
+		b.f;
+	--a++[5];
 }
