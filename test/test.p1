@@ -1,0 +1,24 @@
+# To je komentar
+int a;
+int b = 4;
+void c (int a, int b){
+	int c;
+	void d = 1 + 2 * 3;
+}
+int main(){
+	return 5;
+	false;
+	true;
+	'1';
+	'\n';
+	a = 5;
+	if(a){
+		if(c) a;
+		else b;
+		"abc\n";
+	} else if(++b++ % 2 == 1){
+		"def\n";
+	}
+	while(a)
+		b;
+}
