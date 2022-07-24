@@ -447,20 +447,443 @@
 	}
 }
 :fun(syntax_isExpression){
-	f = 1
 	:call(syntax_isExpression_f)
 	y = f == 0
 	:if(y){
 		f = 1
 		:call(syntax_isExpression_ee)
 	}
+	:if(d){
+		x = m - 4
+		:call(debug_printExpression)
+	}
 }
 :fun(syntax_isExpression_ee){
 	:load(x,i)
-	y = x == 4
-	z = i + 1
-	:load(x,z)
-	x = x == 14
+	y = x == 42 # ||
+	:if(y){
+		i = i + 4
+		s = m - 4
+		:call(push) # expr1
+		:call(syntax_isExpression_f)
+		u = m - 4
+		x = 2 # expression
+		:store(x,m)
+		m = m + 1
+		x = 21 # ||
+		:store(x,m) # type
+		m = m + 1
+		:call(pop) # expr1
+		:store(s,m) # expr1
+		m = m + 1
+		:store(u,m) #expr2
+		m = m + 1
+		y = f == 0
+		:if(y){
+			f = 1
+			:call(syntax_isExpression_ee)
+		}
+	} else {
+		f = 0
+	}
+}
+:fun(syntax_isExpression_f){
+	:call(syntax_isExpression_g)
+	y = f == 0
+	:if(y){
+		f = 1
+		:call(syntax_isExpression_ff)
+	}
+}
+:fun(syntax_isExpression_ff){
+	:load(x,i)
+	y = x == 41 # &&
+	:if(y){
+		i = i + 4
+		s = m - 4
+		:call(push) # expr1
+		:call(syntax_isExpression_g)
+		u = m - 4
+		x = 2 # expression
+		:store(x,m)
+		m = m + 1
+		x = 20 # &&
+		:store(x,m) # type
+		m = m + 1
+		:call(pop) # expr1
+		:store(s,m) # expr1
+		m = m + 1
+		:store(u,m) #expr2
+		m = m + 1
+		y = f == 0
+		:if(y){
+			f = 1
+			:call(syntax_isExpression_ff)
+		}
+	} else {
+		f = 0
+	}
+}
+:fun(syntax_isExpression_g){
+	:call(syntax_isExpression_h)
+	y = f == 0
+	:if(y){
+		f = 1
+		:call(syntax_isExpression_gg)
+	}
+}
+:fun(syntax_isExpression_gg){
+	:load(x,i)
+	y = x == 29 # |
+	:if(y){
+		i = i + 4
+		s = m - 4
+		:call(push) # expr1
+		:call(syntax_isExpression_i)
+		u = m - 4
+		x = 2 # expression
+		:store(x,m)
+		m = m + 1
+		x = 19 # |
+		:store(x,m) # type
+		m = m + 1
+		:call(pop) # expr1
+		:store(s,m) # expr1
+		m = m + 1
+		:store(u,m) #expr2
+		m = m + 1
+		y = f == 0
+		:if(y){
+			f = 1
+			:call(syntax_isExpression_gg)
+		}
+	} else {
+		f = 0
+	}
+}
+:fun(syntax_isExpression_h){
+	:call(syntax_isExpression_i)
+	y = f == 0
+	:if(y){
+		f = 1
+		:call(syntax_isExpression_hh)
+	}
+}
+:fun(syntax_isExpression_hh){
+	:load(x,i)
+	y = x == 28 # &
+	:if(y){
+		i = i + 4
+		s = m - 4
+		:call(push) # expr1
+		:call(syntax_isExpression_i)
+		u = m - 4
+		x = 2 # expression
+		:store(x,m)
+		m = m + 1
+		x = 18 # &
+		:store(x,m) # type
+		m = m + 1
+		:call(pop) # expr1
+		:store(s,m) # expr1
+		m = m + 1
+		:store(u,m) #expr2
+		m = m + 1
+		y = f == 0
+		:if(y){
+			f = 1
+			:call(syntax_isExpression_hh)
+		}
+	} else {
+		f = 0
+	}
+}
+:fun(syntax_isExpression_i){
+	:call(syntax_isExpression_j)
+	y = f == 0
+	:if(y){
+		f = 1
+		:call(syntax_isExpression_ii)
+	}
+}
+:fun(syntax_isExpression_ii){
+	:load(x,i)
+	y = x == 30 # ==
+	z = x == 31 # !=
+	y = y | z
+	:if(y){
+		i = i + 4
+		s = m - 4
+		:call(push) # expr1
+		y = x == 30
+		:if(y){
+			s = 16 # ==
+		} else {
+			s = 17 # !=
+		}
+		:call(push) # op
+		:call(syntax_isExpression_j)
+		u = m - 4
+		x = 2 # expression
+		:store(x,m)
+		m = m + 1
+		:call(pop) # op
+		:store(s,m) # type
+		m = m + 1
+		:call(pop) # expr1
+		:store(s,m) # expr1
+		m = m + 1
+		:store(u,m) #expr2
+		m = m + 1
+		y = f == 0
+		:if(y){
+			f = 1
+			:call(syntax_isExpression_ii)
+		}
+	} else {
+		f = 0
+	}
+}
+:fun(syntax_isExpression_j){
+	:call(syntax_isExpression_k)
+	y = f == 0
+	:if(y){
+		f = 1
+		:call(syntax_isExpression_jj)
+	}
+}
+:fun(syntax_isExpression_jj){
+	:load(x,i)
+	y = x == 32 # <
+	z = x == 33 # >
+	y = y | z
+	z = x == 34 # <=
+	y = y | z
+	z = x == 35 # >=
+	y = y | z
+	:if(y){
+		i = i + 4
+		s = m - 4
+		:call(push) # expr1
+		s = x - 20 # offset of new codes
+		:call(push) # op
+		:call(syntax_isExpression_k)
+		u = m - 4
+		x = 2 # expression
+		:store(x,m)
+		m = m + 1
+		:call(pop) # op
+		:store(s,m) # type
+		m = m + 1
+		:call(pop) # expr1
+		:store(s,m) # expr1
+		m = m + 1
+		:store(u,m) #expr2
+		m = m + 1
+		y = f == 0
+		:if(y){
+			f = 1
+			:call(syntax_isExpression_jj)
+		}
+	} else {
+		f = 0
+	}
+}
+:fun(syntax_isExpression_k){
+	:call(syntax_isExpression_l)
+	y = f == 0
+	:if(y){
+		f = 1
+		:call(syntax_isExpression_kk)
+	}
+}
+:fun(syntax_isExpression_kk){
+	:load(x,i)
+	y = x == 39 # +
+	z = x == 40 # -
+	y = y | z
+	:if(y){
+		i = i + 4
+		s = m - 4
+		:call(push) # expr1
+		s = x - 35
+		:call(push) # op
+		:call(syntax_isExpression_l)
+		u = m - 4
+		x = 2 # expression
+		:store(x,m)
+		m = m + 1
+		:call(pop) # op
+		:store(s,m) # type
+		m = m + 1
+		:call(pop) # expr1
+		:store(s,m) # expr1
+		m = m + 1
+		:store(u,m) #expr2
+		m = m + 1
+		y = f == 0
+		:if(y){
+			f = 1
+			:call(syntax_isExpression_kk)
+		}
+	} else {
+		f = 0
+	}
+}
+:fun(syntax_isExpression_l){
+	:call(syntax_isExpression_m)
+	y = f == 0
+	:if(y){
+		f = 1
+		:call(syntax_isExpression_ll)
+	}
+}
+:fun(syntax_isExpression_ll){
+	:load(x,i)
+	y = x == 36 # *
+	z = x == 37 # /
+	y = y | z
+	z = x == 38 # %
+	y = y | z
+	:if(y){
+		i = i + 4
+		s = m - 4
+		:call(push) # expr1
+		s = x - 29
+		:call(push) # op
+		:call(syntax_isExpression_m)
+		u = m - 4
+		x = 2 # expression
+		:store(x,m)
+		m = m + 1
+		:call(pop) # op
+		:store(s,m) # type
+		m = m + 1
+		:call(pop) # expr1
+		:store(s,m) # expr1
+		m = m + 1
+		:store(u,m) #expr2
+		m = m + 1
+		y = f == 0
+		:if(y){
+			f = 1
+			:call(syntax_isExpression_ll)
+		}
+	} else {
+		f = 0
+	}
+}
+:fun(syntax_isExpression_m){
+	:load(x,i)
+	y = x == 25 # ++
+	:if(y){
+		s = 2 # pref ++
+	}
+	z = x == 26 # --
+	:if(z){
+		s = 3 # pref --
+	}
+	y = y | z
+	z = x == 39 # +
+	:if(z){
+		s = 4 # pref +
+	}
+	y = y | z
+	z = x == 40 # -
+	:if(z){
+		s = 5 # pref -
+	}
+	y = y | z
+	z = x == 24 # !
+	:if(z){
+		s = 6 # pref !
+	}
+	y = y | z
+	:if(y){
+		i = i + 4
+		:call(push)
+		:call(syntax_isExpression_m)
+		u = 2 # expression
+		:store(u,m)
+		u = m - 4
+		m = m + 1
+		:call(pop)
+		:store(s,m) # type
+		m = m + 1
+		:store(u,m) # inner expression
+		m = m + 2 # skip one
+	} else {
+		:call(syntax_isExpression_n)
+	}
+}
+:fun(syntax_isExpression_n){
+	:call(syntax_isExpression_o)
+	:call(syntax_isExpression_nn)
+}
+:fun(syntax_isExpression_nn){
+	:load(x,i)
+	y = x == 25 # ++
+	z = x == 26 # --
+	y = y | z
+	:if(y){
+		u = 2 # expression
+		:store(u,m)
+		u = m - 4 # save last cell
+		x = x == 25
+		:if(x){
+			x = 0 # ++
+		} else {
+			x = 1 # --
+		}
+		m = m + 1
+		:store(x,m) # type
+		m = m + 1
+		:store(u,m) # token
+		m = m + 2 # skip one
+		i = i + 4
+		:call(syntax_isExpression_nn)
+	}
+}
+:fun(syntax_isExpression_o){
+	:load(x,i)
+	y = x == 2 # ident
+	:if(y){
+		u = 22 # ident
+	}
+	z = x == 3 # const
+	:if(z){
+		u = 23
+	}
+	y = y | z
+	:if(y){
+		x = 2 # expression
+		:store(x,m)
+		m = m + 1
+		:store(u,m) # type
+		m = m + 1
+		:store(i,m) # token
+		m = m + 2 # skip one
+		i = i + 4
+		f = 0
+	} else {
+		y = x == 14 # (
+		:if(y){
+			i = i + 4
+			:if(d){
+				d = 0
+				:call(syntax_isExpression)
+				d = 1
+			} else {
+				:call(syntax_isExpression)
+			}
+			:load(x,i)
+			y = x =! 15 # )
+			:if(y){
+				:call(errorExpectedRPARENT)
+			}
+			i = i + 4
+		}
+	}
 }
 :fun(syntax_isType){
 	:load(x,i)
@@ -2001,6 +2424,27 @@
 	y = x => 32 # space
 	u = x =< 126 # ~
 	y = y & u
+}
+:fun(debug_printExpression){
+	u = x + 1
+	:load(u,u)
+	y = u < 22
+	:if(y){
+		s = x
+		:raw("(")
+		:call(push)
+		x = x + 2
+		:load(x,x)
+		:call(debug_printExpression)
+		:call(pop)
+		x = s + 1
+		:load(x,x)
+		:call(putint)
+		x = s + 3
+		:load(x,x)
+		:call(debug_printExpression)
+		:raw(")")
+	}
 }
 #
 # Errors
