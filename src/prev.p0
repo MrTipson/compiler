@@ -526,7 +526,7 @@
 	}
 }
 :fun(syntax_isExpression_g){
-	:call(syntax_isExpression_h)
+	:call(syntax_isExpression_x)
 	y = f == 0
 	:if(y){
 		f = 1
@@ -540,7 +540,7 @@
 		i = i + 4
 		s = m - 4
 		:call(push) # expr1
-		:call(syntax_isExpression_i)
+		:call(syntax_isExpression_x)
 		u = m - 4
 		x = 2 # expression
 		:store(x,m)
@@ -557,6 +557,43 @@
 		:if(y){
 			f = 1
 			:call(syntax_isExpression_gg)
+		}
+	} else {
+		f = 0
+	}
+}
+:fun(syntax_isExpression_x){
+	:call(syntax_isExpression_h)
+	y = f == 0
+	:if(y){
+		f = 1
+		:call(syntax_isExpression_xx)
+	}
+}
+:fun(syntax_isExpression_xx){
+	:load(x,i)
+	y = x == 44 # ^
+	:if(y){
+		i = i + 4
+		s = m - 4
+		:call(push) # expr1
+		:call(syntax_isExpression_h)
+		u = m - 4
+		x = 2 # expression
+		:store(x,m)
+		m = m + 1
+		x = 26 # ^
+		:store(x,m) # type
+		m = m + 1
+		:call(pop) # expr1
+		:store(s,m) # expr1
+		m = m + 1
+		:store(u,m) #expr2
+		m = m + 1
+		y = f == 0
+		:if(y){
+			f = 1
+			:call(syntax_isExpression_xx)
 		}
 	} else {
 		f = 0
@@ -798,6 +835,11 @@
 	z = x == 24 # !
 	:if(z){
 		s = 6 # pref !
+	}
+	y = y | z
+	z = x == 43 # ~
+	:if(z){
+		s = 27 # pref ~
 	}
 	y = y | z
 	:if(y){
@@ -1446,6 +1488,12 @@
 																																:call(tokenize_isSymbol_ADD)
 																																:if(f){
 																																	:call(tokenize_isSymbol_SUB)
+																																	:if(f){
+																																		:call(tokenize_isSymbol_BITXOR)
+																																		:if(f){
+																																			:call(tokenize_isSymbol_BITNOT)
+																																		}
+																																	}
 																																}
 																															}
 																														}
@@ -2070,6 +2118,38 @@
 		}
 	}
 }
+:fun(tokenize_isSymbol_BITNOT){
+	y = x == 126 # ~
+	:if(y){
+		i = i + 1
+		f = 0 # set match flag
+		x = 43 # type 43
+		:store(x,m)
+		m = m + 3 # skip 2 optional fields
+		x = l # line number
+		:store(x,m)
+		m = m + 1
+		:if(d){
+			:raw("BITNOT ")
+		}
+	}
+}
+:fun(tokenize_isSymbol_BITXOR){
+	y = x == 94 # ^
+	:if(y){
+		i = i + 1
+		f = 0 # set match flag
+		x = 44 # type 44
+		:store(x,m)
+		m = m + 3 # skip 2 optional fields
+		x = l # line number
+		:store(x,m)
+		m = m + 1
+		:if(d){
+			:raw("BITXOR ")
+		}
+	}
+}
 :fun(tokenize_isConstant){
 	:call(tokenize_isConstant_false)
 	:if(f){
@@ -2623,6 +2703,8 @@
 			y = u => 2
 			v = u =< 6
 			y = y & v
+			v = u == 27
+			y = y | v
 			:if(y){ # prefix
 				:raw("(")
 				x = x + 2 # expr1
@@ -2643,7 +2725,12 @@
 							:if(y){
 								:raw("-")
 							} else {
-								:raw("!")
+								y = u == 27
+								:if(y){
+									:raw("~")
+								} else {
+									:raw("!")
+								}
 							}
 						}
 					}
@@ -2654,6 +2741,8 @@
 				y = u => 7
 				v = u =< 21
 				y = y & v
+				v = u == 26
+				y = y | v
 				:if(y){ # binop
 					:raw("(")
 					x = x + 2 # expr1
@@ -2720,7 +2809,12 @@
 																		:if(y){
 																			:raw("&&")
 																		} else {
-																			:raw("||")
+																			y = s == 26
+																			:if(y){
+																				:raw("^")
+																			} else {
+																				:raw("||")
+																			}
 																		}
 																	}
 																}

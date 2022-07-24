@@ -3,11 +3,11 @@ int a;
 int b = 4;
 void c (int a, int b){
 	int c;
-	void d = 1 + 2 * 3;
+	void d = 1 ^ 2 * 3;
 }
 int main(){
 	return 5;
-	false;
+	~false++/5;
 	true;
 	'1';
 	'\n';

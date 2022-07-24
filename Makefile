@@ -17,5 +17,6 @@ bin/p1: bin/p1.s
 	as -o bin/p1.o bin/p1.s
 	ld -o bin/p1 bin/p1.o
 
+.phony: clean
 clean:
 	rm -vf $(filter-out .gitignore, $(wildcard bin/*))

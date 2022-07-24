@@ -47,3 +47,5 @@ constant(string) | 3 | 3 | start | Line no.
 \- | 40 | - | - | Line no.
 && | 41 | - | - | Line no.
 \|\| | 42 | - | -  | Line no.
+~ | 43 | - | - | Line no.
+^ | 44 | - | - | Line no.

@@ -11,16 +11,13 @@ param -> type ident
 
 type -> void | char | int | bool
 
-expr -> const | ident | (expr)
-
-expr -> expr ( & | | | == | != | && | || | < | > | <= | >= | * | / | % | + | - ) expr
-
 # Expression grammar
 a | b
 --|--
 E -> FE' | E'-> \|\| FE' \| ε
 F -> GF' | F' ->  && GF' \| ε
-G -> HG' | G' -> \| HG' \| ε
+G -> XG' | G' -> \| XG' \| ε
+X -> HX' | X' -> ^ HX' \| ε
 H -> IH' | H' -> & IH' \| ε
 I -> JI' | I' -> == JI' \| != JI' \| ε
 J -> KJ' | J' -> < KJ' \| > KJ' \| <= KJ' \| >= KJ' \| ε
@@ -42,6 +39,7 @@ Pref  -- | 3
 Pref  +  | 4
 Pref  -  | 5
 Pref  !  | 6
+Pref  ~  | 27
 Binop *  | 7
 Binop /  | 8
 Binop %  | 9
@@ -57,6 +55,7 @@ Binop &  | 18
 Binop \| | 19
 Binop && | 20
 Binop \|\| | 21
+Binop ^  | 26
 ident    | 22
 const    | 23
 
