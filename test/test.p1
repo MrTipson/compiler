@@ -3,6 +3,7 @@
 se vedno komentar */
 int a;
 int b = 4;
+void print(char a);
 void c (int a, int b){
 	int c;
 	void d = 1 ^ 2 * 3;
