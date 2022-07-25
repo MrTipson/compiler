@@ -1,4 +1,6 @@
-# To je komentar
+// To je komentar
+/* to je tudi komentar
+se vedno komentar */
 int a;
 int b = 4;
 void c (int a, int b){

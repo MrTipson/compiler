@@ -1,6 +1,6 @@
 :fun(main){
 	d = 1 # debug
-	a = 1000 # stack pointer
+	a = 10000 # stack pointer
 	:call(readFile)
 	b = m
 	:call(tokenize)
@@ -45,7 +45,7 @@
 	:call(syntax_isType)
 	y = f == 0 # match found
 	:load(x,i)
-	x = x == 2
+	x = x == 2 # ident
 	y = y & x
 	:if(y){
 		i = i + 4
@@ -1107,16 +1107,56 @@
 # Match comment
 :fun(tokenize_isComment){
 	:load(x,i)
-	y = x == 35 # '#'
+	y = x == 47 # '/'
 	:if(y){
-		f = 0 # set match flag
-		i = i + 1 # increment file index
-		:load(x,i)
-		y = x =! 10 # skip characters until end of line
-		:while(y){
-			i = i + 1 # increment file index
+		z = i + 1
+		:load(x,z)
+		y = x == 47 # '/'
+		u = z < b
+		y = y & u
+		:if(y){
+			f = 0 # set match flag
+			i = z + 1 # increment file index
 			:load(x,i)
-			y = x =! 10 # newline
+			y = x =! 10 # skip characters until end of line
+			u = i < b
+			y = y & u
+			:while(y){
+				i = i + 1 # increment file index
+				:load(x,i)
+				y = x =! 10 # newline
+				u = i < b
+				y = y & u
+			}
+		} else {
+			y = x == 42 # '*'
+			:if(y){
+				v = 0
+				i = i + 1
+				:while(y){
+					u = i => b
+					:if(u){
+						:call(errorEOFcomment)
+					}
+					:load(x,i)
+					i = i + 1
+					u = x == 42 # '*'
+					:if(u){
+						v = 1
+					} else {
+						u = x == 47 # /
+						u = u & v
+						:if(u){
+							y = 0
+						}
+						v = 0
+						u = x == 10 # \n
+						:if(u){
+							l = l + 1
+						}
+					}
+				}
+			}
 		}
 	}
 }
@@ -2947,6 +2987,11 @@
 	x = i + 3
 	:load(x,x)
 	:call(errorPrintLine)
+}
+:fun(errorEOFcomment){
+	:raw("EOF reached while parsing comment.")
+	x = 1
+	:exit(x)
 }
 :fun(errorInvalidCharConstant){
 	:raw("Invalid char constant. ")
