@@ -1,5 +1,6 @@
 .include "src/header.s"
 .global _special_switch_i
+.global _dataseg_string_loop
 _start:
 	bl	main
 
@@ -898,4 +899,4 @@ __fun_str2: .ascii "\tpop\t{lr}\n\tbx\tlr\n.pool\n"
 __fun_len2 = .-__fun_str2
 __mem_str: .ascii "mem: .space 40000\n"
 __mem_len = .-__mem_str
-heap: .space 4000
+heap: .space 20000

@@ -1,6 +1,6 @@
 :fun(main){
 	d = 1 # debug
-	a = 10000 # stack pointer
+	a = 5000 # stack pointer
 	:call(readFile)
 	b = m
 	:call(tokenize)
@@ -954,40 +954,97 @@
 	:load(x,i)
 	y = x == 2 # ident
 	:if(y){
-		u = 22 # ident
-	}
-	z = x == 3 # const
-	:if(z){
-		u = 23
-	}
-	y = y | z
-	:if(y){
-		x = 2 # expression
-		:store(x,m)
-		m = m + 1
-		:store(u,m) # type
-		m = m + 1
-		:store(i,m) # token
-		m = m + 2 # skip one
-		i = i + 4
-		f = 0
-	} else {
+		z = i + 4
+		:load(x,z)
 		y = x == 14 # (
-		:if(y){
-			i = i + 4
-			:if(d){
-				d = 0
-				:call(syntax_isExpression)
-				d = 1
-			} else {
-				:call(syntax_isExpression)
-			}
+		:if(y){ # function call
+			# Starting memory entry for call
+			x = 10 # call
+			:store(x,m)
+			m = m + 1
+			x = 0 # start
+			:store(x,m)
+			m = m + 1
+			:store(i,m) # ident
+			m = m + 2 # skip one
+			# Finish writing memory
+			i = z + 4
 			:load(x,i)
+			y = x =! 15 # )
+			:if(y){ # undo first increment of while loop
+				i = i - 4
+			}
+			:while(y){
+				i = i + 4
+				f = 1
+				:call(syntax_isExpression)
+				:if(f){
+					:call(errorUnmatchedToken)
+				}
+				x = 11 # argument
+				:store(x,m)
+				u = m - 4
+				m = m + 1
+				:store(u,m)
+				m = m + 3 # skip two
+				:load(x,i)
+				y = x == 21 # ,
+			}
 			y = x =! 15 # )
 			:if(y){
 				:call(errorExpectedRPARENT)
 			}
+			:raw("MatchedCALL")
+			# Ending memory entry for call
+			x = 10 # call
+			:store(x,m)
+			m = m + 1
+			x = 1 # end
+			:store(x,m)
+			m = m + 3 # skip two
+		} else { # ident
+			x = 2 # expression
+			:store(x,m)
+			m = m + 1
+			x = 22 # ident
+			:store(x,m) # type
+			m = m + 1
+			:store(i,m) # token
+			m = m + 2 # skip one
+		}
+		i = i + 4
+		f = 0
+	} else {
+		y = x == 3 # const
+		:if(y){
+			x = 2 # expression
+			:store(x,m)
+			m = m + 1
+			x = 23
+			:store(x,m) # type
+			m = m + 1
+			:store(i,m) # token
+			m = m + 2 # skip one
 			i = i + 4
+			f = 0
+		} else {
+			y = x == 14 # (
+			:if(y){
+				i = i + 4
+				:if(d){
+					d = 0
+					:call(syntax_isExpression)
+					d = 1
+				} else {
+					:call(syntax_isExpression)
+				}
+				:load(x,i)
+				y = x =! 15 # )
+				:if(y){
+					:call(errorExpectedRPARENT)
+				}
+				i = i + 4
+			}
 		}
 	}
 }
@@ -2723,147 +2780,232 @@
 		c = i < g
 	}
 }
+:fun(debug_printExpressionExtra){
+	y = u == 10 # call expression
+	:if(y){
+		u = 1
+		:while(u){
+			x = x - 4
+			:load(y,x)
+			y = y == 10
+			:if(y){
+				y = x + 1
+				:load(y,y)
+				:if(y){ # y : 0start, 1end
+					u = u + 1
+				} else {
+					u = u - 1
+				}
+			}
+		}
+		:raw("CALL(")
+		u = x + 2 # expr1 (token)
+		:load(u,u) # load token addr
+		:load(y,u) # check if its an ident
+		y = y =! 2
+		:if(y){
+			x = -44
+			:call(errorPrintLine)
+		}
+		v = u + 2
+		u = u + 1
+		:load(u,u) # start
+		:load(v,v) # length
+		v = u + v
+		y = u < v
+		:while(y){
+			:load(z,u)
+			:putchar(z)
+			u = u + 1
+			y = u < v
+		}
+		:raw(")[ ")
+		u = 1
+		v = 0
+		:while(u){
+			x = x + 4
+			:load(z,x)
+			y = z == 10
+			:if(y){
+				y = x + 1
+				:load(y,y)
+				:if(y){ # y : 0start, 1end
+					:if(v){
+						v = v - 1
+					} else {
+						u = 0
+					}
+				} else {
+					v = v + 1
+				}
+			} else {
+				y = z == 11
+				z = v == 0
+				y = y & z
+				:if(y){
+					s = x
+					:call(push)
+					x = x + 1
+					:load(x,x)
+					:call(debug_printExpression)
+					:call(pop)
+					x = s
+					:raw(", ")
+				}
+			}
+		}
+		:raw(" ]")
+	} else {
+		y = u == 11 # argument
+		:if(y){
+
+		} else {			
+			x = -40
+			:call(errorPrintLine)
+		}
+	}
+}
 :fun(debug_printExpression){
 	:load(u,x)
 	y = u =! 2 # check if its an expression
 	:if(y){
-		x = -40
-		:call(errorPrintLine)
-	}
-	u = x + 1
-	:load(u,u)
-	y = u == 0
-	:if(y){ # postfix ++
-		:raw("(")
-		x = x + 2 # expr1
-		:load(x,x)
-		:call(debug_printExpression)
-		:raw("++")
-		:raw(")")
+		:call(debug_printExpressionExtra)
 	} else {
-		y = u == 1
-		:if(y){ # postfix --
+		u = x + 1
+		:load(u,u)
+		y = u == 0
+		:if(y){ # postfix ++
 			:raw("(")
 			x = x + 2 # expr1
 			:load(x,x)
 			:call(debug_printExpression)
-			:raw("--")
+			:raw("++")
 			:raw(")")
 		} else {
-			y = u => 2
-			v = u =< 6
-			y = y & v
-			v = u == 27
-			y = y | v
-			:if(y){ # prefix
+			y = u == 1
+			:if(y){ # postfix --
 				:raw("(")
 				x = x + 2 # expr1
 				:load(x,x)
-				y = u == 2
-				:if(y){
-					:raw("++")
-				} else {
-					y = u == 3
+				:call(debug_printExpression)
+				:raw("--")
+				:raw(")")
+			} else {
+				y = u => 2
+				v = u =< 6
+				y = y & v
+				v = u == 27
+				y = y | v
+				:if(y){ # prefix
+					:raw("(")
+					x = x + 2 # expr1
+					:load(x,x)
+					y = u == 2
 					:if(y){
-						:raw("--")
+						:raw("++")
 					} else {
-						y = u == 4
+						y = u == 3
 						:if(y){
-							:raw("+")
+							:raw("--")
 						} else {
-							y = u == 5
+							y = u == 4
 							:if(y){
-								:raw("-")
+								:raw("+")
 							} else {
-								y = u == 27
+								y = u == 5
 								:if(y){
-									:raw("~")
+									:raw("-")
 								} else {
-									:raw("!")
+									y = u == 27
+									:if(y){
+										:raw("~")
+									} else {
+										:raw("!")
+									}
 								}
 							}
 						}
 					}
-				}
-				:call(debug_printExpression)
-				:raw(")")
-			} else {
-				y = u => 7
-				v = u =< 21
-				y = y & v
-				v = u == 26
-				y = y | v
-				:if(y){ # binop
-					:raw("(")
-					x = x + 2 # expr1
-					s = x + 1 # expr2
-					:call(push) # push expr2
-					s = u # op
-					:call(push) # push op
-					:load(x,x)
 					:call(debug_printExpression)
-					:call(pop) # pop op
-					y = s == 7
-					:if(y){
-						:raw("*")
-					} else {
-						y = s == 8
+					:raw(")")
+				} else {
+					y = u => 7
+					v = u =< 21
+					y = y & v
+					v = u == 26
+					y = y | v
+					:if(y){ # binop
+						:raw("(")
+						x = x + 2 # expr1
+						s = x + 1 # expr2
+						:call(push) # push expr2
+						s = u # op
+						:call(push) # push op
+						:load(x,x)
+						:call(debug_printExpression)
+						:call(pop) # pop op
+						y = s == 7
 						:if(y){
-							:raw("/")
+							:raw("*")
 						} else {
-							y = s == 9
+							y = s == 8
 							:if(y){
-								:raw("%")
+								:raw("/")
 							} else {
-								y = s == 10
+								y = s == 9
 								:if(y){
-									:raw("+")
+									:raw("%")
 								} else {
-									y = s == 11
+									y = s == 10
 									:if(y){
-										:raw("-")
+										:raw("+")
 									} else {
-										y = s == 12
+										y = s == 11
 										:if(y){
-											:raw("<")
+											:raw("-")
 										} else {
-											y = s == 13
+											y = s == 12
 											:if(y){
-												:raw(">")
+												:raw("<")
 											} else {
-												y = s == 14
+												y = s == 13
 												:if(y){
-													:raw("<=")
+													:raw(">")
 												} else {
-													y = s == 15
+													y = s == 14
 													:if(y){
-														:raw(">=")
+														:raw("<=")
 													} else {
-														y = s == 16
+														y = s == 15
 														:if(y){
-															:raw("==")
+															:raw(">=")
 														} else {
-															y = s == 17
+															y = s == 16
 															:if(y){
-																:raw("!=")
+																:raw("==")
 															} else {
-																y = s == 18
+																y = s == 17
 																:if(y){
-																	:raw("&")
+																	:raw("!=")
 																} else {
-																	y = s == 19
+																	y = s == 18
 																	:if(y){
-																		:raw("|")
+																		:raw("&")
 																	} else {
-																		y = s == 20
+																		y = s == 19
 																		:if(y){
-																			:raw("&&")
+																			:raw("|")
 																		} else {
-																			y = s == 26
+																			y = s == 20
 																			:if(y){
-																				:raw("^")
+																				:raw("&&")
 																			} else {
-																				:raw("||")
+																				y = s == 26
+																				:if(y){
+																					:raw("^")
+																				} else {
+																					:raw("||")
+																				}
 																			}
 																		}
 																	}
@@ -2878,94 +3020,94 @@
 								}
 							}
 						}
-					}
-					:call(pop) # pop expr2
-					:load(x,s)
-					:call(debug_printExpression)
-					:raw(")")
-				} else {
-					y = u == 22
-					:if(y){ # ident
-						u = x + 2 # expr1 (token)
-						:load(x,u) # load token addr
-						:load(u,x)
-						y = u =! 2
-						:if(y){
-							x = -42
-							:call(errorPrintLine)
-						}
-						u = x + 1
-						:load(u,u) # start
-						v = x + 2
-						:load(v,v) # length
-						v = u + v
-						y = u < v
-						:while(y){
-							:load(x,u)
-							:putchar(x)
-							u = u + 1
-							y = u < v
-						}
+						:call(pop) # pop expr2
+						:load(x,s)
+						:call(debug_printExpression)
+						:raw(")")
 					} else {
-						y = u == 23
-						:if(y){ # const
+						y = u == 22
+						:if(y){ # ident
 							u = x + 2 # expr1 (token)
 							:load(x,u) # load token addr
 							:load(u,x)
-							y = u =! 3
+							y = u =! 2
 							:if(y){
-								x = -43
+								x = -42
 								:call(errorPrintLine)
 							}
-							u = x + 2
-							:load(x,u)
-							:call(putint)
+							u = x + 1
+							:load(u,u) # start
+							v = x + 2
+							:load(v,v) # length
+							v = u + v
+							y = u < v
+							:while(y){
+								:load(x,u)
+								:putchar(x)
+								u = u + 1
+								y = u < v
+							}
 						} else {
-							y = u == 24
-							:if(y){ # array
-								:raw("(")
-								x = x + 2 # expr1
-								s = x + 1 # expr2
-								:call(push)
-								:load(x,x)
-								:call(debug_printExpression)
-								:raw("[")
-								:call(pop)
-								:load(x,s)
-								:call(debug_printExpression)
-								:raw("])")
+							y = u == 23
+							:if(y){ # const
+								u = x + 2 # expr1 (token)
+								:load(x,u) # load token addr
+								:load(u,x)
+								y = u =! 3
+								:if(y){
+									x = -43
+									:call(errorPrintLine)
+								}
+								u = x + 2
+								:load(x,u)
+								:call(putint)
 							} else {
-								y = u == 25
-								:if(y){ # component
+								y = u == 24
+								:if(y){ # array
 									:raw("(")
 									x = x + 2 # expr1
 									s = x + 1 # expr2
 									:call(push)
 									:load(x,x)
 									:call(debug_printExpression)
-									:raw(".")
+									:raw("[")
 									:call(pop)
 									:load(x,s)
-									u = x + 1
-									:load(u,u) # start
-									v = x + 2
-									:load(v,v) # length
-									v = u + v
-									y = u < v
-									:while(y){
-										:load(x,u)
-										:putchar(x)
-										u = u + 1
+									:call(debug_printExpression)
+									:raw("])")
+								} else {
+									y = u == 25
+									:if(y){ # component
+										:raw("(")
+										x = x + 2 # expr1
+										s = x + 1 # expr2
+										:call(push)
+										:load(x,x)
+										:call(debug_printExpression)
+										:raw(".")
+										:call(pop)
+										:load(x,s)
+										u = x + 1
+										:load(u,u) # start
+										v = x + 2
+										:load(v,v) # length
+										v = u + v
 										y = u < v
+										:while(y){
+											:load(x,u)
+											:putchar(x)
+											u = u + 1
+											y = u < v
+										}
+										:raw(")")
 									}
-									:raw(")")
 								}
 							}
 						}
 					}
 				}
 			}
-		}
+		}	
 	}
 }
 #
