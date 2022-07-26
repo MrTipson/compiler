@@ -111,7 +111,8 @@
 			}
 			y = x =! 15 # )
 			:if(y){
-				:call(errorExpectedRPARENT)
+				x = 41  # )
+				:call(errorExpectedX)
 			}
 			i = i + 4
 			:load(x,i)
@@ -125,7 +126,8 @@
 			} else {
 				y = x =! 16 # {
 				:if(y){
-					:call(errorExpectedLCURLY)
+					x = 123 # {
+					:call(errorExpectedX)
 				}
 				i = i + 4
 				:load(x,i)
@@ -1037,7 +1039,8 @@
 			}
 			y = x =! 15 # )
 			:if(y){
-				:call(errorExpectedRPARENT)
+				x = 41 # )
+				:call(errorExpectedX)
 			}
 			# Ending memory entry for call
 			x = 10 # call
@@ -1085,7 +1088,8 @@
 				:load(x,i)
 				y = x =! 15 # )
 				:if(y){
-					:call(errorExpectedRPARENT)
+					x = 41 # )
+					:call(errorExpectedX)
 				}
 				i = i + 4
 			}
@@ -1291,8 +1295,12 @@
 				} 
 				i = i + 4
 				f = 0
+				:if(d){
+					:raw("TYPEDECL ")
+				}
 			} else {
-				:call(errorExpectedLCURLY)
+				x = 123 # {
+				:call(errorExpectedX)
 			}
 		} else {
 			:raw("Expected identifier. ")
@@ -2991,7 +2999,7 @@
 	}
 }
 :fun(debug_printTypes){
-	:raw("\nExpressions:\n")
+	:raw("\nTypes:\n")
 	i = e
 	c = i < g
 	:while(c){
@@ -3471,28 +3479,10 @@
 #
 # Errors
 #
-:fun(errorExpectedLCURLY){
-	:raw("Expected {, found token type ")
-	:load(x,i)
-	:call(putint)
-	:raw(". ")
-	x = i + 3
-	:load(x,x)
-	:call(errorPrintLine)
-}
 :fun(errorExpectedX){
 	:raw("Expected ")
 	:putchar(x)
 	:raw(", found token type ")
-	:load(x,i)
-	:call(putint)
-	:raw(". ")
-	x = i + 3
-	:load(x,x)
-	:call(errorPrintLine)
-}
-:fun(errorExpectedRPARENT){
-	:raw("Expected ), found token type ")
 	:load(x,i)
 	:call(putint)
 	:raw(". ")
