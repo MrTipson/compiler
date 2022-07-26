@@ -34,9 +34,14 @@
 			# restore if matching changed anything
 			i = w
 			m = o
-			:call(syntax_isFunction)
+			:call(syntax_isTypeDeclaration)
 			:if(f){
-				:call(errorUnmatchedToken)
+				i = w
+				m = o
+				:call(syntax_isFunction)
+				:if(f){
+					:call(errorUnmatchedToken)
+				}
 			}
 		}
 		c = i < g
@@ -184,6 +189,7 @@
 						:if(f){
 							i = w
 							m = o
+							:call(syntax_isTypeDeclaration)
 						}
 					}
 				}
@@ -447,9 +453,6 @@
 :fun(syntax_isExprStmt){
 	:call(syntax_isExpression)
 	y = f == 0
-	:if(y){
-		:raw("matchedexpr ")
-	}
 	:load(x,i)
 	x = x == 22 # ;
 	y = y & x
@@ -984,7 +987,6 @@
 					:store(i,m) # token (component)
 					m = m + 1
 					i = i + 4
-					:raw("matchedcomp ")
 					:call(syntax_isExpression_nn)
 				} else {
 					f = 1
@@ -1125,7 +1127,6 @@
 		:load(x,i)
 		u = x == 36 # *
 		:if(u){
-			:raw("matchedptr ")
 			x = 1 # type
 			:store(x,m)
 			u = m - 4
@@ -1148,7 +1149,6 @@
 			v = x == 19 # ]
 			u = u & v
 			:if(u){
-				:raw("matchedarr ")
 				x = 1 # type
 				:store(x,m)
 				u = m - 4
@@ -1229,6 +1229,77 @@
 		}
 	} else {
 		f = 1 # no match
+	}
+}
+:fun(syntax_isTypeDeclaration){
+	:load(x,i)
+	y = x == 45 # struct
+	:if(y){
+		i = i + 4
+		:load(x,i)
+		y = x == 2 # ident
+		:if(y){
+			x = 12 # struct
+			:store(x,m)
+			m = m + 1
+			x = 0 # start
+			:store(x,m)
+			m = m + 1
+			:store(i,m)
+			m = m + 2 # skip one
+			i = i + 4
+			:load(x,i)
+			y = x == 16 # {
+			:if(y){
+				i = i + 4
+				:load(x,i)
+				y = x =! 17 # }
+				:while(y){
+					f = 1
+					:call(syntax_isParameter)
+					:if(f){
+						:call(errorUnmatchedToken)
+					}
+					:load(x,i)
+					y = x =! 22 # ;
+					:if(y){
+						x = 59 # ;
+						:call(errorExpectedX)
+					}
+					y = x == -1 # EOF
+					:if(y){
+						:raw("End of file reached while parsing struct.")
+						x = 1
+						:exit(x)
+					}
+					i = i + 4
+					:load(x,i)
+					y = x =! 17 # }
+				}
+				x = 12 # struct
+				:store(x,m)
+				m = m + 1
+				x = 1 # end
+				:store(x,m)
+				m = m + 3 # skip two
+				i = i + 4
+				:load(x,i)
+				y = x =! 22 # ;
+				:if(y){
+					x = 59 # ;
+					:call(errorExpectedX)
+				} 
+				i = i + 4
+				f = 0
+			} else {
+				:call(errorExpectedLCURLY)
+			}
+		} else {
+			:raw("Expected identifier. ")
+			x = i + 3
+			:load(x,x)
+			:call(errorPrintLine)
+		}
 	}
 }
 #
@@ -1387,6 +1458,9 @@
 							:call(tokenize_isKeyword_while)
 							:if(f){
 								:call(tokenize_isKeyword_return)
+								:if(f){
+									:call(tokenize_isKeyword_struct)
+								}
 							}
 						}
 					}
@@ -1608,6 +1682,7 @@
 	:load(z,i) # 6th character
 	i = i + 1
 	:load(x,i) # 7th character should be non-identifier
+	i = i - 1
 	:call(tokenize_isKeyword_helper) # y contains result
 	x = p == 114 # r
 	y = y & x
@@ -1632,6 +1707,38 @@
 		i = i + 1 # increment file (we loaded but didnt increment)
 		:if(d){
 			:raw("RETURN ")
+		}
+	}
+}
+:fun(tokenize_isKeyword_struct){
+	:load(z,i) # 6th character
+	i = i + 1
+	:load(x,i) # 7th character should be non-identifier
+	i = i - 1
+	:call(tokenize_isKeyword_helper) # y contains result
+	x = p == 115 # s
+	y = y & x
+	x = q == 116 # t
+	y = y & x
+	x = r == 114 # r
+	y = y & x
+	x = s == 117 # u
+	y = y & x
+	x = t == 99 # c
+	y = y & x
+	x = z == 116 # t
+	y = y & x
+	:if(y){ # match
+		f = 0 # set match flag
+		x = 45 # type 45
+		:store(x,m)
+		m = m + 3 # skip optional field
+		x = l
+		:store(x,m)
+		m = m + 1
+		i = i + 1 # increment file (we loaded but didnt increment)
+		:if(d){
+			:raw("STRUCT ")
 		}
 	}
 }
@@ -3366,6 +3473,17 @@
 #
 :fun(errorExpectedLCURLY){
 	:raw("Expected {, found token type ")
+	:load(x,i)
+	:call(putint)
+	:raw(". ")
+	x = i + 3
+	:load(x,x)
+	:call(errorPrintLine)
+}
+:fun(errorExpectedX){
+	:raw("Expected ")
+	:putchar(x)
+	:raw(", found token type ")
 	:load(x,i)
 	:call(putint)
 	:raw(". ")

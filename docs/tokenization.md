@@ -9,6 +9,7 @@ if | 11 | - | - | Line no.
 else | 12 | - | - | Line no.
 while | 13 | - | - | Line no.
 return | 27 | - | - | Line no.
+struct | 45 | - | - | Line no.
 *identifier* | 2 | start | length | Line no.
 constant(int) | 3 | 0 | value | Line no.
 constant(char) | 3 | 1 | value | Line no.

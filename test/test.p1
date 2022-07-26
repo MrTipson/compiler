@@ -1,6 +1,10 @@
 // To je komentar
 /* to je tudi komentar
 se vedno komentar */
+struct abc {
+	int[10] a;
+	char b;
+};
 int* a;
 int b = 4;
 abc[10] print(char[10] a);

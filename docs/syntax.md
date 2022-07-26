@@ -1,6 +1,8 @@
 ## Definition
 prg -> decl {decl}
 
+decl -> struct ident {type ident; {type ident;}};
+
 decl -> type ident;
 
 decl -> type ident = expr;
@@ -77,5 +79,6 @@ If/Else | 8 | 0if, 1else, 2end | expr(if) | -
 While | 9 | 0start, 1end | expr(start only) | -
 Call | 10 | 0start, 1end | ident(start only) | -
 Argument | 11 | expr | - | -
+Struct | 12 | 0start, 1end | ident | -
 
 > Note: Cast expression: type is expr2
