@@ -12,9 +12,9 @@ int main(){
 	return 5;
 	~false++/5;
 	true;
-	'1';
+	*&'1';
 	'\n';
-	a = 5;
+	*&(int)a = 5;
 	if(a){
 		if(c) a;
 		else b;

@@ -859,6 +859,34 @@
 		s = 27 # pref ~
 	}
 	y = y | z
+	z = x == 28 # &
+	:if(z){
+		s = 28 # &
+	}
+	y = y | z
+	z = x == 36 # *
+	:if(z){
+		s = 29 # *
+	}
+	y = y | z
+	z = x == 14 # (
+	:if(z){
+		i = i + 4
+		f = 1
+		:call(syntax_isType)
+		u = f == 0
+		:load(x,i)
+		v = x == 15 # )
+		u = u & v
+		:if(u){
+			s = m - 4
+			:call(push)
+			s = 30
+			y = y | 1
+		} else {
+			i = i - 8
+		}
+	}
 	:if(y){
 		i = i + 4
 		:call(push)
@@ -871,7 +899,13 @@
 		:store(s,m) # type
 		m = m + 1
 		:store(u,m) # inner expression
-		m = m + 2 # skip one
+		m = m + 1
+		y = s == 30 # cast expression
+		:if(y){
+			:call(pop)
+			:store(s, m) # type is in expr2
+		}
+		m = m + 1
 	} else {
 		:call(syntax_isExpression_n)
 	}
@@ -2937,6 +2971,49 @@
 		}
 	}
 }
+:fun(debug_printPrefix){
+	y = u == 2
+	:if(y){
+		:raw("++")
+	} else {
+		y = u == 3
+		:if(y){
+			:raw("--")
+		} else {
+			y = u == 4
+			:if(y){
+				:raw("+")
+			} else {
+				y = u == 5
+				:if(y){
+					:raw("-")
+				} else {
+					y = u == 27
+					:if(y){
+						:raw("~")
+					} else {
+						y = u == 28
+						:if(y){
+							:raw("&")
+						} else {
+							y = u == 29
+							:if(y){
+								:raw("*")
+							} else {
+								y = u == 30
+								:if(y){
+									:raw("cast")
+								} else {
+									:raw("!")
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
 :fun(debug_printExpression){
 	:load(u,x)
 	y = u =! 2 # check if its an expression
@@ -2966,38 +3043,15 @@
 				y = u => 2
 				v = u =< 6
 				y = y & v
-				v = u == 27
+				v = u => 27
+				z = u =< 30
+				v = v & z
 				y = y | v
 				:if(y){ # prefix
 					:raw("(")
 					x = x + 2 # expr1
 					:load(x,x)
-					y = u == 2
-					:if(y){
-						:raw("++")
-					} else {
-						y = u == 3
-						:if(y){
-							:raw("--")
-						} else {
-							y = u == 4
-							:if(y){
-								:raw("+")
-							} else {
-								y = u == 5
-								:if(y){
-									:raw("-")
-								} else {
-									y = u == 27
-									:if(y){
-										:raw("~")
-									} else {
-										:raw("!")
-									}
-								}
-							}
-						}
-					}
+					:call(debug_printPrefix)
 					:call(debug_printExpression)
 					:raw(")")
 				} else {

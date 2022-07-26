@@ -23,7 +23,7 @@ I -> JI' | I' -> == JI' \| != JI' \| ε
 J -> KJ' | J' -> < KJ' \| > KJ' \| <= KJ' \| >= KJ' \| ε
 K -> LK' | K' -> + LK' \| - LK' \| ε
 L -> ML' | L' -> * ML' \| / ML' \| % ML' \| ε
-M -> ++M \| --M \| +M \| -M \| !M \| N
+M -> ++M \| --M \| +M \| -M \| !M \| &M \| *M \| (type)M \| N
 N -> ON' | N' -> ++N' \| --N' \| [E]N' \| .identN' \| ε
 O -> ident \| const \| (E)
 
@@ -40,6 +40,9 @@ Pref  +  | 4
 Pref  -  | 5
 Pref  !  | 6
 Pref  ~  | 27
+Pref  &  | 28
+Pref  *  | 29
+Pref cast| 30
 Binop *  | 7
 Binop /  | 8
 Binop %  | 9
@@ -74,3 +77,5 @@ If/Else | 8 | 0if, 1else, 2end | expr(if) | -
 While | 9 | 0start, 1end | expr(start only) | -
 Call | 10 | 0start, 1end | ident(start only) | -
 Argument | 11 | expr | - | -
+
+> Note: Cast expression: type is expr2
