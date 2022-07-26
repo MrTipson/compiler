@@ -63,7 +63,7 @@ const    | 23
 Type\Offset | 0 | 1 | 2 | 3
 ----------- | - | - | - | -
 Declaration | 0 | type | expression (-1 if none) | -
-Type | 1 | [0int, 1char, 2bool, 3void, 4arr, 5ptr] | basetype | -
+Type | 1 | 0int, 1char, 2bool, 3void, 4arr, 5ptr, 6name | basetype | const token
 Expression | 2 | id | expr1 | expr2
 Function | 3 | type | ident | 0start, 1end, 2startdecl
 Parameter | 4 | type | ident | -

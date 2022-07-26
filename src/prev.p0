@@ -389,8 +389,12 @@
 :fun(syntax_isWhile){
 	:load(x,i)
 	y = x == 13 # while
+	z = i + 4
+	:load(x,z)
+	u = x == 14 # (
+	y = y & u
 	:if(y){
-		i = i + 4
+		i = z + 4
 		:call(syntax_isExpression)
 		y = f == 0
 		:load(x,i)
@@ -442,6 +446,9 @@
 :fun(syntax_isExprStmt){
 	:call(syntax_isExpression)
 	y = f == 0
+	:if(y){
+		:raw("matchedexpr ")
+	}
 	:load(x,i)
 	x = x == 22 # ;
 	y = y & x
@@ -942,6 +949,7 @@
 					:store(i,m) # token (component)
 					m = m + 1
 					i = i + 4
+					:raw("matchedcomp ")
 					:call(syntax_isExpression_nn)
 				} else {
 					f = 1
@@ -994,7 +1002,6 @@
 			:if(y){
 				:call(errorExpectedRPARENT)
 			}
-			:raw("MatchedCALL")
 			# Ending memory entry for call
 			x = 10 # call
 			:store(x,m)
@@ -1050,7 +1057,8 @@
 }
 :fun(syntax_isType){
 	:load(x,i)
-	y = x == 0
+	y = x == 0 # type token
+	f = 1
 	:if(y){
 		x = 1 # type
 		:store(x,m)
@@ -1060,7 +1068,68 @@
 		:store(x,m) # type id
 		m = m + 3 # skip one
 		i = i + 4
+		:load(x,i)
 		f = 0 # set match flag
+	} else {
+		y = x == 2 # ident token
+		:if(y){
+			x = 1 # type
+			:store(x,m)
+			m = m + 1
+			x = 6 # name type
+			:store(x,m) # type id
+			m = m + 1
+			:store(i,m) # basetype is the ident
+			m = m + 2 # skip one
+			i = i + 4
+			f = 0 # set match flag
+		}
+	}
+	y = f == 0
+	:while(y){
+		:load(x,i)
+		u = x == 36 # *
+		:if(u){
+			:raw("matchedptr ")
+			x = 1 # type
+			:store(x,m)
+			u = m - 4
+			m = m + 1
+			x = 5 # pointer type
+			:store(x,m) # type id
+			m = m + 1
+			:store(u,m) # basetype is last type
+			m = m + 2 # skip one
+			i = i + 4
+		} else {
+			u = x == 18 # [
+			z = i + 4
+			:load(x,z)
+			v = x == 3 # const
+			u = u & v
+			k = z
+			z = z + 4
+			:load(x,z)
+			v = x == 19 # ]
+			u = u & v
+			:if(u){
+				:raw("matchedarr ")
+				x = 1 # type
+				:store(x,m)
+				u = m - 4
+				m = m + 1
+				x = 4 # array type
+				:store(x,m) # type id
+				m = m + 1
+				:store(u,m) # basetype is last type
+				m = m + 1
+				:store(k,m) # length is the const token
+				m = m + 1
+				i = z + 4
+			} else {
+				y = 0
+			}
+		}
 	}
 }
 :fun(syntax_isDeclaration){
@@ -1338,6 +1407,7 @@
 		x = l # line number
 		:store(x,m)
 		m = m + 1 
+		i = i - 1
 		:if(d){
 			:raw("BOOL ")
 		}
@@ -1365,6 +1435,7 @@
 		x = l # line number
 		:store(x,m)
 		m = m + 1
+		i = i - 1
 		:if(d){
 			:raw("CHAR ")
 		}
@@ -1391,7 +1462,7 @@
 		:store(x,m)
 		m = m + 1
 		# i is too far
-		i = i - 1
+		i = i - 2
 		:if(d){
 			:raw("INT ")
 		}
@@ -1419,6 +1490,7 @@
 		x = l # line number
 		:store(x,m)
 		m = m + 1
+		i = i - 1
 		:if(d){
 			:raw("VOID ")
 		}
@@ -1465,6 +1537,7 @@
 		x = l
 		:store(x,m)
 		m = m + 1
+		i = i - 1
 		:if(d){
 			:raw("ELSE ")
 		}
@@ -1491,7 +1564,6 @@
 		x = l
 		:store(x,m)
 		m = m + 1
-		i = i + 1 # increment file (we loaded but didnt increment)
 		:if(d){
 			:raw("WHILE ")
 		}

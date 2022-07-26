@@ -1,9 +1,9 @@
 // To je komentar
 /* to je tudi komentar
 se vedno komentar */
-int a;
+int* a;
 int b = 4;
-void print(char a);
+abc[10] print(char[10] a);
 void c (int a, int b){
 	int c;
 	void d = 1 ^ 2 * 3;
