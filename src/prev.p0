@@ -11,6 +11,7 @@
 	g = m
 	:if(d){
 		:call(debug_printExpressions)
+		:call(debug_printTypes)
 	}
 	:exit(a)
 }
@@ -2804,6 +2805,130 @@
 		:raw(" ")
 		i = i + 4
 		c = i < e
+	}
+}
+:fun(debug_printType){
+	:load(u,x)
+	y = u =! 1
+	:if(y){
+		x = u
+		:call(putint)
+		x = -30
+		:call(errorPrintLine)
+	}
+	u = x + 1
+	:load(u,u)
+	y = u == 0 # int
+	:if(y){
+		:raw("int")
+	} else {
+		y = u == 1 # char
+		:if(y){
+			:raw("char")
+		} else {
+			y = u == 2 # bool
+			:if(y){
+				:raw("bool")
+			} else {
+				y = u == 3 # void
+				:if(y){
+					:raw("void")
+				} else {
+					y = u == 4 # array
+					:if(y){
+						:raw("arr(")
+						u = x + 3
+						:load(u,u) # load token addr
+						u = u + 2
+						:load(u,u) # load const value
+						v = x
+						x = u
+						:call(putint)
+						:raw(", ")
+						x = v
+						u = x + 2 # basetype
+						:load(x,u)
+						:call(debug_printType)
+						:raw(")")
+					} else {
+						y = u == 5
+						:if(y){
+							:raw("ptr(")
+							u = x + 2 # basetype
+							:load(x,u)
+							:call(debug_printType)
+							:raw(")")
+						} else {
+							y = u == 6
+							:if(y){
+								u = x + 2 # basetype
+								:load(u,u)
+								v = u + 2 # length
+								:load(v,v)
+								u = u + 1 # start
+								:load(u,u)
+								v = u + v
+								y = u < v
+								:while(y){
+									:load(x,u)
+									:putchar(x)
+									u = u + 1
+									y = u < v
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+:fun(debug_printTypes){
+	:raw("\nExpressions:\n")
+	i = e
+	c = i < g
+	:while(c){
+		:load(x,i)
+		y = x == 0 # declaration
+		:if(y){
+			:raw("DECL [ ")
+		}
+		u = x == 3 # function
+		:if(u){
+			v = i + 3
+			:load(v,v)
+			v = v =! 1 # end
+			u = u & v
+		}
+		:if(u){
+			:raw("FUN [ ")
+		}
+		y = y | u
+		u = x == 4 # parameter
+		:if(u){
+			:raw("PAR [ ")
+		}
+		y = y | u
+		:if(y){
+			z = i + 1
+			:load(x,z)
+			:call(debug_printType)
+			:raw(" ] ")
+		} else {
+			y = x == 2 # expression
+			z = i + 1
+			:load(x,z)
+			y = x == 30 # cast expression
+			:if(y){
+				:raw("CAST [ ")
+				z = i + 3
+				:load(x,z)
+				:call(debug_printType)
+				:raw(" ] ")
+			}
+		}
+		i = i + 4
+		c = i < g
 	}
 }
 :fun(debug_printExpressions){
