@@ -13,7 +13,165 @@
 		:call(debug_printExpressions)
 		:call(debug_printTypes)
 	}
+	:call(semantics)
 	:exit(a)
+}
+#
+# Phase 3 - Semantic analisys
+#
+:fun(semantics){
+	:if(d){
+		:raw("\nPhase 3 - Semantic analisys\n")
+	}
+	:call(semantics_nameResolver)
+}
+:fun(semantics_nameResolver){
+	i = e
+	y = i < g
+	t = 0
+	# First pass - global declarations
+	:while(y){
+		:load(x,i)
+		y = x == 3 # function
+		:if(y){
+			x = i + 2
+			:load(x,x)
+			p = x
+			:call(semantics_nameResolver_getDeclaration)
+			y = y =! -1
+			:if(y){
+				:raw("Name ")
+				x = p
+				:call(printIdent)
+				:raw(" already declared.")
+				x = 1
+				:exit(x)
+			}
+			:store(i,m)
+			m = m + 1
+			:store(t,m)
+			m = m + 1
+			y = 1
+			:while(y){
+				i = i + 4
+				:load(x,i)
+				y = x =! 3 # skip function bodies on first pass
+			}
+		} else {
+			y = x == 0 # declaration
+			:if(y){
+				x = i + 3
+				:load(x,x)
+				p = x
+				:call(semantics_nameResolver_getDeclaration)
+				y = y =! -1
+				:if(y){
+					:raw("Name ")
+					x = p
+					:call(printIdent)
+					:raw(" already declared.")
+					x = 1
+					:exit(x)
+				}
+				:store(i,m)
+				m = m + 1
+				:store(t,m)
+				m = m + 1
+			} else {
+				y = x == 12 # struct
+				:if(y){
+					x = i + 2
+					:load(x,x)
+					p = x
+					:call(semantics_nameResolver_getTypeDeclaration)
+					y = y =! -1
+					:if(y){
+						:raw("Type ")
+						x = p
+						:call(printIdent)
+						:raw(" already declared.")
+						x = 1
+						:exit(x)
+					}
+					:store(i,m)
+					m = m + 1
+					:store(t,m)
+					m = m + 1
+				}
+			}
+		}
+		i = i + 4
+		y = i < g
+	}
+}
+:fun(semantics_nameResolver_getDeclaration){
+	j = m - 2
+	r = -1
+	q = -1
+	y = j => g
+	z = x # save search ident
+	:while(y){
+		:load(u,j) # load declaration address
+		:load(v,u) # load declaration type
+		y = v == 0 # variable
+		:if(y){
+			v = u + 3
+			:load(y,v)
+			x = z
+			:call(identEquals)
+			:if(y){
+				r = u
+				q = j + 1
+				:load(q,q)
+			}
+		} else {
+			y = v == 3 # function
+			:if(y){
+				v = u + 2
+				:load(y,v)
+				x = z
+				:call(identEquals)
+				:if(y){
+					r = u
+					q = j + 1
+					:load(q,q)
+				}
+			}
+		}
+		j = j - 2
+		y = j => g
+		u = r == -1
+		y = y & u
+	}
+	y = r
+}
+:fun(semantics_nameResolver_getTypeDeclaration){
+	j = m - 2
+	r = -1
+	q = -1
+	y = j => g
+	z = x # save search ident
+	:while(y){
+		:load(u,j) # load declaration address
+		:load(v,u) # load declaration type
+		y = v == 12 # struct
+		:if(y){
+			v = u + 2
+			:load(y,v)
+			x = z
+			:call(identEquals)
+			:if(y){
+				r = u
+				q = j + 1
+				:load(q,q)
+			}
+		}
+		j = j - 2
+		y = j => g
+		u = r == -1
+		y = y & u
+	}
+	y = r
 }
 #
 # Phase 2 - Syntax analisys
@@ -1176,6 +1334,7 @@
 	y = f == 0 # match found
 	:load(x,i)
 	x = x == 2
+	l = i # save identifier location
 	y = y & x
 	:if(y){ # type ident
 		i = i + 4
@@ -1191,7 +1350,9 @@
 			m = m + 1
 			x = -1
 			:store(x,m)
-			m = m + 2 # skip one
+			m = m + 1
+			:store(l,m)
+			m = m + 1
 			f = 0 # set match flag
 			:if(d){
 				:raw("DECL ")
@@ -1220,7 +1381,9 @@
 					m = m + 1
 					x = m - 6 # last cell (4) and the 2 we just added
 					:store(x,m)
-					m = m + 2 # skip one
+					m = m + 1
+					:store(l,m)
+					m = m + 1
 					:if(d){
 						:raw("INIT ")
 					}
@@ -3153,18 +3316,10 @@
 			x = -44
 			:call(errorPrintLine)
 		}
-		v = u + 2
-		u = u + 1
-		:load(u,u) # start
-		:load(v,v) # length
-		v = u + v
-		y = u < v
-		:while(y){
-			:load(z,u)
-			:putchar(z)
-			u = u + 1
-			y = u < v
-		}
+		v = x
+		x = u
+		:call(printIdent)
+		x = v
 		:raw(")[ ")
 		u = 1
 		v = 0
@@ -3401,18 +3556,7 @@
 								x = -42
 								:call(errorPrintLine)
 							}
-							u = x + 1
-							:load(u,u) # start
-							v = x + 2
-							:load(v,v) # length
-							v = u + v
-							y = u < v
-							:while(y){
-								:load(x,u)
-								:putchar(x)
-								u = u + 1
-								y = u < v
-							}
+							:call(printIdent)
 						} else {
 							y = u == 23
 							:if(y){ # const
@@ -3453,18 +3597,7 @@
 										:raw(".")
 										:call(pop)
 										:load(x,s)
-										u = x + 1
-										:load(u,u) # start
-										v = x + 2
-										:load(v,v) # length
-										v = u + v
-										y = u < v
-										:while(y){
-											:load(x,u)
-											:putchar(x)
-											u = u + 1
-											y = u < v
-										}
+										:call(printIdent)
 										:raw(")")
 									}
 								}
@@ -3475,6 +3608,84 @@
 			}
 		}	
 	}
+}
+:fun(printIdent){
+	s = x
+	:call(push)
+	s = u
+	:call(push)
+	s = v
+	:call(push)
+	s = y
+	:call(push)
+	u = x + 1
+	:load(u,u) # start
+	v = x + 2
+	:load(v,v) # length
+	v = u + v
+	y = u < v
+	:while(y){
+		:load(x,u)
+		:putchar(x)
+		u = u + 1
+		y = u < v
+	}
+	:call(pop)
+	y = s
+	:call(pop)
+	v = s
+	:call(pop)
+	u = s
+	:call(pop)
+	x = s
+}
+# input: x,y
+# output: y
+:fun(identEquals){
+	s = t
+	:call(push)
+	s = u
+	:call(push)
+	s = v
+	:call(push)
+	s = z
+	:call(push)
+	u = x + 2 # ident1 length
+	:load(u,u)
+	v = y + 2 # ident2 length
+	:load(v,v)
+	z = u == v
+	:if(z){
+		x = x + 1 # ident1 start
+		:load(x,x)
+		y = y + 1 # ident2 start
+		:load(y,y)
+		t = 0 # counter
+		z = u # length
+		u = t < z
+		:while(u){
+			u = x + t
+			:load(u,u)
+			v = y + t
+			:load(v,v)
+			u = u == v
+			:if(u){
+				t = t + 1
+				u = t < z
+			}
+		}
+		y = t == z
+	} else {
+		y = 0
+	}
+	:call(pop)
+	z = s
+	:call(pop)
+	v = s
+	:call(pop)
+	u = s
+	:call(pop)
+	t = s
 }
 #
 # Errors
