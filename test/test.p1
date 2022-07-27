@@ -6,11 +6,12 @@ struct abc {
 	char b;
 };
 int* a;
-int b = 4;
-abc[10] print(char[10] a);
-void c (int a, int b){
+abc b = 4;
+abc[10] printf(char[10] a);
+void c (int a, int e){
 	int c;
 	void d = 1 ^ 2 * 3;
+	e;
 }
 int main(){
 	return 5;
@@ -18,16 +19,20 @@ int main(){
 	true;
 	*&'1';
 	'\n';
-	*&(int)a = 5;
+	*&(abc)a = 5;
 	if(a){
-		if(c) a;
+		int g;
+		g;
+		if(c) g;
 		else b;
 		"abc\n";
 	} else if(++b++ % 2 == 1){
 		"def\n";
 	}
-	printf("abc\n", 2*3, test());
-	while(abc)
-		b.f;
+	printf("abc\n", 2*3, main());
+	while(a){
+		int f;
+		f.f;
+	}
 	--a++[5];
 }

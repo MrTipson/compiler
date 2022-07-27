@@ -68,7 +68,7 @@ const    | 23
 Type\Offset | 0 | 1 | 2 | 3
 ----------- | - | - | - | -
 Declaration | 0 | type | expression (-1 if none) | ident
-Type | 1 | 0int, 1char, 2bool, 3void, 4arr, 5ptr, 6name | basetype | const token
+Type | 1 | 0int, 1char, 2bool, 3void, 4arr, 5ptr, 6name | basetype | const token (array only)
 Expression | 2 | id | expr1 | expr2
 Function | 3 | type | ident | 0start, 1end, 2startdecl
 Parameter | 4 | type | ident | -
@@ -82,3 +82,5 @@ Argument | 11 | expr | - | -
 Struct | 12 | 0start, 1end | ident | -
 
 > Note: Cast expression: type is expr2
+
+> Note: Idents get replaced by declaration pointers during name resolution (phase 3) (except in declarations themselves).

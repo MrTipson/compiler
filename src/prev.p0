@@ -43,9 +43,10 @@
 				:raw("Name ")
 				x = p
 				:call(printIdent)
-				:raw(" already declared.")
-				x = 1
-				:exit(x)
+				:raw(" already declared. ")
+				x = p + 3
+				:load(x,x)
+				:call(errorPrintLine)
 			}
 			:store(i,m)
 			m = m + 1
@@ -58,50 +59,344 @@
 				y = x =! 3 # skip function bodies on first pass
 			}
 		} else {
-			y = x == 0 # declaration
+			:call(semantics_nameResolver_handleDeclaration)
+		}
+		i = i + 4
+		y = i < g
+	}
+	:raw("FIRST PASS DONE \n")
+	i = e
+	y = i < g
+	t = 0
+	:while(y){
+		:load(x,i)
+		y = x == 3 # function
+		:if(y){
+			t = t + 1
+			s = m
+			:call(push)
+			i = i + 4
+			:load(x,i)
+			y = x =! 3 # function end
+			:while(y){
+				y = x == 0 # declaration
+				u = x == 12 # type declaration
+				y = y | u
+				u = x == 4 # parameter
+				y = y | u
+				:if(y){
+					:call(semantics_nameResolver_handleDeclaration)
+				} else {
+					y = x == 8 # if
+					u = x == 9 # while
+					y = y | u
+					:if(y){
+						:call(semantics_nameResolver_recursive)
+					} else {
+						:call(semantics_nameResolver_resolveNames)
+					}
+				}
+				i = i + 4
+				:load(x,i)
+				y = x =! 3 # function end
+			}
+			:call(pop)
+			m = s
+			t = t - 1
+		} else {
+			y = x == 1 # type
+			u = i + 1
+			:load(u,u)
+			u = u == 6 # name
+			y = y & u
 			:if(y){
-				x = i + 3
+				x = i + 2 # ident
+				:load(x,x)
+				p = x
+				:call(semantics_nameResolver_getTypeDeclaration)
+				y = r == -1
+				:if(y){
+					:raw("Undeclared type ")
+					x = p
+					:call(printIdent)
+					:raw(". ")
+					x = p + 3
+					:load(x,x)
+					:call(errorPrintLine)
+				}
+				x = i + 2
+				:store(r,x)
+			}
+		}
+		i = i + 4
+		y = i < g
+	}
+}
+:fun(semantics_nameResolver_resolveNames){
+	y = x == 2 # expression
+	u = i + 1
+	:load(u,u)
+	u = u == 22 # ident expression
+	y = y & u
+	:if(y){
+		x = i + 2 # ident
+		:load(x,x)
+		p = x
+		:call(semantics_nameResolver_getDeclaration)
+		y = r == -1
+		:if(y){
+			:raw("Undeclared name ")
+			x = p
+			:call(printIdent)
+			:raw(". ")
+			x = p + 3
+			:load(x,x)
+			:call(errorPrintLine)
+		}
+		x = i + 2
+		:store(r,x)
+	} else {
+		y = x == 1 # type
+		u = i + 1 # type id
+		:load(u,u)
+		u = u == 6 # named type
+		y = y & u
+		:if(y){
+			x = i + 2 # ident
+			:load(x,x)
+			p = x
+			:call(semantics_nameResolver_getTypeDeclaration)
+			y = r == -1
+			:if(y){
+				:raw("Undeclared type ")
+				x = p
+				:call(printIdent)
+				:raw(". ")
+				x = p + 3
+				:load(x,x)
+				:call(errorPrintLine)
+			}
+			x = i + 2
+			:store(r,x)
+		} else {
+			y = x == 10 # call
+			u = i + 1 # start/end
+			:load(u,u)
+			u = u == 0 # start
+			y = y & u
+			:if(y){
+				x = i + 2 # ident
+				:load(x,x)
+				p = x
+				:call(semantics_nameResolver_getDeclaration)
+				y = r == -1
+				:if(y){
+					:raw("Undeclared name ")
+					x = p
+					:call(printIdent)
+					:raw(". ")
+					x = p + 3
+					:load(x,x)
+					:call(errorPrintLine)
+				}
+				x = i + 2
+				:store(r,x)
+			}
+		}
+	}
+}
+:fun(semantics_nameResolver_recursive){
+	t = t + 1
+	s = m
+	:call(push)
+	y = x == 8 # if/else
+	:if(y){
+		y = i + 1
+		:load(y,y)
+		y = y == 0
+		i = i + 4
+		:load(x,i)
+		:if(y){ # if
+			y = x =! 8 # if/else
+			u = i + 1
+			:load(u,u)
+			u = u =! 1 # else
+			y = y | u
+			:while(y){
+				y = x == 0 # declaration
+				u = x == 12 # type declaration
+				y = y | u
+				:if(y){
+					:call(semantics_nameResolver_handleDeclaration)
+				} else {
+					y = x == 8 # if
+					u = x == 9 # while
+					y = y | u
+					:if(y){
+						:call(semantics_nameResolver_recursive)
+					} else {
+						:call(semantics_nameResolver_resolveNames)
+					}
+				}
+				i = i + 4
+				:load(x,i)
+				y = x =! 8 # if/else
+				u = i + 1
+				:load(u,u)
+				v = u == 0 # another start of if
+				y = y | v
+			}
+			y = u == 1 # else
+			:if(y){
+				i = i - 4 # move one cell back so the else starts a new recursive resolver
+			}
+		} else { # else 
+			y = x =! 8 # if/else
+			u = i + 1
+			:load(u,u)
+			u = u =! 2 # end
+			y = y | u
+			:while(y){
+				y = x == 0 # declaration
+				u = x == 12 # type declaration
+				y = y | u
+				:if(y){
+					:call(semantics_nameResolver_handleDeclaration)
+				} else {
+					y = x == 8 # if
+					u = x == 9 # while
+					y = y | u
+					:if(y){
+						:call(semantics_nameResolver_recursive)
+					} else {
+						:call(semantics_nameResolver_resolveNames)
+					}
+				}
+				i = i + 4
+				:load(x,i)
+				y = x =! 8 # if/else
+				u = i + 1
+				:load(u,u)
+				u = u =! 2 # end
+				y = y | u
+			}
+		}
+	} else { # while
+		i = i + 4
+		:load(x,i)
+		y = x =! 9 # while
+		u = i + 1
+		:load(u,u)
+		u = u =! 1 # end
+		y = y | u
+		:while(y){
+			y = x == 0 # declaration
+			u = x == 12 # type declaration
+			y = y | u
+			:if(y){
+				:call(semantics_nameResolver_handleDeclaration)
+			} else {
+				y = x == 8 # if
+				u = x == 9 # while
+				y = y | u
+				:if(y){
+					:call(semantics_nameResolver_recursive)
+				} else {
+					:call(semantics_nameResolver_resolveNames)
+				}
+			}
+			i = i + 4
+			:load(x,i)
+			y = x =! 9 # while
+			u = i + 1
+			:load(u,u)
+			u = u =! 1 # end
+			y = y | u
+		}
+	}
+	:call(pop)
+	m = s
+	t = t - 1
+}
+:fun(semantics_nameResolver_handleDeclaration){
+	y = x == 0 # declaration
+	:if(y){
+		x = i + 3
+		:load(x,x)
+		p = x
+		:call(semantics_nameResolver_getDeclaration)
+		y = y =! -1
+		q = q == t
+		y = y & q
+		:if(y){
+			:raw("Name ")
+			x = p
+			:call(printIdent)
+			:raw(" already declared. ")
+			x = p + 3
+			:load(x,x)
+			:call(errorPrintLine)
+		}
+		:store(i,m)
+		m = m + 1
+		:store(t,m)
+		m = m + 1
+	} else {
+		y = x == 12 # struct
+		:if(y){
+			x = i + 2
+			:load(x,x)
+			p = x
+			:call(semantics_nameResolver_getTypeDeclaration)
+			y = y =! -1
+			q = q == t
+			y = y & q
+			:if(y){
+				:raw("Type ")
+				x = p
+				:call(printIdent)
+				:raw(" already declared. ")
+				x = p + 3
+				:load(x,x)
+				:call(errorPrintLine)
+			}
+			:store(i,m)
+			m = m + 1
+			:store(t,m)
+			m = m + 1
+			i = i + 4
+			:load(x,i)
+			y = x =! 12
+			:while(y){
+				i = i + 4
+				:load(x,i)
+				y = x =! 12
+			}
+		} else {
+			y = x == 4 # parameter
+			:if(y){
+				x = i + 2
 				:load(x,x)
 				p = x
 				:call(semantics_nameResolver_getDeclaration)
 				y = y =! -1
+				q = q == t
+				y = y & q
 				:if(y){
-					:raw("Name ")
+					:raw("Parameter ")
 					x = p
 					:call(printIdent)
-					:raw(" already declared.")
-					x = 1
-					:exit(x)
+					:raw(" already declared. ")
+					x = p + 3
+					:load(x,x)
+					:call(errorPrintLine)
 				}
 				:store(i,m)
 				m = m + 1
 				:store(t,m)
 				m = m + 1
-			} else {
-				y = x == 12 # struct
-				:if(y){
-					x = i + 2
-					:load(x,x)
-					p = x
-					:call(semantics_nameResolver_getTypeDeclaration)
-					y = y =! -1
-					:if(y){
-						:raw("Type ")
-						x = p
-						:call(printIdent)
-						:raw(" already declared.")
-						x = 1
-						:exit(x)
-					}
-					:store(i,m)
-					m = m + 1
-					:store(t,m)
-					m = m + 1
-				}
 			}
 		}
-		i = i + 4
-		y = i < g
 	}
 }
 :fun(semantics_nameResolver_getDeclaration){
@@ -126,6 +421,8 @@
 			}
 		} else {
 			y = v == 3 # function
+			v = v == 4 # parameter
+			y = y | v
 			:if(y){
 				v = u + 2
 				:load(y,v)
@@ -212,7 +509,6 @@
 	x = x == 2 # ident
 	y = y & x
 	:if(y){
-		i = i + 4
 		x = 4 # parameter
 		:store(x,m)
 		x = m - 4 # type was written in last cell
@@ -221,6 +517,7 @@
 		m = m + 1
 		:store(i,m) # identifier is current token
 		m = m + 2 # skip one
+		i = i + 4
 		:if(d){
 			:raw("PAR ")
 		}
@@ -476,6 +773,8 @@
 				y = x == 16 # {
 				:if(y){
 					i = i + 4
+					:load(x,i)
+					y = x =! 17 # }
 					:while(y){
 						f = 1
 						:call(syntax_isStatement)
@@ -510,6 +809,8 @@
 					y = x == 16 # {
 					:if(y){
 						i = i + 4
+						:load(x,i)
+						y = x =! 17 # }
 						:while(y){
 							f = 1
 							:call(syntax_isStatement)
@@ -581,6 +882,8 @@
 			y = x == 16 # {
 			:if(y){
 				i = i + 4
+				:load(x,i)
+				y = x =! 17 # }
 				:while(y){
 					f = 1
 					:call(syntax_isStatement)
@@ -3650,6 +3953,19 @@
 	:call(push)
 	s = z
 	:call(push)
+	##
+	z = 0
+	:if(z){
+		z = x
+		:raw(" ( ")
+		:call(printIdent)
+		:raw(" ")
+		x = y
+		:call(printIdent)
+		:raw(" ) ")
+		x = z
+	}
+	##
 	u = x + 2 # ident1 length
 	:load(u,u)
 	v = y + 2 # ident2 length

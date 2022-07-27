@@ -7,5 +7,6 @@
 .text
 .align  2
 .global _start
+.global exit
 
 .include "src/stdlib.s"
