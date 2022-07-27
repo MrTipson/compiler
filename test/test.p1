@@ -3,7 +3,10 @@
 se vedno komentar */
 struct abc {
 	int[10] a;
-	char b;
+	abc1 b;
+};
+struct abc1 {
+	int[10] a;
 };
 int* a;
 abc b = 4;

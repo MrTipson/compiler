@@ -24,6 +24,114 @@
 		:raw("\nPhase 3 - Semantic analisys\n")
 	}
 	:call(semantics_nameResolver)
+	m = g # the memory pointer can be reset to the initial position
+	:call(semantics_typeResolver)
+}
+:fun(semantics_typeResolver){
+	:call(semantics_typeResolver_validateStructs)
+}
+:fun(semantics_typeResolver_recursiveType){
+	:load(u,x)
+	y = u =! 1 # type
+	:if(y){
+		x = -20
+		:call(errorPrintLine)
+	}
+	u = x + 1
+	:load(u,u)
+	y = u == 4 # array
+	:while(y){ # resolve type as long as its an array
+		x = x + 2
+		:load(x,x)
+		u = x + 1
+		:load(u,u)
+		y = u == 4 # array
+	}
+	y = u == 6 # nametype
+	:if(y){
+		u = x + 2 # basetype
+		:load(u,u) # should be address of struct declaration
+		j = g
+		y = j < m
+		:while(y){
+			:load(x,j)
+			y = x == u
+			:if(y){
+				:raw("Struct ")
+				x = x + 2 # ident
+				:load(x,x)
+				:call(printIdent)
+				:raw(" cannot be recursive (use pointers!). ")
+				x = x + 3 # line no.
+				:load(x,x)
+				:call(errorPrintLine)
+			}
+			j = j + 1
+			y = j < m
+		}
+		:store(u,m)
+		m = m + 1
+		y = 1
+		:while(y){
+			u = u + 4
+			:load(x,u)
+			y = x == 4 # parameter
+			:if(y){
+				x = u + 1 # parameter type
+				:load(x,x)
+				s = u
+				:call(push)
+				:call(semantics_typeResolver_recursiveType)
+				:call(pop)
+				u = s
+				y = 1
+			} else {
+				y = x =! 12 # end of struct
+			}
+		}
+	}
+}
+:fun(semantics_typeResolver_validateStructs){
+	i = e
+	y = i < g
+	:while(y){
+		:load(x,i)
+		y = x == 12 # struct
+		:if(y){
+			:store(i,m)
+			m = m + 1
+			f = 1 # parameter flag
+			:while(y){
+				i = i + 4
+				:load(x,i)
+				y = x == 4 # parameter (struct component)
+				:if(y){
+					f = 0
+					x = i + 1 # parameter type
+					:load(x,x)
+					:call(semantics_typeResolver_recursiveType)
+					y = 1
+				} else {
+					y = x =! 12 # end of struct
+				}
+			}
+			:if(f){
+				:raw("Struct ")
+				x = m - 1
+				:load(x,x)
+				x = x + 2 # ident
+				:load(x,x)
+				x = x + 3 # line no.
+				:call(printIdent)
+				:raw(" cannot be empty. ")
+				:load(x,x)
+				:call(errorPrintLine)
+			}
+			m = m - 1
+		}
+		i = i + 4
+		y = i < g
+	}
 }
 :fun(semantics_nameResolver){
 	i = e
