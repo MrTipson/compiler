@@ -475,11 +475,21 @@
 			i = i + 4
 			:load(x,i)
 			y = x =! 12
+			t = t + 1
+			s = m
+			:call(push)
 			:while(y){
 				i = i + 4
 				:load(x,i)
 				y = x =! 12
+				:if(y){
+					:call(semantics_nameResolver_handleDeclaration)
+					y = 1
+				}
 			}
+			t = t - 1
+			:call(pop)
+			m = s
 		} else {
 			y = x == 4 # parameter
 			:if(y){
