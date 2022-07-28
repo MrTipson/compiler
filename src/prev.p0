@@ -29,6 +29,121 @@
 }
 :fun(semantics_typeResolver){
 	:call(semantics_typeResolver_validateStructs)
+	i = e
+	y = i < g
+	:while(y){
+		:load(x,i)
+		:call(semantics_typeResolver_checkVoid)
+		y = x == 0 # declaration
+		:if(y){
+
+		} else {
+			y = x == 3 # function
+			:if(y){
+
+			} else {
+				y = x == 5 # return
+				:if(y){
+
+				} else {
+					y = x == 6 # expression statement
+					:if(y){
+
+					} else {
+						y = x == 7 # assignment
+						:if(y){
+
+						} else {
+							y = x == 8 # if
+							:if(y){
+
+							} else {
+								y = x == 9 # while
+								:if(y){
+
+								} else {
+									y = x == 10 # call
+									:if(y){
+
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		i = i + 4
+		y = i < g
+	}
+	y = u == 3 # void
+	:if(y){
+	}
+}
+:fun(semantics_typeResolver_resolveExpression){
+
+}
+# input: x,y
+:fun(semantics_typeResolver_assertTypeEquals){
+	:load(u,x)
+	:load(v,y)
+	u = u =! 1
+	v = v =! 1
+	u = u & v
+	:if(u){
+		:raw("[TypeEquals] Invalid input")
+	}
+	u = x + 1
+	:load(u,u)
+	v = y + 1
+	:load(v,v)
+	u = u == v
+	:if(u){ # are equal
+		u = v == 4 # array
+		:if(u){
+
+		} else {
+			u = v == 5 # ptr
+			:if(u){
+
+			} else {
+				u = v == 6 # name
+				:if(u){ # compare decls here
+
+				}
+			}
+		}
+	} else {
+		
+	}
+}
+:fun(semantics_typeResolver_checkVoid){
+	y = x == 0 # declaration
+	:if(y){
+		v = 3 # offset
+	}
+	u = x == 4 # parameter
+	:if(u){
+		v = 2 # offset
+	}
+	y = y | u
+	:if(y){
+		u = i + 1
+		:load(u,u) # load type address
+		u = u + 1 
+		:load(u,u) # load type
+		y = u == 3 # void
+		:if(y){
+			:raw("Variable or field ":)
+			x = i + v # ident
+			:load(x,x)
+			:call(printIdent)
+			:raw(" cannot be void. ")
+			x = x + 3 # line no.
+			:load(x,x)
+			:call(errorPrintLine)
+		}
+	}
 }
 :fun(semantics_typeResolver_recursiveType){
 	:load(u,x)

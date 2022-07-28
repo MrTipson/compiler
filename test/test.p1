@@ -13,7 +13,7 @@ abc b = 4;
 abc[10] printf(char[10] a);
 void c (int a, int e){
 	int c;
-	void d = 1 ^ 2 * 3;
+	int d = 1 ^ 2 * 3;
 	e;
 }
 int main(){
