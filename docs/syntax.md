@@ -84,4 +84,4 @@ Struct | 12 | 0start, 1end | ident | -
 
 > Note: Cast expression: type is expr2
 
-> Note: Idents get replaced by declaration pointers during name resolution (phase 3) (except in declarations themselves).
+> Note: Declaration address is added as expr2 to ident expressions during name resolution (phase 3).
