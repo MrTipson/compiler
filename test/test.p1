@@ -8,7 +8,7 @@ struct abc {
 struct abc1 {
 	int[10] a;
 };
-int* a;
+int* a = null;
 abc b = 4;
 abc[10] printf(char[10] a);
 void c (int a, int e){
@@ -35,7 +35,7 @@ int main(){
 	printf("abc\n", 2*3, main());
 	while(a){
 		int f;
-		f.f;
+		f.f->e;
 	}
 	--a++[5];
 }

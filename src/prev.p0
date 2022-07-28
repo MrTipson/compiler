@@ -1687,6 +1687,30 @@
 				} else {
 					f = 1
 				}
+			} else {
+				y = x == 46 # ->
+				:if(y){
+					i = i + 4
+					:load(x,i)
+					y = x == 2 # ident
+					:if(y){
+						u = m - 4 # last expression
+						x = 2 # expression
+						:store(x,m)
+						m = m + 1
+						x = 31 # comp acess (from pointer)
+						:store(x,m) # type
+						m = m + 1
+						:store(u,m) # base expression
+						m = m + 1
+						:store(i,m) # token (component)
+						m = m + 1
+						i = i + 4
+						:call(syntax_isExpression_nn)
+					} else {
+						f = 1
+					}
+				}
 			}
 		}
 	}
@@ -2475,51 +2499,54 @@
 											:if(f){
 												:call(tokenize_isSymbol_OR)
 												:if(f){
-													:call(tokenize_isSymbol_LPARENT)
+													:call(tokenize_isSymbol_ARROW)
 													:if(f){
-														:call(tokenize_isSymbol_RPARENT)
+														:call(tokenize_isSymbol_LPARENT)
 														:if(f){
-															:call(tokenize_isSymbol_LCURLY)
+															:call(tokenize_isSymbol_RPARENT)
 															:if(f){
-																:call(tokenize_isSymbol_RCURLY)
+																:call(tokenize_isSymbol_LCURLY)
 																:if(f){
-																	:call(tokenize_isSymbol_LBRACK)
+																	:call(tokenize_isSymbol_RCURLY)
 																	:if(f){
-																		:call(tokenize_isSymbol_RBRACK)
+																		:call(tokenize_isSymbol_LBRACK)
 																		:if(f){
-																			:call(tokenize_isSymbol_PERIOD)
+																			:call(tokenize_isSymbol_RBRACK)
 																			:if(f){
-																				:call(tokenize_isSymbol_COMMA)
+																				:call(tokenize_isSymbol_PERIOD)
 																				:if(f){
-																					:call(tokenize_isSymbol_SEMICOLON)
+																					:call(tokenize_isSymbol_COMMA)
 																					:if(f){
-																						:call(tokenize_isSymbol_COLON)
+																						:call(tokenize_isSymbol_SEMICOLON)
 																						:if(f){
-																							:call(tokenize_isSymbol_EXCL)
+																							:call(tokenize_isSymbol_COLON)
 																							:if(f){
-																								:call(tokenize_isSymbol_ASSIGN)
+																								:call(tokenize_isSymbol_EXCL)
 																								:if(f){
-																									:call(tokenize_isSymbol_BITAND)
+																									:call(tokenize_isSymbol_ASSIGN)
 																									:if(f){
-																										:call(tokenize_isSymbol_BITOR)
+																										:call(tokenize_isSymbol_BITAND)
 																										:if(f){
-																											:call(tokenize_isSymbol_LT)
+																											:call(tokenize_isSymbol_BITOR)
 																											:if(f){
-																												:call(tokenize_isSymbol_GT)
+																												:call(tokenize_isSymbol_LT)
 																												:if(f){
-																													:call(tokenize_isSymbol_MUL)
+																													:call(tokenize_isSymbol_GT)
 																													:if(f){
-																														:call(tokenize_isSymbol_DIV)
+																														:call(tokenize_isSymbol_MUL)
 																														:if(f){
-																															:call(tokenize_isSymbol_MOD)
+																															:call(tokenize_isSymbol_DIV)
 																															:if(f){
-																																:call(tokenize_isSymbol_ADD)
+																																:call(tokenize_isSymbol_MOD)
 																																:if(f){
-																																	:call(tokenize_isSymbol_SUB)
+																																	:call(tokenize_isSymbol_ADD)
 																																	:if(f){
-																																		:call(tokenize_isSymbol_BITXOR)
+																																		:call(tokenize_isSymbol_SUB)
 																																		:if(f){
-																																			:call(tokenize_isSymbol_BITNOT)
+																																			:call(tokenize_isSymbol_BITXOR)
+																																			:if(f){
+																																				:call(tokenize_isSymbol_BITNOT)
+																																			}
 																																		}
 																																	}
 																																}
@@ -2804,6 +2831,26 @@
 		m = m + 1
 		:if(d){
 			:raw("OR ")
+		}
+	}
+}
+:fun(tokenize_isSymbol_ARROW){
+	y = x == 45 # -
+	z = i + 1
+	:load(z,z)
+	z = z == 62 # >
+	y = y & z
+	:if(y){
+		i = i + 2
+		f = 0 # set match flag
+		x = 46 # type 46
+		:store(x,m)
+		m = m + 3 # skip 2 optional fields
+		x = l # line number
+		:store(x,m)
+		m = m + 1
+		:if(d){
+			:raw("ARROW ")
 		}
 	}
 }
@@ -3188,6 +3235,9 @@
 				:call(tokenize_isConstant_int)
 				:if(f){
 					:call(tokenize_isConstant_string)
+					:if(f){
+						:call(tokenize_isConstant_null)
+					}
 				}
 			}
 		}
@@ -3229,6 +3279,45 @@
 		m = m + 1
 		:if(d){
 			:raw("CBOOL(1) ")
+		}
+	}
+}
+:fun(tokenize_isConstant_null){
+	:load(p,i)
+	z = i + 1
+	:load(q,z)
+	z = z + 1
+	:load(r,z)
+	z = z + 1
+	:load(s,z)
+	z = z + 1
+	:load(x,z)
+	:call(tokenize_isKeyword_helper)
+	z = p == 110 # n
+	y = y & z
+	z = q == 117 # u
+	y = y & z
+	z = r == 108 # l
+	y = y & z
+	z = s == 108 # l
+	y = y & z
+	:if(y){
+		i = i + 4
+		f = 0 # set flag
+		x = 3 # type 3
+		:store(x,m)
+		m = m + 1
+		x = 4 # id 4 (constant(voidptr))
+		:store(x,m)
+		m = m + 1
+		x = 0
+		:store(x,m)
+		m = m + 1
+		x = l # line number
+		:store(x,m)
+		m = m + 1
+		:if(d){
+			:raw("NULL ")
 		}
 	}
 }
@@ -4135,6 +4224,21 @@
 										:load(x,s)
 										:call(printIdent)
 										:raw(")")
+									} else {
+										y = u == 31 # pointer component
+										:if(y){
+											:raw("(")
+											x = x + 2 # expr1
+											s = x + 1 # expr2
+											:call(push)
+											:load(x,x)
+											:call(debug_printExpression)
+											:raw("->")
+											:call(pop)
+											:load(x,s)
+											:call(printIdent)
+											:raw(")")
+										}
 									}
 								}
 							}

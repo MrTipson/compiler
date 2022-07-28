@@ -36,6 +36,7 @@ Postf ++ | 0
 Postf -- | 1
 Postf arr| 24
 Post comp| 25
+Post ptr comp | 31
 Pref  ++ | 2
 Pref  -- | 3
 Pref  +  | 4
