@@ -8,17 +8,17 @@ struct abc {
 struct abc1 {
 	int[10] a;
 };
-int* a = null;
-abc b = 4;
+int* a = (int*) null;
+abc b;
 abc[10] printf(char[10] a);
 void c (int a, int e){
 	int c;
-	int d = 1 ^ 2 * 3;
+	int d = 3;
 	e;
 }
 int main(){
 	return 5;
-	~false++/5;
+	~1++/5;
 	true;
 	*&'1';
 	'\n';
@@ -35,7 +35,7 @@ int main(){
 	printf("abc\n", 2*3, main());
 	while(a){
 		int f;
-		f.f->e;
+		b.b->a;
 	}
 	--a++[5];
 }

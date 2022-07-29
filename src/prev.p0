@@ -46,7 +46,18 @@
 				:load(x,x)
 				y = x == 4 # array
 				:if(y){
-					:raw("Cannot initialize array type ")
+					:raw("Cannot initialize array ")
+					x = i + 3 # ident
+					:load(x,x)
+					:call(printIdent)
+					:raw(". ")
+					x = x + 3 # line no.
+					:load(x,x)
+					:call(errorPrintLine)
+				}
+				y = x == 6 # struct
+				:if(y){
+					:raw("Cannot initialize struct ")
 					x = i + 3 # ident
 					:load(x,x)
 					:call(printIdent)
@@ -61,12 +72,12 @@
 				:call(semantics_typeResolver_resolveExpression)
 				:call(pop)
 				x = s
-				:call(pop)
-				y = s
+				y = m - 1
+				:load(y,y)
 				:call(semantics_typeResolver_equals)
 				y = y == 0
 				:if(y){
-					:raw("Types must be equal when initializing. ")
+					:raw("Types must be equal. ")
 					x = l
 					:call(errorPrintLine)
 				}
@@ -87,7 +98,11 @@
 				} else {
 					y = x == 6 # expression statement
 					:if(y){
-
+						x = i + 1
+						:load(x,x)
+						:call(putint)
+						:raw(" ")
+						:call(semantics_typeResolver_resolveExpression)
 					} else {
 						y = x == 7 # assignment
 						:if(y){
@@ -124,8 +139,8 @@
 	m = m + 1
 	:store(x,m) # type id
 	m = m - 1
-	x = 2
-	:store(x,m) # memory cell type (2)
+	x = 1 # type
+	:store(x,m) # memory cell type (1)
 	m = m + 2
 	:store(y,m) # basetype
 	m = m + 2 # skip one
@@ -232,7 +247,7 @@
 	u = s
 }
 :fun(semantics_typeResolver_resolveExpression_extra_outer){
-	:if(y){
+	:if(y){ # *,/,%,&,|,^
 		u = x + 2
 		v = x + 3
 		:load(x,u)
@@ -391,6 +406,12 @@
 						x = l
 						:call(errorPrintLine)
 					}
+					x = 2
+					y = 0
+					:call(semantics_typeResolver_createType)
+					x = m - 4
+					:store(x,m)
+					m = m + 1
 				} else {
 					y = u == 20 # &&
 					v = u == 21 # ||
@@ -436,7 +457,6 @@
 							:store(u,m)
 							m = m + 1
 						} else {
-							y = u == 23 # const
 							:call(semantics_typeResolver_resolveExpression_extra)
 						}
 					}
@@ -446,12 +466,14 @@
 	}
 }
 :fun(semantics_typeResolver_resolveExpression_extra){
+	y = u == 23 # const
 	:if(y){
 		u = x + 2 # const token
 		:load(u,u)
 		v = u + 3 # line no.
 		:load(l,v) # keep current line updated
 		v = u + 1
+		:load(v,v)
 		y = v == 0 # int
 		x = v == 1 # char
 		y = y | x
@@ -575,13 +597,13 @@
 					:call(errorPrintLine)
 				}
 			} else {
-				y = u == 28 # prefix & (pointer)
 				:call(semantics_typeResolver_resolveExpression_extra_inner)
 			}
 		}
 	}
 }
 :fun(semantics_typeResolver_resolveExpression_extra_inner){
+	y = u == 28 # prefix & (pointer)
 	:if(y){
 		u = x + 2
 		:load(x,u)
@@ -714,6 +736,7 @@
 }
 # input: x,y
 :fun(semantics_typeResolver_equals){
+	:call(break)
 	s = u
 	:call(push)
 	s = v
@@ -738,15 +761,42 @@
 	:if(u){ # are equal
 		u = v == 4 # array
 		:if(u){
-
+			u = x + 3 # load length token
+			:load(u,u)
+			u = u + 2 # value
+			:load(u,u)
+			v = y + 3 # load length token
+			:load(v,v)
+			v = v + 2 # value
+			:load(v,v)
+			u = u =! v
+			:if(u){
+				y = 0
+			} else {
+				x = x + 2 # basetype
+				:load(x,x)
+				y = y + 2 # basetype
+				:load(y,y)
+				:call(semantics_typeResolver_equals)
+			}
 		} else {
 			u = v == 5 # ptr
 			:if(u){
-
+				x = x + 2 # basetype
+				:load(x,x)
+				y = y + 2 # basetype
+				:load(y,y)
+				:call(semantics_typeResolver_equals)
 			} else {
 				u = v == 6 # name
 				:if(u){ # compare decls here
-
+					x = x + 2 # basetype
+					:load(x,x)
+					y = y + 2 # basetype
+					:load(y,y)
+					y = x == y
+				} else {
+					y = 1
 				}
 			}
 		}
@@ -4284,6 +4334,9 @@
 #
 # Utility functions
 #
+# breakpoint
+:fun(break){
+}
 :fun(push){
 	:store(s,a)
 	a = a - 1
