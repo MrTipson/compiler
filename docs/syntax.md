@@ -78,7 +78,7 @@ Expression statement | 6 | expr | - | -
 Assignment | 7 | 0=, 1+=, 2-=, 3/=,4*= | expr1 | expr2
 If/Else | 8 | 0if, 1else, 2end | expr(if) | -
 While | 9 | 0start, 1end | expr(start only) | -
-Call | 10 | 0start, 1end | ident(start only) | -
+Call | 10 | 0start, 1end | ident(start only) | start(end only)
 Argument | 11 | expr | - | -
 Struct | 12 | 0start, 1end | ident | -
 

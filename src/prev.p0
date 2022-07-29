@@ -100,8 +100,6 @@
 					:if(y){
 						x = i + 1
 						:load(x,x)
-						:call(putint)
-						:raw(" ")
 						:call(semantics_typeResolver_resolveExpression)
 					} else {
 						y = x == 7 # assignment
@@ -156,41 +154,22 @@
 	:call(push)
 	:load(u,x)
 	y = u =! 2 # expression
+	v = u =! 10 # call
+	y = y & v
 	:if(y){
 		:raw("[ResolveExpression] Invalid input. ")
 		x = l
 		:call(errorPrintLine)
 	}
-	u = x + 1
-	:load(u,u)
-	y = u => 0
-	v = u =< 3
-	y = y & v # postincrement, postdecrement, preincrement, predecrement
-	:if(y){
-		u = x + 2
-		:load(x,u)
-		:call(semantics_typeResolver_resolveExpression)
-		u = m - 1
-		:load(x,u) # load address of type
-		x = x + 1
-		:load(x,x) # load type type
-		y = x =! 0 # int
-		u = x =! 1 # char
-		y = y & u
-		u = x =! 5 # ptr
-		y = y & u
-		:if(y){
-			:raw("Increment operator must have expression of type int, char or pointer. ")
-			x = l
-			:call(errorPrintLine)
-		}
-		# operator doesnt change the type
+	v = u == 10 # call
+	:if(v){
+		:call(semantics_typeResolver_resolveCall)
 	} else {
-		y = u == 4 # prefix +
-		v = u == 5 # prefix -
-		y = y | v
-		v = u == 27 # prefix ~ (bitwise negation)
-		y = y | v
+		u = x + 1
+		:load(u,u)
+		y = u => 0
+		v = u =< 3
+		y = y & v # postincrement, postdecrement, preincrement, predecrement
 		:if(y){
 			u = x + 2
 			:load(x,u)
@@ -200,14 +179,22 @@
 			x = x + 1
 			:load(x,x) # load type type
 			y = x =! 0 # int
+			u = x =! 1 # char
+			y = y & u
+			u = x =! 5 # ptr
+			y = y & u
 			:if(y){
-				:raw("Prefix operator +,- or ~ must have expression of type int. ")
+				:raw("Increment operator must have expression of type int, char or pointer. ")
 				x = l
 				:call(errorPrintLine)
 			}
 			# operator doesnt change the type
 		} else {
-			y = u == 6 # boolean negate
+			y = u == 4 # prefix +
+			v = u == 5 # prefix -
+			y = y | v
+			v = u == 27 # prefix ~ (bitwise negation)
+			y = y | v
 			:if(y){
 				u = x + 2
 				:load(x,u)
@@ -216,24 +203,42 @@
 				:load(x,u) # load address of type
 				x = x + 1
 				:load(x,x) # load type type
-				y = x =! 2 # bool
+				y = x =! 0 # int
 				:if(y){
-					:raw("Prefix operator ! must have expression of type bool. ")
+					:raw("Prefix operator +,- or ~ must have expression of type int. ")
 					x = l
 					:call(errorPrintLine)
 				}
 				# operator doesnt change the type
 			} else {
-				y = u => 7
-				v = u =< 9
-				y = y & v # *,/,%
-				v = u == 18 # &
-				y = y | v
-				v = u == 19 # |
-				y = y | v
-				v = u == 26 # ^
-				y = y | v
-				:call(semantics_typeResolver_resolveExpression_extra_outer)
+				y = u == 6 # boolean negate
+				:if(y){
+					u = x + 2
+					:load(x,u)
+					:call(semantics_typeResolver_resolveExpression)
+					u = m - 1
+					:load(x,u) # load address of type
+					x = x + 1
+					:load(x,x) # load type type
+					y = x =! 2 # bool
+					:if(y){
+						:raw("Prefix operator ! must have expression of type bool. ")
+						x = l
+						:call(errorPrintLine)
+					}
+					# operator doesnt change the type
+				} else {
+					y = u => 7
+					v = u =< 9
+					y = y & v # *,/,%
+					v = u == 18 # &
+					y = y | v
+					v = u == 19 # |
+					y = y | v
+					v = u == 26 # ^
+					y = y | v
+					:call(semantics_typeResolver_resolveExpression_extra_outer)
+				}
 			}
 		}
 	}
@@ -245,6 +250,95 @@
 	v = s
 	:call(pop)
 	u = s
+}
+:fun(semantics_typeResolver_resolveCall){
+	# x,y,v,u are already saved
+	s = k
+	:call(push)
+	s = p
+	:call(push)
+	# x has call address (end)
+	x = x + 3
+	:load(x,x)
+	k = x + 2 # function pointer
+	:load(k,k)
+	u = x # call iterator
+	v = k # function iterator
+	c = 1
+	y = 1
+	:while(y){
+		y = 1
+		:while(y){
+			u = u + 4
+			:load(x,u)
+			:call(break)
+			p = x == 10 # call
+			:if(p){
+				p = u + 1
+				:load(p,p)
+				p = p == 1
+				:if(p){ # end
+					c = c - 1
+				} else { #start
+					c = c + 1
+				}
+			}
+			y = c => 1
+			p = x =! 11 # argument
+			y = y & p
+		}
+		y = 1
+		:while(y){ # skip all non parameter/function end block
+			v = v + 4
+			:load(s,v)
+			y = s =! 3 # function
+			p = s =! 4 # parameter
+			y = y & p
+		}
+		y = x == 10 
+		:if(y){ # call end
+			y = s =! 3 
+			:if(y){ # parameter
+				:raw("Parameter count must match in function calls. ")
+				x = l
+				:call(errorPrintLine)
+			} else { # function end
+				y = 0 # no more parameters/arguments
+			}
+		} else { # argument
+			y = s == 4
+			:if(y){ # parameter
+				x = u + 1
+				:load(x,x)
+				:call(semantics_typeResolver_resolveExpression)
+				x = m - 1 # argument type
+				:load(x,x)
+				y = v + 1 # parameter type
+				:load(y,y)
+				:call(semantics_typeResolver_equals)
+				y = y == 0
+				:if(y){
+					:raw("Parameter type must match in function calls. ")
+					x = l
+					:call(errorPrintLine)
+				}
+				y = 1
+			} else { # function end
+				:raw("Parameter count must match in function calls. ")
+				x = l
+				:call(errorPrintLine)
+			}
+		}
+	}
+	k = k + 1
+	:load(k,k)
+	:store(k,m)
+	m = m + 1
+	:call(pop)
+	p = s
+	:call(pop)
+	k = s
+	# x,y,v,u will get restored
 }
 :fun(semantics_typeResolver_resolveExpression_extra_outer){
 	:if(y){ # *,/,%,&,|,^
@@ -725,7 +819,7 @@
 							:call(errorPrintLine)
 						}
 					} else {
-						:raw("Base expression must be type struct. ")
+						:raw("Base expression must be type struct pointer. ")
 						x = l
 						:call(errorPrintLine)
 					}		
@@ -736,7 +830,6 @@
 }
 # input: x,y
 :fun(semantics_typeResolver_equals){
-	:call(break)
 	s = u
 	:call(push)
 	s = v
@@ -2448,6 +2541,8 @@
 		y = x == 14 # (
 		:if(y){ # function call
 			# Starting memory entry for call
+			s = m
+			:call(push)
 			x = 10 # call
 			:store(x,m)
 			m = m + 1
@@ -2490,7 +2585,10 @@
 			m = m + 1
 			x = 1 # end
 			:store(x,m)
-			m = m + 3 # skip two
+			m = m + 2 # skip one
+			:call(pop)
+			:store(s,m)
+			m = m + 1
 		} else { # ident
 			x = 2 # expression
 			:store(x,m)

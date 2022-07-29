@@ -3,14 +3,14 @@
 se vedno komentar */
 struct abc {
 	int[10] a;
-	abc1 b;
+	abc1* b;
 };
 struct abc1 {
 	int[10] a;
 };
 int* a = (int*) null;
 abc b;
-abc[10] printf(char[10] a);
+abc[10] printf(char* a);
 void c (int a, int e){
 	int c;
 	int d = 3;
@@ -32,10 +32,11 @@ int main(){
 	} else if(++b++ % 2 == 1){
 		"def\n";
 	}
-	printf("abc\n", 2*3, main());
+	printf("abc\n");
+	int a = main();
 	while(a){
 		int f;
 		b.b->a;
 	}
-	--a++[5];
+	printf("abc")[5].a[0]++;
 }
