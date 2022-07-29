@@ -40,6 +40,10 @@
 			:load(x,x)
 			y = x =! -1 # initialization
 			:if(y){
+				s = i + 3 # ident
+				:load(s,s)
+				s = s + 3 # line no
+				:load(l,s)
 				x = i + 1 # type
 				:load(s,x)
 				x = s + 1
@@ -86,6 +90,7 @@
 			y = x == 3 # function
 			:if(y){
 				x = i + 3 # start/end/decl
+				:load(x,x)
 				y = x == 0
 				:if(y){
 					x = i + 1
@@ -94,7 +99,29 @@
 			} else {
 				y = x == 5 # return
 				:if(y){
-
+					x = i + 1
+					:load(x,x)
+					y = x == -1
+					:if(y){
+						x = 3
+						y = 0
+						:call(semantics_typeResolver_createType)
+						x = f
+						y = m - 4
+						:call(semantics_typeResolver_equals)
+					} else {
+						:call(semantics_typeResolver_resolveExpression)
+						y = m - 1
+						:load(y,y)
+						x = f
+						:call(semantics_typeResolver_equals)
+					}
+					y = y == 0
+					:if(y){
+						:raw("Expression in return must match with function type. ")
+						x = l
+						:call(errorPrintLine)
+					}
 				} else {
 					y = x == 6 # expression statement
 					:if(y){
@@ -104,19 +131,54 @@
 					} else {
 						y = x == 7 # assignment
 						:if(y){
-
+							:call(semantics_typeResolver_assignments)
 						} else {
 							y = x == 8 # if
 							:if(y){
-
+								x = i + 1
+								:load(x,x)
+								y = x == 0 # if
+								:if(y){
+									x = i + 2
+									:load(x,x)
+									:call(semantics_typeResolver_resolveExpression)
+									u = m - 1
+									x = 2
+									y = 0
+									:call(semantics_typeResolver_createType)
+									x = m - 4
+									:load(y,u)
+									:call(semantics_typeResolver_equals)
+									y = y == 0
+									:if(y){
+										:raw("Expression in if must be a boolean. ")
+										x = l
+										:call(errorPrintLine)
+									}
+								}
 							} else {
 								y = x == 9 # while
 								:if(y){
-
-								} else {
-									y = x == 10 # call
+									x = i + 1
+									:load(x,x)
+									y = x == 0 # start
 									:if(y){
-
+										x = i + 2
+										:load(x,x)
+										:call(semantics_typeResolver_resolveExpression)
+										u = m - 1
+										x = 2
+										y = 0
+										:call(semantics_typeResolver_createType)
+										x = m - 4
+										:load(y,u)
+										:call(semantics_typeResolver_equals)
+										y = y == 0
+										:if(y){
+											:raw("Expression in while must be a boolean. ")
+											x = l
+											:call(errorPrintLine)
+										}
 									}
 								}
 							}
@@ -262,6 +324,16 @@
 	:load(x,x)
 	k = x + 2 # function pointer
 	:load(k,k)
+	:load(u,k)
+	y = u =! 3
+	:if(y){
+		u = k + 3
+		:load(x,u)
+		:call(printIdent)
+		:raw(" is not a function. ")
+		x = l
+		:call(errorPrintLine)
+	}
 	u = x # call iterator
 	v = k # function iterator
 	c = 1
@@ -468,93 +540,106 @@
 				:store(x,m)
 				m = m + 1
 			} else {
-				y = u == 16 # ==
-				v = u == 17 # !=
-				y = y | v
+				:call(semantics_typeResolver_resolveExpression_outofideas)
+			}
+		}
+	}
+}
+:fun(semantics_typeResolver_resolveExpression_outofideas){
+	y = u == 16 # ==
+	v = u == 17 # !=
+	y = y | v
+	:if(y){
+		u = x + 2
+		v = x + 3
+		:load(x,u)
+		:call(semantics_typeResolver_resolveExpression)
+		s = m - 1
+		:call(push)
+		:load(x,v)
+		:call(semantics_typeResolver_resolveExpression)
+		u = m - 1
+		:load(x,u) # load address of type2
+		x = x + 1
+		:load(x,x) # load type2 type
+		:call(pop)
+		:load(y,s) # load address of type
+		y = y + 1
+		:load(y,y) # load type1 type
+		x = x =! y # same type
+		u = y == 4 # array
+		x = x | u
+		u = y == 3 # void
+		x = x | u
+		u = y == 6 # struct
+		x = x | u
+		:if(y){
+			:raw("Operators ==,!= must have 2 expressions of same type (int, bool, char, pointer). ")
+			x = l
+			:call(errorPrintLine)
+		}
+		x = 2
+		y = 0
+		:call(semantics_typeResolver_createType)
+		x = m - 4
+		:store(x,m)
+		m = m + 1
+	} else {
+		y = u == 20 # &&
+		v = u == 21 # ||
+		y = y | v
+		:if(y){
+			u = x + 2
+			v = x + 3
+			:load(x,u)
+			:call(semantics_typeResolver_resolveExpression)
+			s = m - 1
+			:call(push)
+			:load(x,v)
+			:call(semantics_typeResolver_resolveExpression)
+			u = m - 1
+			:load(x,u) # load address of type2
+			x = x + 1
+			:load(x,x) # load type2 type
+			:call(pop)
+			:load(y,s) # load address of type
+			y = y + 1
+			:load(y,y) # load type1 type
+			x = x =! y # same type
+			y = y =! 2 # bool
+			y = y | x
+			:if(y){
+				:raw("Operators &&,|| must have 2 expressions of type bool. ")
+				x = l
+				:call(errorPrintLine)
+			}
+			# type doesnt change
+		} else {
+			y = u == 22 # ident
+			:if(y){
+				u = x + 2 # ident token
+				:load(u,u)
+				u = u + 3 # line no.
+				:load(u,u)
+				l = u # keep l updated for error messages
+				u = x + 3 # declaration location
+				:load(u,u)
+				:load(y,u)
+				y = y == 3 # function
 				:if(y){
-					u = x + 2
-					v = x + 3
-					:load(x,u)
-					:call(semantics_typeResolver_resolveExpression)
-					s = m - 1
-					:call(push)
-					:load(x,v)
-					:call(semantics_typeResolver_resolveExpression)
-					u = m - 1
-					:load(x,u) # load address of type2
-					x = x + 1
-					:load(x,x) # load type2 type
-					:call(pop)
-					:load(y,s) # load address of type
-					y = y + 1
-					:load(y,y) # load type1 type
-					x = x =! y # same type
-					u = y == 4 # array
-					x = x | u
-					u = y == 3 # void
-					x = x | u
-					u = y == 6 # struct
-					x = x | u
-					:if(y){
-						:raw("Operators ==,!= must have 2 expressions of same type (int, bool, char, pointer). ")
-						x = l
-						:call(errorPrintLine)
-					}
-					x = 2
-					y = 0
-					:call(semantics_typeResolver_createType)
-					x = m - 4
-					:store(x,m)
-					m = m + 1
-				} else {
-					y = u == 20 # &&
-					v = u == 21 # ||
-					y = y | v
-					:if(y){
-						u = x + 2
-						v = x + 3
-						:load(x,u)
-						:call(semantics_typeResolver_resolveExpression)
-						s = m - 1
-						:call(push)
-						:load(x,v)
-						:call(semantics_typeResolver_resolveExpression)
-						u = m - 1
-						:load(x,u) # load address of type2
-						x = x + 1
-						:load(x,x) # load type2 type
-						:call(pop)
-						:load(y,s) # load address of type
-						y = y + 1
-						:load(y,y) # load type1 type
-						x = x =! y # same type
-						y = y =! 2 # bool
-						y = y | x
-						:if(y){
-							:raw("Operators &&,|| must have 2 expressions of type bool. ")
-							x = l
-							:call(errorPrintLine)
-						}
-						# type doesnt change
-					} else {
-						y = u == 22 # ident
-						:if(y){
-							u = x + 2 # ident token
-							:load(u,u)
-							u = u + 3 # line no.
-							:load(u,u)
-							l = u # keep l updated for error messages
-							u = x + 3 # declaration location
-							:load(u,u)
-							u = u + 1 # type
-							:load(u,u)
-							:store(u,m)
-							m = m + 1
-						} else {
-							:call(semantics_typeResolver_resolveExpression_extra)
-						}
-					}
+					x = x + 2
+					:load(x,x)
+					:call(printIdent)
+					:raw(" is a function, not a variable. ")
+					x = l
+					:call(errorPrintLine)
 				}
+				u = u + 1 # type
+				:load(u,u)
+				:store(u,m)
+				m = m + 1
+			} else {
+				:call(semantics_typeResolver_resolveExpression_extra)
 			}
 		}
 	}
@@ -824,6 +909,94 @@
 						:call(errorPrintLine)
 					}		
 				}
+			}
+		}
+	}
+}
+:fun(semantics_typeResolver_assignments){
+	x = i + 2 # expr1
+	:load(x,x)
+	:call(semantics_typeResolver_resolveExpression)
+	s = m - 1
+	:load(s,s)
+	:call(push)
+	x = i + 3 # expr2
+	:load(x,x)
+	:call(semantics_typeResolver_resolveExpression)
+	x = i + 1 # type of assignment
+	:load(x,x)
+	y = x == 0 # =
+	:if(y){
+		:call(pop)
+		x = s
+		y = m - 1
+		:load(y,y)
+		:call(semantics_typeResolver_equals)
+		y = y == 0
+		:if(y){
+			:raw("[ = ] Expressions in assignment need to have equal types. ")
+			x = l
+			:call(errorPrintLine)
+		}
+	} else {
+		y = x == 1
+		x = x == 2
+		y = y | x # +=,-=
+		:if(y){
+			:call(pop)
+			x = s + 1
+			:load(x,x)
+			y = x == 0 # int
+			:if(y){
+				y = m - 1
+				:load(y,y)
+				y = y + 1
+				:load(x,y)
+				y = x =! 0 # int
+				x = x =! 1 # char
+				y = y & x
+				:if(y){
+					:raw("[ +=,-= ] Right side must be int or char. ")
+					x = l
+					:call(errorPrintLine)
+				}
+			} else {
+				y = x == 1 # char
+				x = x == 5 # pointer
+				y = y | x
+				:if(y){
+					y = m - 1
+					:load(y,y)
+					y = y + 1
+					:load(y,y)
+					y = y =! 0
+					:if(y){
+						:raw("[ +=,-= ] Right side must be int. ")
+						x = l
+						:call(errorPrintLine)
+					}
+				}  else {
+					:raw("[ +=,-= ] Left side must be int, char or ptr. ")
+					x = l
+					:call(errorPrintLine)
+				}		
+			}
+		} else { # *=,/=
+			y = m - 1
+			:load(y,y)
+			y = y + 1
+			:load(y,y)
+			y = y == 0
+			:call(pop)
+			x = s + 1
+			:load(x,x)
+			x = x == 0
+			y = y & x
+			y = y == 0
+			:if(y){
+				:raw("[ /=,*= ] Both expressions have to be integers. ")
+				x = l
+				:call(errorPrintLine)
 			}
 		}
 	}
@@ -1104,7 +1277,6 @@
 		i = i + 4
 		y = i < g
 	}
-	:raw("FIRST PASS DONE \n")
 	i = e
 	y = i < g
 	t = 0
@@ -1716,6 +1888,7 @@
 		:load(x,i)
 		y = x == 22 # ;
 		:if(y){
+			i = i + 4
 			x = 5 # return
 			:store(x,m)
 			x = -1 # expression
@@ -4681,7 +4854,10 @@
 				x = i + 1
 				:load(x,x)
 				:raw("RET[ ")
-				:call(debug_printExpression)
+				y = x =! -1
+				:if(y){
+					:call(debug_printExpression)
+				}
 				:raw(" ] ")
 			} else {
 				y = x == 6
@@ -4806,14 +4982,6 @@
 			}
 		}
 		:raw(" ]")
-	} else {
-		y = u == 11 # argument
-		:if(y){
-
-		} else {			
-			x = -40
-			:call(errorPrintLine)
-		}
 	}
 }
 :fun(debug_printPrefix){
