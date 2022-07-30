@@ -26,14 +26,17 @@
 	:call(semantics_nameResolver)
 	m = g # the memory pointer can be reset to the initial position
 	:call(semantics_typeResolver)
+	m = g # the memory pointer can be reset to the initial position
 }
 :fun(semantics_typeResolver){
+	# h will be used for address resolving
 	:call(semantics_typeResolver_validateStructsAndArrays)
 	i = e
 	y = i < g
 	:while(y){
 		:load(x,i)
 		:call(semantics_typeResolver_checkVoid)
+		h = 0 # reset addrresolver flag
 		y = x == 0 # declaration
 		:if(y){
 			x = i + 2
@@ -236,6 +239,13 @@
 			u = x + 2
 			:load(x,u)
 			:call(semantics_typeResolver_resolveExpression)
+			y = h == 0
+			:if(y){
+				:raw("[increment/decrement] Expression must be an Lvalue. ")
+				x = l
+				:call(errorPrintLine)
+			}
+			h = 0
 			u = m - 1
 			:load(x,u) # load address of type
 			x = x + 1
@@ -261,6 +271,7 @@
 				u = x + 2
 				:load(x,u)
 				:call(semantics_typeResolver_resolveExpression)
+				h = 0
 				u = m - 1
 				:load(x,u) # load address of type
 				x = x + 1
@@ -278,6 +289,7 @@
 					u = x + 2
 					:load(x,u)
 					:call(semantics_typeResolver_resolveExpression)
+					h = 0
 					u = m - 1
 					:load(x,u) # load address of type
 					x = x + 1
@@ -383,6 +395,7 @@
 				x = u + 1
 				:load(x,x)
 				:call(semantics_typeResolver_resolveExpression)
+				h = 0
 				x = m - 1 # argument type
 				:load(x,x)
 				y = v + 1 # parameter type
@@ -418,10 +431,12 @@
 		v = x + 3
 		:load(x,u)
 		:call(semantics_typeResolver_resolveExpression)
+		h = 0
 		s = m - 1
 		:call(push)
 		:load(x,v)
 		:call(semantics_typeResolver_resolveExpression)
+		h = 0
 		u = m - 1
 		:load(x,u) # load address of type2
 		x = x + 1
@@ -448,10 +463,12 @@
 			v = x + 3
 			:load(x,u)
 			:call(semantics_typeResolver_resolveExpression)
+			h = 0
 			s = m - 1
 			:call(push)
 			:load(x,v)
 			:call(semantics_typeResolver_resolveExpression)
+			h = 0
 			u = m - 1
 			:load(x,u) # load address of type2
 			x = x + 1
@@ -504,10 +521,12 @@
 				v = x + 3
 				:load(x,u)
 				:call(semantics_typeResolver_resolveExpression)
+				h = 0
 				s = m - 1
 				:call(push)
 				:load(x,v)
 				:call(semantics_typeResolver_resolveExpression)
+				h = 0
 				u = m - 1
 				:load(x,u) # load address of type2
 				x = x + 1
@@ -554,10 +573,12 @@
 		v = x + 3
 		:load(x,u)
 		:call(semantics_typeResolver_resolveExpression)
+		h = 0
 		s = m - 1
 		:call(push)
 		:load(x,v)
 		:call(semantics_typeResolver_resolveExpression)
+		h = 0
 		u = m - 1
 		:load(x,u) # load address of type2
 		x = x + 1
@@ -593,10 +614,12 @@
 			v = x + 3
 			:load(x,u)
 			:call(semantics_typeResolver_resolveExpression)
+			h = 0
 			s = m - 1
 			:call(push)
 			:load(x,v)
 			:call(semantics_typeResolver_resolveExpression)
+			h = 0
 			u = m - 1
 			:load(x,u) # load address of type2
 			x = x + 1
@@ -634,6 +657,7 @@
 					x = l
 					:call(errorPrintLine)
 				}
+				h = 1
 				u = u + 1 # type
 				:load(u,u)
 				:store(u,m)
@@ -701,6 +725,12 @@
 			:call(semantics_typeResolver_resolveExpression)
 			s = m - 1
 			:call(push)
+			y = h == 0
+			:if(y){
+				:raw("[array access] Base expression must be Lvalue. ")
+				x = l
+				:call(errorPrintLine)
+			}
 			:load(x,v)
 			:call(semantics_typeResolver_resolveExpression)
 			u = m - 1
@@ -719,6 +749,7 @@
 				x = l
 				:call(errorPrintLine)
 			}
+			h = 1
 			:load(y,s)
 			y = y + 2 # basetype
 			:load(y,y)
@@ -733,6 +764,12 @@
 				:call(semantics_typeResolver_resolveExpression)
 				u = m - 1
 				:load(x,u) # load address of type2
+				y = h == 0
+				:if(y){
+					:raw("[comp access] Base expression must be Lvalue. ")
+					x = l
+					:call(errorPrintLine)
+				}
 				x = x + 1
 				:load(y,x) # load type2 type
 				y = y == 6 # struct
@@ -770,6 +807,7 @@
 						x = l
 						:call(errorPrintLine)
 					}
+					h = 1
 				} else {
 					:raw("Base expression must be type struct. ")
 					x = l
@@ -787,6 +825,13 @@
 		u = x + 2
 		:load(x,u)
 		:call(semantics_typeResolver_resolveExpression)
+		y = h == 0
+		:if(y){
+			:raw("Cannot take address (expression must be Lvalue). ")
+			x = l
+			:call(errorPrintLine)
+		}
+		h = 0
 		u = m - 1
 		:load(y,u) # load as basetype
 		x = 5 # pointer
@@ -810,6 +855,7 @@
 				:load(y,y)
 				:store(y,m)
 				m = m + 1
+				h = 1
 			} else {
 				:raw("Expression must be a pointer. ")
 				x = l
@@ -849,6 +895,7 @@
 					x = l
 					:call(errorPrintLine)
 				}
+				h = 0
 				:store(x,m)
 				m = m + 1
 			} else {
@@ -903,6 +950,7 @@
 							x = l
 							:call(errorPrintLine)
 						}
+						h = 1
 					} else {
 						:raw("Base expression must be type struct pointer. ")
 						x = l
@@ -920,6 +968,13 @@
 	s = m - 1
 	:load(s,s)
 	:call(push)
+	y = h == 0
+	:if(y){
+		:raw("Left side of assignment must be an Lvalue. ")
+		x = l
+		:call(errorPrintLine)
+	}
+	h = 0 # reset addrresolver flag
 	x = i + 3 # expr2
 	:load(x,x)
 	:call(semantics_typeResolver_resolveExpression)
@@ -1231,6 +1286,25 @@
 					x = x + 3
 					:load(x,x)
 					:call(errorPrintLine)
+				}
+			} else {
+				y = x == 3 # function
+				:if(y){
+					x = i + 1
+					:load(x,x)
+					x = x + 1
+					:load(x,x)
+					y = x == 4 # array
+					x = x == 6 # struct
+					y = y | x
+					:if(y){
+						:raw("Function return type cannot be array or struct. ")
+						x = i + 2 # ident
+						:load(x,x)
+						x = x + 3 # line no
+						:load(x,x)
+						:call(errorPrintLine)
+					} 
 				}
 			}
 		}
@@ -2574,7 +2648,7 @@
 			s = 30
 			y = y | 1
 		} else {
-			i = i - 8
+			i = i - 4
 		}
 	}
 	:if(y){

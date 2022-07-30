@@ -10,7 +10,7 @@ struct abc1 {
 };
 int* a = (int*) null;
 abc b;
-abc[10] printf(char* a);
+abc[10]* printf(char* a);
 void c (int a, int e){
 	int c;
 	int d = 3;
@@ -18,19 +18,19 @@ void c (int a, int e){
 }
 int main(){
 	return 5;
-	~1++/5;
+	~*a++/5;
 	true;
-	*&'1';
+	*&b;
 	'\n';
 	*a += 'c';
-	*&(abc*)a = (abc*)null;
+	*&a = (int*)null;
 	if(*a == 5){
 		int g;
 		g;
 		if(*a == 2) g;
 		else b;
 		"abc\n";
-	} else if(++b.a[0]++ % 2 == 1){
+	} else if(++b.a[0] % 2 == 1){
 		"def\n";
 	}
 	printf("abc\n");
@@ -39,5 +39,5 @@ int main(){
 		int f;
 		b.b->a;
 	}
-	printf("abc")[5].b->a;
+	(*printf("abc"))[5].b->a;
 }
