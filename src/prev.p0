@@ -1642,6 +1642,21 @@
 				y = x =! 3 # skip function bodies on first pass
 			}
 		} else {
+			y = x == 2 # expression
+			u = i + 1
+			:load(u,u) # expression id
+			u = u == 22 # ident
+			y = y & u
+			u = x == 10 # call
+			y = y | u
+			:if(y){
+				:raw("Variable access and function calls not allowed in global context. ")
+				u = i + 2
+				:load(u,u)
+				u = u + 3
+				:load(x,u)
+				:call(errorPrintLine)
+			}
 			:call(semantics_nameResolver_handleDeclaration)
 		}
 		i = i + 4
