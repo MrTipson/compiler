@@ -14,7 +14,287 @@
 		:call(debug_printTypes)
 	}
 	:call(semantics)
+	# no new memory needs to be saved
+	:call(memory)
+	h = m
 	:exit(a)
+}
+#
+# Phase 4 - Memory
+#
+:fun(memory){
+	:if(d){
+		:raw("Phase 4 - Memory\n")
+	}
+	i = e
+	y = i < g
+	c = 0 # string counter
+	f = 0 # function flag
+	o = 0 # declaration offset
+	p = 0 # struct flag
+	:while(y){
+		:load(x,i)
+		y = x == 2 # expression
+		u = i + 1
+		:load(u,u)
+		u = u == 23 # const
+		y = y & u
+		:if(y){
+			x = i + 2
+			:load(x,x)
+			u = x + 1
+			:load(u,u)
+			y = u == 3 # string
+			:if(y){
+				u = x + 3
+				:store(c,u) # override line no. with string id
+				:store(x,m)
+				m = m + 1
+				:if(d){
+					x = x + 2
+					:load(x,x)
+					:load(u,x)
+					:putchar(u)
+					x = x + 1
+					:load(u,x)
+					y = u =! 34 # "
+					:while(y){
+						y = u == 92 # \
+						:if(y){
+							:putchar(u)
+							x = x + 1
+							:load(u,x)
+						}
+						:putchar(u)
+						x = x + 1
+						:load(u,x)
+						y = u =! 34 # "
+					}
+					:putchar(u)
+					:raw("(")
+					x = c
+					:call(putint)
+					:raw(") ")
+				}
+				c = c + 1
+			}
+		} else {
+			y = x == 0 # declaration
+			:if(y){
+				y = f == 0 # not in a function
+				:if(y){
+					:store(i,m)
+					m = m + 1
+				} else { # decl in function
+					x = i
+					:call(memory_getSize)
+					o = o - y
+					:if(d){
+						x = i + 3
+						:load(x,x)
+						:call(printIdent)
+						:raw("(")
+						x = o
+						:call(putint)
+						:raw(") ")
+					}
+					x = i + 3
+					:store(o,x) # override ident with offset
+				}
+			} else {
+				y = x == 4 # parameter
+				:if(y){
+					y = p == 0
+					:if(y){ # function param
+						x = i
+						:call(memory_getSize)
+						o = o - y
+						x = i + 3 # same offset as declaration
+						:store(o,x)
+						:if(d){
+							x = i + 2
+							:load(x,x)
+							:call(printIdent)
+							:raw("(")
+							x = o
+							:call(putint)
+							:raw(") ")
+						}
+					} else { # struct param
+						x = i
+						:call(memory_getSize)
+						x = i + 3 # same offset
+						:store(o,x)
+						:if(d){
+							x = i + 2
+							:load(x,x)
+							:call(printIdent)
+							:raw("(")
+							x = o
+							:call(putint)
+							:raw(") ")
+						}
+						o = o + y
+					}
+				} else {
+					y = x == 3 # function
+					:if(y){
+						:if(f){ # funcion end
+							x = i + 2
+							o = 8 - o # o is negative, 8 bytes for 2 ints
+							:store(o,x)
+							:raw("]\n ")
+						} else {
+							x = i + 2
+							:load(x,x)
+							:raw("\n")
+							:call(printIdent)
+							:raw("[ ")
+						}
+						o = 0
+						f = 1 - f
+					} else {
+						y = x == 12 # struct
+						:if(y){
+							:if(p){ # struct end
+								:call(pop)
+								o = s
+							} else { # struct start
+								s = o
+								:call(push)
+								o = 0
+							}
+							p = 1 - p
+						}
+					}
+				}
+			}
+		}
+		i = i + 4
+		y = i < g
+	}
+}
+# input: x (syntax token)
+# output: y (size in bytes)
+:fun(memory_getSize){
+	s = x
+	:call(push)
+	s = u
+	:call(push)
+	s = v
+	:call(push)
+	:load(u,x)
+	y = u =! 0 # decl
+	v = u =! 4 # param
+	y = y & v
+	v = u =! 12 # struct
+	y = y & v
+	:if(y){
+		x = u
+		:call(putint)
+		:raw("[Memory getSize] Invalid argument. ")
+		x = 1
+		:exit(x)
+	}
+	y = u == 0 # decl
+	v = u == 4 # param
+	y = y | v
+	:if(y){ # decl/param
+		x = x + 1
+		:load(x,x) # type addr
+		:call(memory_getTypeSize)
+	} else { 
+		u = x + 3 # precalculated size (perhaps)
+		:load(u,u)
+		y = u == -1
+		:if(y){
+			s = x + 3
+			:call(push)
+			x = x + 4
+			:load(u,x)
+			y = u =! 12
+			v = 0
+			:while(y){
+				y = u == 4 # parameter
+				:if(y){
+					x = x + 1
+					:load(x,x) # type addr
+					:call(memory_getTypeSize)
+					v = v + y	
+				}
+				x = x + 4
+				:load(u,x)
+				y = u =! 12
+			}
+			:call(pop)
+			:store(v,s)
+		} else {
+			y = u
+		}
+	}
+	:call(pop)
+	v = s
+	:call(pop)
+	u = s
+	:call(pop)
+	x = s
+}
+:fun(memory_getTypeSize){
+	s = x
+	:call(push)
+	s = u
+	:call(push)
+	s = v
+	:call(push)
+	:load(u,x)
+	y = u =! 1
+	:if(y){
+		:raw("[Memory getTypeSize] invalid arguments. ")
+		x = 1
+		:exit(x)
+	}
+	u = x + 1
+	:load(u,u)
+	y = u == 0 # int
+	v = u == 5 # pointer
+	y = y | v
+	:if(y){
+		y = 4
+	} else {
+		y = u == 1 # char
+		v = u == 2 # bool
+		y = y | v
+		:if(y){
+			y = 1
+		} else {
+			y = u == 4 # array
+			:if(y){
+				u = x + 3
+				:load(u,u) # const token address
+				u = u + 2 # value
+				:load(s,u)
+				:call(push)
+				x = x + 2 # basetype
+				:load(x,x)
+				:call(memory_getTypeSize)
+				:call(pop)
+				y = y * s
+			} else {
+				y = u == 6 # name
+				:if(y){
+					x = x + 2
+					:load(x,x)
+					:call(memory_getSize)
+				}
+			}
+		}
+	}
+	:call(pop)
+	v = s
+	:call(pop)
+	u = s
+	:call(pop)
+	x = s
 }
 #
 # Phase 3 - Semantic analisys
@@ -1226,17 +1506,22 @@
 	:while(y){
 		:load(x,i)
 		y = x == 12 # struct
+		u = i + 1
+		:load(u,u)
+		u = u == 0
+		y = y & u
 		:if(y){
 			:store(i,m)
 			m = m + 1
 			f = 1 # parameter flag
+			z = i
 			:while(y){
-				i = i + 4
-				:load(x,i)
+				z = z + 4
+				:load(x,z)
 				y = x == 4 # parameter (struct component)
 				:if(y){
 					f = 0
-					x = i + 1 # parameter type
+					x = z + 1 # parameter type
 					:load(x,x)
 					:call(semantics_typeResolver_recursiveType)
 					y = 1
@@ -1283,6 +1568,17 @@
 				u = u == 0
 				:if(u){
 					:raw("Array length cannot be 0. ")
+					x = x + 3
+					:load(x,x)
+					:call(errorPrintLine)
+				}
+				u = i + 2
+				:load(u,u)
+				u = u + 1
+				:load(u,u)
+				u = u == 3 # void
+				:if(u){
+					:raw("Array basetype cannot be void. ")
 					x = x + 3
 					:load(x,x)
 					:call(errorPrintLine)
@@ -3042,7 +3338,10 @@
 			:store(x,m)
 			m = m + 1
 			:store(i,m)
-			m = m + 2 # skip one
+			m = m + 1
+			x = -1
+			:store(x,m)
+			m = m + 1
 			i = i + 4
 			:load(x,i)
 			y = x == 16 # {

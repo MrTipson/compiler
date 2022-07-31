@@ -80,7 +80,7 @@ If/Else | 8 | 0if, 1else, 2end | expr(if) | -
 While | 9 | 0start, 1end | expr(start only) | -
 Call | 10 | 0start, 1end | ident(start only) | start(end only)
 Argument | 11 | expr | - | -
-Struct | 12 | 0start, 1end | ident | -
+Struct | 12 | 0start, 1end | ident | -1
 
 > Note: Cast expression: type is expr2
 
