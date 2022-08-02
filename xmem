@@ -1,0 +1,25 @@
+define xmem
+    dont-repeat
+	set $memaddr = (int *)(&mem)
+    set $addr = $memaddr + (int)e
+    set $endaddr = $memaddr + (int)g
+    while $addr < $endaddr
+        printf "%d: ", $addr - $memaddr
+        set $lineendaddr = $addr + 5
+        if $lineendaddr > $endaddr
+            set $lineendaddr = $endaddr
+        end
+        set $a = $addr
+        while $a < $lineendaddr
+            printf "%4d ", *(unsigned int *)$a
+            set $a++
+        end
+        printf "\n"
+        set $addr = $addr + 5
+    end
+end
+
+document xmem
+usage: xmem
+outputs syntax memory layout, 5 per row
+end
