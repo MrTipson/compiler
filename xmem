@@ -3,6 +3,9 @@ define xmem
 	set $memaddr = (int *)(&mem)
     set $addr = $memaddr + (int)e
     set $endaddr = $memaddr + (int)g
+    if $endaddr < $addr
+        set $endaddr = $memaddr + (int)m
+    end
     while $addr < $endaddr
         printf "%d: ", $addr - $memaddr
         set $lineendaddr = $addr + 5
