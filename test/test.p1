@@ -10,7 +10,9 @@ struct abc {
 struct abc1 {
 	int[10] a;
 };
+char d;
 int* a = (int*) null;
+int l;
 abc b;
 abc[10]* printf(char* a);
 void c (int a, int e){
@@ -18,8 +20,8 @@ void c (int a, int e){
 	int d = 3;
 	e;
 }
-int main(){
-	return 5;
+char main(){
+	return d++;
 	~*a++/5;
 	true;
 	*&b;
@@ -36,8 +38,8 @@ int main(){
 		"def\n";
 	}
 	printf("abc\n");
-	int a = main();
-	while(a == 0){
+	char a = main();
+	while(a == '0'){
 		int f;
 		b.b->a;
 	}

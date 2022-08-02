@@ -15,7 +15,7 @@ constant(int) | 3 | 0 | value | Line no.
 constant(char) | 3 | 1 | value | Line no.
 constant(boolean) | 3 | 2 | value | Line no.
 constant(string) | 3 | 3 | start | Line no.
-null | 3 | 4 | - | Line no.
+null | 3 | 4 | 0 | Line no.
 ( | 14 | - | - | Line no.
 ) | 15 | - | - | Line no.
 { | 16 | - | - | Line no.
