@@ -24,7 +24,6 @@
 		:raw("\nPhase 5 - Code generation\n*/\n")
 	}
 	:call(codegen)
-	:exit(a)
 }
 #
 # Phase 5 - Code generation
@@ -189,6 +188,7 @@
 								:raw("\nLneg_")
 								:call(putint)
 								:raw(":\n")
+								s = x
 								:call(push)
 								s = 0
 								:call(push)
@@ -557,9 +557,9 @@
 								x = v
 								:call(memory_getTypeSize)
 								x = y
-								:raw("\tmul\tr0,r0,#")
+								:raw("\tldr\tr1,=")
 								:call(putint)
-								:raw("\n\tldr\tr1,[sp,#4],#4\n\tadd\tr0,r1,r0\n")
+								:raw("\n\tmul\tr0,r0,r1\n\tldr\tr1,[sp,#4]\n\tadd\tsp,sp,#4\n\tadd\tr0,r1,r0\n")
 								x = a + 1
 								:load(x,x)
 								:if(x){
@@ -673,14 +673,14 @@
 			:load(x,x)
 			y = 1
 			:call(codegen_expression)
-			:raw("\tldr\tr1,[sp,#4],#4\n")
+			:raw("\tldr\tr1,[sp,#4]\n\tadd\tsp,sp,#4\n")
 			y = u == 7 # binop *
 			:if(y){
 				:raw("\tmul\tr0,r1,r0\n")
 			} else {
 				y = u == 8 # binop /
 				:if(y){
-					:raw("\tdiv\tr0,r1,r0\n")
+					:raw("\tsdiv\tr0,r1,r0\n")
 				} else {
 					y = u == 9 # binop %
 					:if(y){
