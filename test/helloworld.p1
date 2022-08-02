@@ -1,0 +1,6 @@
+// Hello world
+int write(int fd, char* cbuf, int count);
+
+void main(){
+	write(1,"Hello world!\n",13);
+}

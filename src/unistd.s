@@ -1,0 +1,28 @@
+@ Define my Raspberry Pi
+.cpu    cortex-a7
+.fpu    neon-vfpv4
+.syntax unified         @ modern syntax
+
+@ Program code
+.text
+.align  2
+
+.global Fwrite
+Fwrite:
+	ldr	r0,[sp,#12]
+	ldr	r1,[sp,#8]
+	ldr	r2,[sp,#4]
+	mov	r7,#4
+	svc	0
+	add	sp,sp,#12
+	bx	lr
+
+.global Fread
+Fread:
+	ldr	r0,[sp,#12]
+	ldr	r1,[sp,#8]
+	ldr	r2,[sp,#4]
+	mov	r7,#3
+	svc	0
+	add	sp,sp,#12
+	bx	lr

@@ -17,6 +17,14 @@ bin/p1: bin/p1.s
 	as -o bin/p1.o bin/p1.s
 	ld -o bin/p1 bin/p1.o
 
+bin/unistd.o: src/unistd.s
+	as -o bin/unistd.o src/unistd.s
+
+test bin/$(FILE) bin/$(FILE).s bin/$(FILE).o: test/$(FILE).p1 bin/p1 bin/unistd.o
+	bin/p1 < test/$(FILE).p1 > bin/$(FILE).s
+	as -o bin/$(FILE).o bin/$(FILE).s
+	ld -o bin/$(FILE) bin/$(FILE).o bin/unistd.o
+
 .phony: clean
 clean:
 	rm -vf $(filter-out .gitignore, $(wildcard bin/*))
