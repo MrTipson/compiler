@@ -35,7 +35,6 @@
 	q = 0 # function flag
 	f = -1 # current function ident
 	:raw(".cpu\tcortex-a7\n.fpu\tneon-vfpv4\n.syntax\tunified\n\n.text\n.align\t1\n\n")
-	:raw(".global\t_start\n_start:\n\tbl\tFmain\n\tldr\tr0,[sp]\n\tmov\tr7,#1\n\tsvc\t0\n")
 	:while(y){
 		:load(x,i)
 		y = x == 5 # return
@@ -61,10 +60,12 @@
 					x = i + 2 # expr1
 					:load(v,x)
 					x = v
+					y = 0
 					:call(codegen_expression)
-					:raw("\tstr\tr0,[sp,#-4]\n\tsub\tsp,sp,#4\n")
+					:raw("\tsub\tsp,sp,#4\n\tstr\tr0,[sp]\n")
 					x = i + 3 # expr2
 					:load(x,x)
+					y = 1
 					:call(codegen_expression)
 					x = v + 4 # expression type
 					:load(x,x)
@@ -73,6 +74,7 @@
 					x = i + 1 # type of assignment
 					:load(x,x)
 					y = x == 0
+					:raw("\tldr\tr1,[sp],#4\n")
 					:if(y){
 						y = v == 1
 						:if(y){
@@ -249,6 +251,10 @@
 									q = 1
 									x = i + 2
 									:load(x,x)
+									:call(codegen_isMain)
+									:if(y){
+										:raw(".global\t_start\n_start:\n\tbl\tFmain\n\tmov\tr7,#1\n\tsvc\t0\n")
+									}
 									:raw("\n.global F")
 									:call(printIdent)
 									:raw("\nF")
@@ -644,7 +650,7 @@
 		} else {
 			y = u == 5 # -
 			:if(y){
-				:raw("\tmul\tr0,r0,#-1\n")
+				:raw("\tmov\tr1,#-1\n\tmul\tr0,r0,r1\n")
 			} else {
 				y = u == 6 # !
 				:if(y){
@@ -885,6 +891,37 @@
 	:raw("\n")
 	:call(pop)
 	z = s
+}
+:fun(codegen_isMain){
+	s = x
+	:call(push)
+	s = u
+	:call(push)
+	u = x + 2
+	:load(u,u)
+	y = u == 4 # len(main)
+	:if(y){
+		x = x + 1
+		:load(x,x)
+		:load(u,x)
+		y = u == 109 # m
+		u = x + 1
+		:load(u,u)
+		u = u == 97 # a
+		y = y & u
+		u = x + 2
+		:load(u,u)
+		u = u == 105 # i
+		y = y & u
+		u = x + 3
+		:load(u,u)
+		u = u == 110 # n
+		y = y & u
+	}
+	:call(pop)
+	u = s
+	:call(pop)
+	x = s
 }
 #
 # Phase 4 - Memory

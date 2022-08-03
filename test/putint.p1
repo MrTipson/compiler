@@ -2,13 +2,13 @@
 int write(int fd, char* cbuf, int count);
 
 void main(){
-	putint(12345);
+	putint_test(12345);
 }
 
-void putint(int num){
+void putint_test(int num){
 	if(num > 0){
 		char c = (num % 10) + '0';
-		putint(num / 10);
+		putint_test(num / 10);
 		write(1, &c, 1);
 	}
 }

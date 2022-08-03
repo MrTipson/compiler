@@ -20,12 +20,16 @@ bin/p1: bin/p1.s
 bin/unistd.o: src/unistd.s
 	as -o bin/unistd.o src/unistd.s
 
+bin/stdio.o: src/stdio.p1
+	bin/p1 < src/stdio.p1 > bin/stdio.s
+	as -o bin/stdio.o bin/stdio.s
+
 bin/$(FILE).s: test/$(FILE).p1 bin/p1
 	bin/p1 < test/$(FILE).p1 > bin/$(FILE).s
 
-test bin/$(FILE) bin/$(FILE).o:  bin/p1 bin/unistd.o bin/$(FILE).s
+test bin/$(FILE) bin/$(FILE).o:  bin/p1 bin/unistd.o bin/$(FILE).s bin/stdio.o
 	as -o bin/$(FILE).o bin/$(FILE).s
-	ld -o bin/$(FILE) bin/$(FILE).o bin/unistd.o
+	ld -o bin/$(FILE) bin/$(FILE).o bin/unistd.o bin/stdio.o
 
 .phony: clean
 clean:

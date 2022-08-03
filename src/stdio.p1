@@ -1,0 +1,23 @@
+int write(int fd, char* cbuf, int count);
+
+void putint(int num){
+	if(num == 0) {
+		char c = '0';
+		write(1,&c,1);
+	} else {
+		if(num < 0){
+			char c = '-';
+			write(1,&c,1);
+			num = -num;
+		}
+		__putint(num);
+	}
+}
+
+void __putint(int num){
+	if(num > 0){
+		char c = (num % 10) + '0';
+		__putint(num / 10);
+		write(1, &c, 1);
+	}
+}
