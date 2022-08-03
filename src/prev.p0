@@ -16,7 +16,6 @@
 		:call(debug_printExpressions)
 		:call(debug_printTypes)
 	}
-	:call(break)
 	:call(semantics)
 	h = m
 	:call(memory)
@@ -35,7 +34,7 @@
 	c = 0
 	q = 0 # function flag
 	f = -1 # current function ident
-	:raw(".cpu\tcortex-a7\n.fpu\tneon-vfpv4\n.syntax\tunified\n\n.text\n.align\t2\n\n")
+	:raw(".cpu\tcortex-a7\n.fpu\tneon-vfpv4\n.syntax\tunified\n\n.text\n.align\t1\n\n")
 	:raw(".global\t_start\n_start:\n\tbl\tFmain\n\tldr\tr0,[sp]\n\tmov\tr7,#1\n\tsvc\t0\n")
 	:while(y){
 		:load(x,i)
@@ -63,7 +62,7 @@
 					:load(v,x)
 					x = v
 					:call(codegen_expression)
-					:raw("\tstr\tr0,[sp],#-4\n")
+					:raw("\tstr\tr0,[sp,#-4]\n\tsub\tsp,sp,#4\n")
 					x = i + 3 # expr2
 					:load(x,x)
 					:call(codegen_expression)
@@ -266,7 +265,10 @@
 									:raw("\tldr\tr1,=")
 									x = v
 									:call(putint)
-									:raw("\n\tsub\tsp,sp,r1\n\tstr\tfp,[sp,#8]\n\tstr\tlr,[sp,#4]\n")
+									:raw("\n\tsub\tsp,sp,r1\n\tstr\tfp,[sp,#4]\n\tstr\tlr,[sp]\n\tldr\tr1,=")
+									x = u
+									:call(putint)
+									:raw("\n\tadd\tfp,sp,r1\n")
 								} else {
 									y = x == 1 # end
 									y = y & q
@@ -274,7 +276,7 @@
 										:raw("\tmov\tr0,#0\nF")
 										x = f
 										:call(printIdent)
-										:raw("_end:\n\tldr\tfp,[sp,#8]\n\tldr\tlr,[sp,#4]\n")
+										:raw("_end:\n\tldr\tfp,[sp,#4]\n\tldr\tlr,[sp]\n")
 										x = i + 2 # frame size
 										:load(x,x)
 										:raw("\tldr\tr1,=")
@@ -311,7 +313,7 @@
 		:if(y){
 			:raw("\tldr\tr1,=")
 			:call(putint)
-			:raw("\n\tadd\tr1,fp,r1\n")
+			:raw("\n\tsub\tr1,fp,r1\n")
 		} else {
 			:raw("\tldr\tr1,=V")
 			x = i + 3 # ident
@@ -542,7 +544,7 @@
 						} else {
 							y = u == 24 # array access
 							:if(y){
-								:raw("\tstr\tr0,[sp],#-4\n")
+								:raw("\tsub\tsp,sp,#4\n\tstr\tr0,[sp]\n")
 								v = x + 2 # expr1
 								:load(v,v)
 								v = v + 4 # expr1 type
@@ -560,7 +562,7 @@
 								x = y
 								:raw("\tldr\tr1,=")
 								:call(putint)
-								:raw("\n\tmul\tr0,r0,r1\n\tldr\tr1,[sp,#4]\n\tadd\tsp,sp,#4\n\tadd\tr0,r1,r0\n")
+								:raw("\n\tmul\tr0,r0,r1\n\tldr\tr1,[sp],#4\n\tadd\tr0,r1,r0\n")
 								x = a + 1
 								:load(x,x)
 								:if(x){
@@ -669,12 +671,12 @@
 			:load(x,x)
 			y = 1
 			:call(codegen_expression)
-			:raw("\tstr\tr0,[sp],#-4\n")
+			:raw("\tsub\tsp,sp,#4\n\tstr\tr0,[sp]\n")
 			x = v + 3
 			:load(x,x)
 			y = 1
 			:call(codegen_expression)
-			:raw("\tldr\tr1,[sp,#4]\n\tadd\tsp,sp,#4\n")
+			:raw("\tldr\tr1,[sp],#4\n")
 			y = u == 7 # binop *
 			:if(y){
 				:raw("\tmul\tr0,r1,r0\n")
@@ -798,16 +800,17 @@
 		} else {
 			y = u == 22 # ident
 			:if(y){
-				x = x + 2 # expr1
+				x = x + 3 # corresponding declaration
 				:load(x,x)
 				v = x
+				:call(break)
 				x = v + 4 # offset
 				:load(x,x)
-				y = x =! 0
+				y = x =! -1
 				:if(y){
 					:raw("\tldr\tr0,=")
 					:call(putint)
-					:raw("\n\tadd\tr0,fp,r0\n")
+					:raw("\n\tsub\tr0,fp,r0\n")
 				} else {
 					:raw("\tldr\tr0,=V")
 					x = v + 3 # ident
@@ -855,11 +858,11 @@
 			:call(memory_getTypeSize)
 			x = y == 1
 			:if(x){
-				:raw("\tstrb\tr0,[sp],#-1\n")
+				:raw("\tsub\tsp,sp,#1\n\tstrb\tr0,[sp]\n")
 			} else {
 				x = y == 4
 				:if(x){
-					:raw("\tstr\tr0,[sp],#-4\n")
+					:raw("\tsub\tsp,sp,#4\n\tstr\tr0,[sp]\n")
 				} else {
 					:raw("Internal error. ")
 					x = 1
@@ -953,7 +956,7 @@
 				} else { # decl in function
 					x = i
 					:call(memory_getSize)
-					o = o - y
+					o = o + y
 					:if(d){
 						x = i + 3
 						:load(x,x)
@@ -974,8 +977,8 @@
 						x = i
 						:call(memory_getSize)
 						r = r + y
-						o = o - y
-						x = i + 3 # same offset as declaration
+						o = o + y
+						x = i + 4 # same offset as declaration
 						:store(o,x)
 						:if(d){
 							x = i + 2
@@ -989,8 +992,6 @@
 					} else { # struct param
 						x = i
 						:call(memory_getSize)
-						x = i + 3 # same offset
-						:store(o,x)
 						:if(d){
 							x = i + 2
 							:load(x,x)
@@ -1000,6 +1001,8 @@
 							:call(putint)
 							:raw(") ")
 						}
+						x = i + 4 # same offset
+						:store(o,x)
 						o = o + y
 					}
 				} else {
@@ -1007,7 +1010,7 @@
 					:if(y){
 						:if(f){ # funcion end
 							x = i + 2
-							o = 8 - o # o is negative, 8 bytes for 2 ints
+							o = 8 + o # 8 bytes for 2 ints (RA,FP)
 							:store(o,x)
 							x = i + 4 # extra space
 							:store(r,x) # size of parameters
@@ -2998,7 +3001,10 @@
 		:store(x,m)
 		m = m + 1
 		:store(i,m) # identifier is current token
-		m = m + 3 # skip two
+		m = m + 2 # skip two
+		x = -1
+		:store(x,m)
+		m = m + 1
 		i = i + 4
 		:if(d){
 			:raw("PAR ")
@@ -4235,7 +4241,7 @@
 			m = m + 1
 			:store(l,m)
 			m = m + 1
-			x = 0
+			x = -1
 			:store(x,m)
 			m = m + 1
 			f = 0 # set match flag
@@ -4269,7 +4275,7 @@
 					m = m + 1
 					:store(l,m)
 					m = m + 1
-					x = 0
+					x = -1
 					:store(x,m)
 					m = m + 1
 					:if(d){

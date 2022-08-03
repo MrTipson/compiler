@@ -20,8 +20,10 @@ bin/p1: bin/p1.s
 bin/unistd.o: src/unistd.s
 	as -o bin/unistd.o src/unistd.s
 
-test bin/$(FILE) bin/$(FILE).s bin/$(FILE).o: test/$(FILE).p1 bin/p1 bin/unistd.o
+bin/$(FILE).s: test/$(FILE).p1 bin/p1
 	bin/p1 < test/$(FILE).p1 > bin/$(FILE).s
+
+test bin/$(FILE) bin/$(FILE).o:  bin/p1 bin/unistd.o bin/$(FILE).s
 	as -o bin/$(FILE).o bin/$(FILE).s
 	ld -o bin/$(FILE) bin/$(FILE).o bin/unistd.o
 

@@ -1,0 +1,14 @@
+// putint - write int to stdout
+int write(int fd, char* cbuf, int count);
+
+void main(){
+	putint(12345);
+}
+
+void putint(int num){
+	if(num > 0){
+		char c = (num % 10) + '0';
+		putint(num / 10);
+		write(1, &c, 1);
+	}
+}
