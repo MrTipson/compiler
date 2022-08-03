@@ -697,7 +697,11 @@
 					:if(y){
 						:raw("\tmvn\tr0,r0\n")
 					} else { # *
-						:raw("\tldr\tr0,[r0]\n")
+						x = a + 1
+						:load(x,x)
+						:if(x){
+							:raw("\tldr\tr0,[r0]\n")
+						}
 					}
 				}
 			}

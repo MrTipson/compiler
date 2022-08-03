@@ -1,0 +1,19 @@
+int write(int fd, char* cbuf, int count);
+
+int main(){
+	bool[20] div;
+	int i = 0;
+	bool* bptr = (bool*) &div;
+	while(i++ < 20){
+		*bptr++ = i % 3 == 0;
+	}
+	i = 0;
+	while(i < 20){
+		if(div[i++]){
+			write(1,"true ",5);
+		} else {
+			write(1,"false ",6);
+		}
+	}
+	write(1,"\n",1);
+}
