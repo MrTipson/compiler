@@ -1,0 +1,14 @@
+int write(int fd, char* cbuf, int count);
+
+void main(int argc, char** argv){
+	while(argc-- > 0){
+		int l = 0;
+		char* arg = *argv;
+		while(arg[l] != (char)0){
+			l++;
+		}
+		write(1, *argv++, l);
+		char endl = '\n';
+		write(1, &endl, 1);
+	}
+}

@@ -253,7 +253,7 @@
 									:load(x,x)
 									:call(codegen_isMain)
 									:if(y){
-										:raw(".global\t_start\n_start:\n\tldr\tr1,[sp]\n\tadd\tr2,sp,#4\n\tstr\tr2,[sp],#-4\n\tstr\tr1,[sp]\n\tbl\tFmain\n\tmov\tr7,#1\n\tsvc\t0\n")
+										:raw(".global\t_start\n_start:\n\tadd\tr2,sp,#4\n\tstr\tr2,[sp,#-4]\n\tsub\tsp,sp,#4\n\tbl\tFmain\n\tmov\tr7,#1\n\tsvc\t0\n")
 									}
 									:raw("\n.global F")
 									:call(printIdent)
@@ -587,14 +587,18 @@
 						} else {
 							y = u == 24 # array access
 							:if(y){
-								:raw("\tsub\tsp,sp,#4\n\tstr\tr0,[sp]\n")
 								v = x + 2 # expr1
 								:load(v,v)
 								v = v + 4 # expr1 type
+								:load(v,v)
+								v = v + 1
+								:load(v,v)
 								v = v == 5 # pointer
+								:call(break)
 								:if(v){ # load pointer value
 									:raw("\tldr\tr0,[r0]\n")
 								}
+								:raw("\tsub\tsp,sp,#4\n\tstr\tr0,[sp]\n")
 								v = x + 4 # expression type
 								:load(v,v)
 								x = x + 3
