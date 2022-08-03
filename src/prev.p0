@@ -374,43 +374,53 @@
 		} else {
 			y = x == 0 # declaration
 			:if(y){
-				x = u + 1
+				x = u + 1 # declaration type
 				:load(x,x)
+				v = x + 1 # type type
+				:load(v,v)
 				:call(memory_getTypeSize)
-				v = y
+				w = y
 				x = u + 3 # ident
 				:raw("V")
 				:load(x,x)
 				:call(printIdent)
-				x = u + 2 # expression
-				:load(x,x)
-				x = x + 2 # expr1
-				:load(x,x)
-				y = v == 1
-				:call(break)
+				y = v == 6 # name
+				z = v == 4 # array
+				y = y | z
 				:if(y){
-					:raw(": .byte ")
+					:raw(": .space ")
+					x = w
+					:call(putint)
 				} else {
-					y = v == 4
+					y = w == 1
 					:if(y){
-						:raw(": .word ")
+						:raw(": .byte ")
 					} else {
-						:raw("Internal error. ")
-						x = 1
-						:exit(x)
+						y = w == 4
+						:if(y){
+							:raw(": .word ")
+						} else {
+							:raw("Internal error. ")
+							x = 1
+							:exit(x)
+						}
 					}
+					x = u + 2 # expression
+					:load(x,x)
+					x = x + 2 # expr1
+					:load(x,x)
+					y = x + 1 # constant type
+					:load(y,y)
+					y = y == 3 # string literal
+					:if(y){
+						x = x + 3 # string id
+						:raw("S")
+					} else {
+						x = x + 2 # value
+					}
+					:load(x,x)
+					:call(putint)
 				}
-				y = x + 1
-				:load(y,y)
-				y = y == 3 # string literal
-				:if(y){
-					x = x + 3 # string id
-					:raw("S")
-				} else {
-					x = x + 2 # value
-				}
-				:load(x,x)
-				:call(putint)
 			} else {
 				:raw("Internal error. ")
 				:call(putint)
