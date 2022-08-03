@@ -253,7 +253,7 @@
 									:load(x,x)
 									:call(codegen_isMain)
 									:if(y){
-										:raw(".global\t_start\n_start:\n\tbl\tFmain\n\tmov\tr7,#1\n\tsvc\t0\n")
+										:raw(".global\t_start\n_start:\n\tldr\tr1,[sp]\n\tadd\tr2,sp,#4\n\tstr\tr2,[sp],#-4\n\tstr\tr1,[sp]\n\tbl\tFmain\n\tmov\tr7,#1\n\tsvc\t0\n")
 									}
 									:raw("\n.global F")
 									:call(printIdent)
@@ -377,12 +377,39 @@
 				x = u + 1
 				:load(x,x)
 				:call(memory_getTypeSize)
+				v = y
 				x = u + 3 # ident
 				:raw("V")
 				:load(x,x)
 				:call(printIdent)
-				:raw(": .space ")
-				x = y
+				x = u + 2 # expression
+				:load(x,x)
+				x = x + 2 # expr1
+				:load(x,x)
+				y = v == 1
+				:call(break)
+				:if(y){
+					:raw(": .byte ")
+				} else {
+					y = v == 4
+					:if(y){
+						:raw(": .word ")
+					} else {
+						:raw("Internal error. ")
+						x = 1
+						:exit(x)
+					}
+				}
+				y = x + 1
+				:load(y,y)
+				y = y == 3 # string literal
+				:if(y){
+					x = x + 3 # string id
+					:raw("S")
+				} else {
+					x = x + 2 # value
+				}
+				:load(x,x)
 				:call(putint)
 			} else {
 				:raw("Internal error. ")
@@ -502,12 +529,12 @@
 							:raw("\tldr\tr1,[r0]\n\tldr\tr2,=")
 							x = y
 							:call(putint)
-							:raw("\nadd\tr1,r1,r2\n\tstr\tr1,[r0]\n\tmov\tr0,r1\n")
+							:raw("\n\tadd\tr1,r1,r2\n\tstr\tr1,[r0]\n\tmov\tr0,r1\n")
 						} else {
 							:call(memory_getTypeSize)
 							u = y == 1
 							:if(u){
-								:raw("\tldrb\tr1,[r0]\n\add\tr1,r1,#1\n\tstrb\tr1,[r0]\n\tmov\tr0,r1\n")
+								:raw("\tldrb\tr1,[r0]\n\tadd\tr1,r1,#1\n\tstrb\tr1,[r0]\n\tmov\tr0,r1\n")
 							} else {
 								u = y == 4
 								:if(u){
@@ -697,11 +724,46 @@
 					} else {
 						y = u == 10 # binop +
 						:if(y){
+							x = v + 4 # expression type
+							:load(x,x)
+							x = x + 1
+							:load(x,x)
+							y = x == 5 # pointer
+							:if(y){
+								x = v + 2
+								:load(x,x)
+								x = x + 4
+								:load(x,x)
+								u = x + 1
+								:load(u,u)
+								y = u == 5
+								:if(y){ # expr1 is pointer
+									x = x + 2 # basetype
+									:load(x,x)
+									:call(memory_getTypeSize)
+									:raw("\tldr\tr2,=")
+									x = y
+									:call(putint)
+									:raw("\n\tmul\tr0,r0,r2\n")
+								} else { # expr2 is pointer
+									x = v + 3 # expr2
+									:load(x,x)
+									x = x + 4 # type
+									:load(x,x)
+									x = x + 2 # basetype
+									:load(x,x)
+									:call(memory_getTypeSize)
+									:raw("\tldr\tr2,=")
+									x = y
+									:call(putint)
+									:raw("\n\tmul\tr1,r1,r2\n")
+								}
+							}
 							:raw("\tadd\tr0,r1,r0\n")
 						} else {
 							y = u == 11 # binop -
 							:if(y){
-								:raw("\tadd\tr0,r1,r0\n")
+								:raw("\tsub\tr0,r1,r0\n")
 							} else {
 								y = u == 12 # binop <
 								:if(y){
@@ -731,13 +793,13 @@
 														v = u == 20 # binop &&
 														y = y | v
 														:if(y){
-															:raw("\tand\tr1,r0\n")
+															:raw("\tand\tr0,r1,r0\n")
 														} else {
 															y = u == 19 # binop |
 															v = u == 21 # binop ||
 															y = y | v
 															:if(y){
-																:raw("\torr\tr1,r0\n")
+																:raw("\torr\tr0,r1,r0\n")
 															} else {
 																y = u == 26 # binop ^
 																:if(y){
@@ -809,7 +871,6 @@
 				x = x + 3 # corresponding declaration
 				:load(x,x)
 				v = x
-				:call(break)
 				x = v + 4 # offset
 				:load(x,x)
 				y = x =! -1
@@ -827,7 +888,23 @@
 				y = a + 1
 				:load(y,y)
 				:if(y){
-					:raw("\tldr\tr0,[r0]\n")
+					x = v + 1 # type
+					:load(x,x)
+					:call(memory_getTypeSize)
+					x = y
+					y = x == 1
+					:if(y){
+						:raw("\tldrb\tr0,[r0]\n")
+					} else {
+						y = x == 4
+						:if(y){
+							:raw("\tldr\tr0,[r0]\n")
+						} else {
+							:raw("Internal error. ")
+							x = 1
+							:exit(x)
+						}
+					}
 				}
 			}
 		}
@@ -1442,7 +1519,7 @@
 			u = x =! 5 # ptr
 			y = y & u
 			:if(y){
-				:raw("Increment operator must have expression of type int, char or pointer. ")
+				:raw("[increment/decrement] Expression must be of type int, char or pointer. ")
 				x = l
 				:call(errorPrintLine)
 			}
@@ -1464,7 +1541,7 @@
 				:load(x,x) # load type type
 				y = x =! 0 # int
 				:if(y){
-					:raw("Prefix operator +,- or ~ must have expression of type int. ")
+					:raw("[Prefix +,-,~] Expression must be of type int. ")
 					x = l
 					:call(errorPrintLine)
 				}
@@ -1482,7 +1559,7 @@
 					:load(x,x) # load type type
 					y = x =! 2 # bool
 					:if(y){
-						:raw("Prefix operator ! must have expression of type bool. ")
+						:raw("[Prefix !] Expression must be of type bool. ")
 						x = l
 						:call(errorPrintLine)
 					}
@@ -1639,7 +1716,7 @@
 		y = y =! 0 # int
 		y = y | x
 		:if(y){
-			:raw("Operators *,/,%,&,|,^ must have 2 expressions of type int. ")
+			:raw("[ Binop *,/,%,&,|,^ ] Operator must have 2 expressions of type int. ")
 			x = l
 			:call(errorPrintLine)
 		}
@@ -1664,8 +1741,8 @@
 			x = x + 1
 			:load(x,x) # load type2 type
 			:call(pop)
-			:load(y,s) # load address of type
-			y = y + 1
+			:load(s,s) # load address of type
+			y = s + 1
 			:load(y,y) # load type1 type
 			v = x == 0 # int
 			:if(v){
@@ -1675,7 +1752,7 @@
 				x = y =! 5 # ptr
 				v = v & x
 				:if(v){
-					:raw("For operators + and -, one of the expressions must be int, the other can be int, char or pointer. ")
+					:raw("[ Binop +,- ] One expression must be int, the other can be int, char or pointer. The result has the same type as 1st expression. ")
 					x = l
 					:call(errorPrintLine)
 				}
@@ -1691,13 +1768,13 @@
 					y = x =! 5 # ptr
 					v = v & y
 					:if(v){
-						:raw("For operators + and -, one of the expressions must be int, the other can be int, char or pointer. ")
+						:raw("[ Binop +,- ] One expression must be int, the other can be int, char or pointer. The result has the same type as 1st expression. ")
 						x = l
 						:call(errorPrintLine)
 					}
 					# type ok, 2nd expression carries over
 				} else {
-					:raw("For operators + and -, one of the expressions must be int, the other can be int, char or pointer. ")
+					:raw("[ Binop +,- ] One expression must be int, the other can be int, char or pointer. The result has the same type as 1st expression. ")
 					x = l
 					:call(errorPrintLine)
 				}
@@ -1727,7 +1804,7 @@
 				:load(y,y) # load type1 type
 				x = x =! y # same type
 				:if(x){
-					:raw("Operators <,>,<=,>= must have 2 expressions of same type (int, char, pointer). ")
+					:raw("[ <,>,<=,>= ] Operator must have 2 expressions of same type (int, char, pointer). ")
 					x = l
 					:call(errorPrintLine)
 				} else {
@@ -1737,7 +1814,7 @@
 					v = y =! 5 # pointer
 					x = x & v
 					:if(x){
-						:raw("Operators <,>,<=,>= must have 2 expressions of same type (int, char, pointer). ")
+						:raw("[ <,>,<=,>= ] Operator must have 2 expressions of same type (int, char, pointer). ")
 						x = l
 						:call(errorPrintLine)
 					}
@@ -1786,7 +1863,7 @@
 		u = y == 6 # struct
 		x = x | u
 		:if(x){
-			:raw("Operators ==,!= must have 2 expressions of same type (int, bool, char, pointer). ")
+			:raw("[ ==,!= ] Operator must have 2 expressions of same type (int, bool, char, pointer). ")
 			x = l
 			:call(errorPrintLine)
 		}
@@ -1823,7 +1900,7 @@
 			y = y =! 2 # bool
 			y = y | x
 			:if(y){
-				:raw("Operators &&,|| must have 2 expressions of type bool. ")
+				:raw("[ &&,|| ] Operator must have 2 expressions of type bool. ")
 				x = l
 				:call(errorPrintLine)
 			}
@@ -1919,7 +1996,7 @@
 			:call(push)
 			y = h == 0
 			:if(y){
-				:raw("[array access] Base expression must be Lvalue. ")
+				:raw("[ Indexing ] Base expression must be Lvalue. ")
 				x = l
 				:call(errorPrintLine)
 			}
@@ -1939,7 +2016,7 @@
 			x = x =! 0 # int
 			v = v | x
 			:if(v){
-				:raw("Base expression must be of type array or pointer, index must be type int. ")
+				:raw("[ Indexing ] Base expression must be of type array or pointer, index must be type int. ")
 				x = l
 				:call(errorPrintLine)
 			}
@@ -1960,7 +2037,7 @@
 				:load(x,u) # load address of type2
 				y = h == 0
 				:if(y){
-					:raw("[comp access] Base expression must be Lvalue. ")
+					:raw("[ Component ] Base expression must be Lvalue. ")
 					x = l
 					:call(errorPrintLine)
 				}
@@ -2560,12 +2637,12 @@
 			y = x == 2 # expression
 			u = i + 1
 			:load(u,u) # expression id
-			u = u == 22 # ident
+			u = u =! 23 # const
 			y = y & u
 			u = x == 10 # call
 			y = y | u
 			:if(y){
-				:raw("Variable access and function calls not allowed in global context. ")
+				:raw("Only constants allowed in global context. ")
 				u = i + 2
 				:load(u,u)
 				u = u + 3

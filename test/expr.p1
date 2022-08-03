@@ -1,0 +1,40 @@
+void putint(int num);
+int write(int fd, char* cbuf, int count);
+
+void bool2str(bool val){
+	if(val) write(1,"true\n",5);
+	else write(1,"false\n",6);
+}
+
+void putintln(int val){
+	putint(val);
+	write(1, endl, 1);
+}
+
+char* endl = "\n";
+void main(){
+	putintln(-15); // -15
+	putintln(9/3); // 3
+	putintln(10*5); // 50
+	putintln(1+2*3); // 7
+	putintln(27%5); // 2
+	putintln(7-10); // -3
+	putintln(10^6); // 12
+	putintln(10|5); // 15
+	putintln(10&5); // 0
+	bool2str(1 == 1); // true
+	bool2str(1 != 1); // false
+	bool2str(5 >= 5); // true
+	bool2str(5 > 5); // false
+	bool2str(-12 <= -12); // true
+	bool2str(-12 < -12); // false
+	bool2str(!false); // true
+	bool2str(true && true || false); // true
+	int a = 5;
+	putintln(a++); // 5
+	putintln(a--); // 6
+	putintln(--a); // 4
+	putintln(++a); // 5
+	putintln(*&a); // 5
+	putintln(~0); // -1
+}
