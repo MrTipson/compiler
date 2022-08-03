@@ -1,0 +1,23 @@
+void putint(int val);
+int write(int fd, char* cbuf, int count);
+
+void test(){}
+
+int[10] arr;
+int main(){
+	int i = 0;
+	while(i < 10){
+		arr[i] = i++ + 1;
+	}
+	while(i > 0){
+		putint(arr[--i]);
+		write(1," ",1);
+	}
+	write(1,"\n",1);
+	int* ptr = &arr[0];
+	while(i++ < 10){
+		putint(*ptr++);
+		write(1," ",1);
+	}
+	write(1,"\n",1);
+}
