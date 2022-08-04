@@ -627,9 +627,10 @@
 							} else {
 								y = u == 25 # component access
 								:if(y){
+									v = x
 									x = x + 3 # component
 									:load(x,x)
-									x = x + 3 # calculated offset
+									x = x + 4 # calculated offset
 									:load(x,x)
 									:raw("\tldr\tr1,=")
 									:call(putint)
@@ -637,7 +638,22 @@
 									y = a + 1
 									:load(y,y)
 									:if(y){
-										:raw("\tldr\tr0,[r0]\n")
+										x = v + 4
+										:load(x,x)
+										:call(memory_getTypeSize)
+										u = y == 1
+										:if(u){
+											:raw("\n\tldrb\tr0,[r0]\n")
+										} else {
+											u = y == 4
+											:if(u){
+												:raw("\n\tldr\tr0,[r0]\n")
+											} else {
+												:raw("Internal error. ")
+												x = 1
+												:exit(x)
+											}
+										}
 									}
 								} else {
 									y = u == 28 # pointer &
@@ -850,14 +866,29 @@
 		:call(codegen_expression)
 		x = v + 3 # component
 		:load(x,x)
-		x = x + 3 # calculated offset
+		x = x + 4 # calculated offset
 		:load(x,x)
 		:raw("\tldr\tr1,=")
 		:call(putint)
 		x = a + 1
 		:load(x,x)
 		:if(x){
-			:raw("\n\tldr\tr0,[r0,r1]\n")
+			x = v + 4
+			:load(x,x)
+			:call(memory_getTypeSize)
+			u = y == 1
+			:if(u){
+				:raw("\n\tldrb\tr0,[r0,r1]\n")
+			} else {
+				u = y == 4
+				:if(u){
+					:raw("\n\tldr\tr0,[r0,r1]\n")
+				} else {
+					:raw("Internal error. ")
+					x = 1
+					:exit(x)
+				}
+			}
 		} else {
 			:raw("\n\tadd\tr0,r0,r1\n")
 		}
@@ -1088,6 +1119,9 @@
 					x = i
 					:call(memory_getSize)
 					o = o + y
+					x = y
+					:raw("Structsize: ")
+					:call(putint)
 					:if(d){
 						x = i + 3
 						:load(x,x)
@@ -1231,6 +1265,7 @@
 			}
 			:call(pop)
 			:store(v,s)
+			y = v
 		} else {
 			y = u
 		}
@@ -2082,6 +2117,7 @@
 								x = j + 1
 								:load(x,x)
 								:store(x,m)
+								:store(j,v)
 								m = m + 1
 							}
 						}
@@ -2226,6 +2262,7 @@
 									x = j + 1
 									:load(x,x)
 									:store(x,m)
+									:store(j,v)
 									m = m + 1
 								}
 							}

@@ -1,0 +1,31 @@
+void putint(int val);
+int write(int fd, char* cbuf, int count);
+
+struct Point {
+	int x;
+	bool isImportant;
+	int y;
+};
+
+int main(int argc, char** argv) {
+	Point p;
+	p.x = 5;
+	p.isImportant = false;
+	p.y = 10;
+	printPoint(&p);
+	Point r;
+	r.x = -1;
+	r.isImportant = true;
+	r.y = 24;
+	printPoint(&r);
+}
+
+void printPoint(Point* point) {
+	write(1,"( ",2);
+	putint(point->x);
+	write(1,", ",2);
+	putint(point->y);
+	write(1," ) is ", 6);
+	if(!point->isImportant) write(1, "not ", 4);
+	write(1,"important.\n",11);
+}
