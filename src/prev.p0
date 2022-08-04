@@ -2342,9 +2342,7 @@
 					:call(errorPrintLine)
 				}
 			} else {
-				y = x == 1 # char
-				x = x == 5 # pointer
-				y = y | x
+				y = x == 5 # pointer
 				:if(y){
 					y = m - 1
 					:load(y,y)
@@ -2356,10 +2354,13 @@
 						x = l
 						:call(errorPrintLine)
 					}
-				}  else {
-					:raw("[ +=,-= ] Left side must be int, char or ptr. ")
-					x = l
-					:call(errorPrintLine)
+				} else {
+					y = x =! 1 # char
+					:if(y){
+						:raw("[ +=,-= ] Left side must be int, char or ptr. ")
+						x = l
+						:call(errorPrintLine)
+					}
 				}		
 			}
 		} else { # *=,/=

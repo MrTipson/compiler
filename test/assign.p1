@@ -1,0 +1,21 @@
+void putint(int val);
+int write(int fd, char* buf, int count);
+
+int main() {
+	char ln = '\n';
+	char c = '5';
+	c -= '0';
+	putint((int)c);
+	write(1,&ln,1);
+	int a = 9;
+	a += '0';
+	write(1,(char*)&a,1);
+	write(1,&ln,1);
+	int b = 160;
+	b /= 10;
+	putint(b);
+	write(1,&ln,1);
+	b *= 2;
+	putint(b);
+	write(1,&ln,1);
+}
