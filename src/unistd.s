@@ -1,6 +1,3 @@
-@ Define my Raspberry Pi
-.cpu    cortex-a7
-.fpu    neon-vfpv4
 .syntax unified         @ modern syntax
 
 @ Program code

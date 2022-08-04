@@ -34,7 +34,7 @@
 	c = 0
 	q = 0 # function flag
 	f = -1 # current function ident
-	:raw(".cpu\tcortex-a7\n.fpu\tneon-vfpv4\n.syntax\tunified\n\n.text\n.align\t1\n\n")
+	:raw(".syntax\tunified\n\n.text\n.align\t1\n\n")
 	:while(y){
 		:load(x,i)
 		y = x == 5 # return
@@ -594,7 +594,6 @@
 								v = v + 1
 								:load(v,v)
 								v = v == 5 # pointer
-								:call(break)
 								:if(v){ # load pointer value
 									:raw("\tldr\tr0,[r0]\n")
 								}
