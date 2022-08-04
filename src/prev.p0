@@ -84,7 +84,7 @@
 							:if(y){
 								:raw("\tstr\tr0,[r1]\n")
 							} else {
-								:raw("Internal error. ")
+								:throw("Internal error.\n")
 								x = 1
 								:exit(x)
 							}
@@ -100,7 +100,7 @@
 								:if(y){
 									:raw("\tldr\tr2,[r1]\n\tadd\tr0,r2,r0\n\tstr\tr0,[r1]\n")
 								} else {
-									:raw("Internal error. ")
+									:throw("Internal error. ")
 									x = 1
 									:exit(x)
 								}
@@ -116,7 +116,7 @@
 									:if(y){
 										:raw("\tldr\tr2,[r1]\n\tsub\tr0,r2,r0\n\tstr\tr0,[r1]\n")
 									} else {
-										:raw("Internal error. ")
+										:throw("Internal error.\n")
 										x = 1
 										:exit(x)
 									}
@@ -132,7 +132,7 @@
 										:if(y){
 											:raw("\tldr\tr2,[r1]\n\tsdiv\tr0,r2,r0\n\tstr\tr0,[r1]\n")
 										} else {
-											:raw("Internal error. ")
+											:throw("Internal error.\n")
 											x = 1
 											:exit(x)
 										}
@@ -148,7 +148,7 @@
 											:if(y){
 												:raw("\tldr\tr2,[r1]\n\tmul\tr0,r2,r0\n\tstr\tr0,[r1]\n")
 											} else {
-												:raw("Internal error. ")
+												:throw("Internal error.\n")
 												x = 1
 												:exit(x)
 											}
@@ -338,7 +338,7 @@
 			:if(u){
 				:raw("\tstr\tr0,[r1]\n")
 			} else {
-				:raw("Internal error. ")
+				:throw("Internal error.\n")
 				x = 1
 				:exit(x)
 			}
@@ -400,7 +400,7 @@
 						:if(y){
 							:raw(": .word ")
 						} else {
-							:raw("Internal error. ")
+							:throw("Internal error.\n")
 							x = 1
 							:exit(x)
 						}
@@ -422,8 +422,8 @@
 					:call(putint)
 				}
 			} else {
-				:raw("Internal error. ")
-				:call(putint)
+				:throw("Internal error.\n")
+				:call(errint)
 				x = 1
 				:exit(x)
 			}		
@@ -490,7 +490,9 @@
 						:if(u){
 							:raw("\tldr\tr1,[r0]\n\tadd\tr2,r1,#1\n\tstr\tr2,[r0]\n\tmov\tr0,r1\n")
 						} else {
-							:raw("Internal error. ")
+							:throw("Internal error.\n")
+							x = 1
+							:exit(x)
 						}
 					}
 				}
@@ -520,7 +522,9 @@
 							:if(u){
 								:raw("\tldr\tr1,[r0]\n\tsub\tr2,r1,#1\n\tstr\tr2,[r0]\n\tmov\tr0,r1\n")
 							} else {
-								:raw("Internal error. ")
+								:throw("Internal error.\n")
+								x = 1
+								:exit(x)
 							}
 						}
 					}
@@ -550,7 +554,9 @@
 								:if(u){
 									:raw("\tldr\tr1,[r0]\n\tadd\tr1,r1,#1\n\tstr\tr1,[r0]\n\tmov\tr0,r1\n")
 								} else {
-									:raw("Internal error. ")
+									:throw("Internal error.\n")
+									x = 1
+									:exit(x)
 								}
 							}
 						}
@@ -580,7 +586,9 @@
 									:if(u){
 										:raw("\tldr\tr1,[r0]\n\tsub\tr1,r1,#1\n\tstr\tr1,[r0]\n\tmov\tr0,r1\n")
 									} else {
-										:raw("Internal error. ")
+										:throw("Internal error.\n")
+										x = 1
+										:exit(x)
 									}
 								}
 							}
@@ -620,7 +628,9 @@
 										:if(u){
 											:raw("\tldr\tr0,[r0]\n")
 										} else {
-											:raw("Internal error. ")
+											:throw("Internal error.\n")
+											x = 1
+											:exit(x)
 										}
 									}
 								}
@@ -649,7 +659,7 @@
 											:if(u){
 												:raw("\n\tldr\tr0,[r0]\n")
 											} else {
-												:raw("Internal error. ")
+												:throw("Internal error.\n")
 												x = 1
 												:exit(x)
 											}
@@ -884,7 +894,7 @@
 				:if(u){
 					:raw("\n\tldr\tr0,[r0,r1]\n")
 				} else {
-					:raw("Internal error. ")
+					:throw("Internal error.\n")
 					x = 1
 					:exit(x)
 				}
@@ -948,7 +958,7 @@
 						:if(y){
 							:raw("\tldr\tr0,[r0]\n")
 						} else {
-							:raw("Internal error. ")
+							:throw("Internal error.\n")
 							x = 1
 							:exit(x)
 						}
@@ -995,7 +1005,7 @@
 				:if(x){
 					:raw("\tsub\tsp,sp,#4\n\tstr\tr0,[sp]\n")
 				} else {
-					:raw("Internal error. ")
+					:throw("Internal error.\n")
 					x = 1
 					:exit(x)
 				}
@@ -1120,7 +1130,6 @@
 					:call(memory_getSize)
 					o = o + y
 					x = y
-					:raw("Structsize: ")
 					:call(putint)
 					:if(d){
 						x = i + 3
@@ -1227,9 +1236,7 @@
 	v = u =! 12 # struct
 	y = y & v
 	:if(y){
-		x = u
-		:call(putint)
-		:raw("[Memory getSize] Invalid argument. ")
+		:throw("[Memory getSize] Invalid argument.\n")
 		x = 1
 		:exit(x)
 	}
@@ -1287,7 +1294,7 @@
 	:load(u,x)
 	y = u =! 1
 	:if(y){
-		:raw("[Memory getTypeSize] invalid arguments. ")
+		:throw("[Memory getTypeSize] invalid arguments.\n")
 		x = 1
 		:exit(x)
 	}
@@ -1370,22 +1377,22 @@
 				:load(x,x)
 				y = x == 4 # array
 				:if(y){
-					:raw("Cannot initialize array ")
+					:throw("Cannot initialize array ")
 					x = i + 3 # ident
 					:load(x,x)
-					:call(printIdent)
-					:raw(". ")
+					:call(errorIdent)
+					:throw(". ")
 					x = x + 3 # line no.
 					:load(x,x)
 					:call(errorPrintLine)
 				}
 				y = x == 6 # struct
 				:if(y){
-					:raw("Cannot initialize struct ")
+					:throw("Cannot initialize struct ")
 					x = i + 3 # ident
 					:load(x,x)
-					:call(printIdent)
-					:raw(". ")
+					:call(errorIdent)
+					:throw(". ")
 					x = x + 3 # line no.
 					:load(x,x)
 					:call(errorPrintLine)
@@ -1401,7 +1408,7 @@
 				:call(semantics_typeResolver_equals)
 				y = y == 0
 				:if(y){
-					:raw("Types must be equal. ")
+					:throw("Types must be equal. ")
 					x = l
 					:call(errorPrintLine)
 				}
@@ -1438,7 +1445,7 @@
 					}
 					y = y == 0
 					:if(y){
-						:raw("Expression in return must match with function type. ")
+						:throw("Expression in return must match with function type. ")
 						x = l
 						:call(errorPrintLine)
 					}
@@ -1471,7 +1478,7 @@
 									:call(semantics_typeResolver_equals)
 									y = y == 0
 									:if(y){
-										:raw("Expression in if must be a boolean. ")
+										:throw("Expression in if must be a boolean. ")
 										x = l
 										:call(errorPrintLine)
 									}
@@ -1495,7 +1502,7 @@
 										:call(semantics_typeResolver_equals)
 										y = y == 0
 										:if(y){
-											:raw("Expression in while must be a boolean. ")
+											:throw("Expression in while must be a boolean. ")
 											x = l
 											:call(errorPrintLine)
 										}
@@ -1537,7 +1544,7 @@
 	v = u =! 10 # call
 	y = y & v
 	:if(y){
-		:raw("[ResolveExpression] Invalid input. ")
+		:throw("[ResolveExpression] Invalid input. ")
 		x = l
 		:call(errorPrintLine)
 	}
@@ -1556,7 +1563,7 @@
 			:call(semantics_typeResolver_resolveExpression)
 			y = h == 0
 			:if(y){
-				:raw("[increment/decrement] Expression must be an Lvalue. ")
+				:throw("[increment/decrement] Expression must be an Lvalue. ")
 				x = l
 				:call(errorPrintLine)
 			}
@@ -1571,7 +1578,7 @@
 			u = x =! 5 # ptr
 			y = y & u
 			:if(y){
-				:raw("[increment/decrement] Expression must be of type int, char or pointer. ")
+				:throw("[increment/decrement] Expression must be of type int, char or pointer. ")
 				x = l
 				:call(errorPrintLine)
 			}
@@ -1593,7 +1600,7 @@
 				:load(x,x) # load type type
 				y = x =! 0 # int
 				:if(y){
-					:raw("[Prefix +,-,~] Expression must be of type int. ")
+					:throw("[Prefix +,-,~] Expression must be of type int. ")
 					x = l
 					:call(errorPrintLine)
 				}
@@ -1611,7 +1618,7 @@
 					:load(x,x) # load type type
 					y = x =! 2 # bool
 					:if(y){
-						:raw("[Prefix !] Expression must be of type bool. ")
+						:throw("[Prefix !] Expression must be of type bool. ")
 						x = l
 						:call(errorPrintLine)
 					}
@@ -1651,8 +1658,8 @@
 	:if(y){
 		u = k + 3
 		:load(x,u)
-		:call(printIdent)
-		:raw(" is not a function. ")
+		:call(errorIdent)
+		:throw(" is not a function. ")
 		x = l
 		:call(errorPrintLine)
 	}
@@ -1692,7 +1699,7 @@
 		:if(y){ # call end
 			y = s =! 3 
 			:if(y){ # parameter
-				:raw("Parameter count must match in function calls. ")
+				:throw("Parameter count must match in function calls. ")
 				x = l
 				:call(errorPrintLine)
 			} else { # function end
@@ -1712,13 +1719,13 @@
 				:call(semantics_typeResolver_equals)
 				y = y == 0
 				:if(y){
-					:raw("Parameter type must match in function calls. ")
+					:throw("Parameter type must match in function calls. ")
 					x = l
 					:call(errorPrintLine)
 				}
 				y = 1
 			} else { # function end
-				:raw("Parameter count must match in function calls. ")
+				:throw("Parameter count must match in function calls. ")
 				x = l
 				:call(errorPrintLine)
 			}
@@ -1768,7 +1775,7 @@
 		y = y =! 0 # int
 		y = y | x
 		:if(y){
-			:raw("[ Binop *,/,%,&,|,^ ] Operator must have 2 expressions of type int. ")
+			:throw("[ Binop *,/,%,&,|,^ ] Operator must have 2 expressions of type int. ")
 			x = l
 			:call(errorPrintLine)
 		}
@@ -1804,7 +1811,7 @@
 				x = y =! 5 # ptr
 				v = v & x
 				:if(v){
-					:raw("[ Binop +,- ] One expression must be int, the other can be int, char or pointer. The result has the same type as 1st expression. ")
+					:throw("[ Binop +,- ] One expression must be int, the other can be int, char or pointer. The result has the same type as 1st expression. ")
 					x = l
 					:call(errorPrintLine)
 				}
@@ -1820,13 +1827,13 @@
 					y = x =! 5 # ptr
 					v = v & y
 					:if(v){
-						:raw("[ Binop +,- ] One expression must be int, the other can be int, char or pointer. The result has the same type as 1st expression. ")
+						:throw("[ Binop +,- ] One expression must be int, the other can be int, char or pointer. The result has the same type as 1st expression. ")
 						x = l
 						:call(errorPrintLine)
 					}
 					# type ok, 2nd expression carries over
 				} else {
-					:raw("[ Binop +,- ] One expression must be int, the other can be int, char or pointer. The result has the same type as 1st expression. ")
+					:throw("[ Binop +,- ] One expression must be int, the other can be int, char or pointer. The result has the same type as 1st expression. ")
 					x = l
 					:call(errorPrintLine)
 				}
@@ -1856,7 +1863,7 @@
 				:load(y,y) # load type1 type
 				x = x =! y # same type
 				:if(x){
-					:raw("[ <,>,<=,>= ] Operator must have 2 expressions of same type (int, char, pointer). ")
+					:throw("[ <,>,<=,>= ] Operator must have 2 expressions of same type (int, char, pointer). ")
 					x = l
 					:call(errorPrintLine)
 				} else {
@@ -1866,7 +1873,7 @@
 					v = y =! 5 # pointer
 					x = x & v
 					:if(x){
-						:raw("[ <,>,<=,>= ] Operator must have 2 expressions of same type (int, char, pointer). ")
+						:throw("[ <,>,<=,>= ] Operator must have 2 expressions of same type (int, char, pointer). ")
 						x = l
 						:call(errorPrintLine)
 					}
@@ -1915,7 +1922,7 @@
 		u = y == 6 # struct
 		x = x | u
 		:if(x){
-			:raw("[ ==,!= ] Operator must have 2 expressions of same type (int, bool, char, pointer). ")
+			:throw("[ ==,!= ] Operator must have 2 expressions of same type (int, bool, char, pointer). ")
 			x = l
 			:call(errorPrintLine)
 		}
@@ -1952,7 +1959,7 @@
 			y = y =! 2 # bool
 			y = y | x
 			:if(y){
-				:raw("[ &&,|| ] Operator must have 2 expressions of type bool. ")
+				:throw("[ &&,|| ] Operator must have 2 expressions of type bool. ")
 				x = l
 				:call(errorPrintLine)
 			}
@@ -1973,7 +1980,7 @@
 					x = x + 2
 					:load(x,x)
 					:call(printIdent)
-					:raw(" is a function, not a variable. ")
+					:throw(" is a function, not a variable. ")
 					x = l
 					:call(errorPrintLine)
 				}
@@ -2048,7 +2055,7 @@
 			:call(push)
 			y = h == 0
 			:if(y){
-				:raw("[ Indexing ] Base expression must be Lvalue. ")
+				:throw("[ Indexing ] Base expression must be Lvalue. ")
 				x = l
 				:call(errorPrintLine)
 			}
@@ -2068,7 +2075,7 @@
 			x = x =! 0 # int
 			v = v | x
 			:if(v){
-				:raw("[ Indexing ] Base expression must be of type array or pointer, index must be type int. ")
+				:throw("[ Indexing ] Base expression must be of type array or pointer, index must be type int. ")
 				x = l
 				:call(errorPrintLine)
 			}
@@ -2089,7 +2096,7 @@
 				:load(x,u) # load address of type2
 				y = h == 0
 				:if(y){
-					:raw("[ Component ] Base expression must be Lvalue. ")
+					:throw("[ Component ] Base expression must be Lvalue. ")
 					x = l
 					:call(errorPrintLine)
 				}
@@ -2124,16 +2131,16 @@
 						y = x =! 12 # struct
 					}
 					:if(w){
-						:raw("Struct does not contain component ")
+						:throw("Struct does not contain component ")
 						x = u
-						:call(printIdent)
-						:raw(". ")
+						:call(errorIdent)
+						:throw(". ")
 						x = l
 						:call(errorPrintLine)
 					}
 					h = 1
 				} else {
-					:raw("Base expression must be type struct. ")
+					:throw("Base expression must be type struct. ")
 					x = l
 					:call(errorPrintLine)
 				}
@@ -2152,7 +2159,7 @@
 		:call(semantics_typeResolver_resolveExpression)
 		y = h == 0
 		:if(y){
-			:raw("Cannot take address (expression must be Lvalue). ")
+			:throw("Cannot take address (expression must be Lvalue). ")
 			x = l
 			:call(errorPrintLine)
 		}
@@ -2182,7 +2189,7 @@
 				m = m + 1
 				h = 1
 			} else {
-				:raw("Expression must be a pointer. ")
+				:throw("Expression must be a pointer. ")
 				x = l
 				:call(errorPrintLine)
 			}
@@ -2216,7 +2223,7 @@
 				s = u == 6 # struct
 				v = v | s
 				:if(v){
-					:raw("Cast expression can contain types int, char and pointer. ")
+					:throw("Cast expression can contain types int, char and pointer. ")
 					x = l
 					:call(errorPrintLine)
 				}
@@ -2269,16 +2276,16 @@
 							y = x =! 12 # struct
 						}
 						:if(w){
-							:raw("Struct does not contain component ")
+							:throw("Struct does not contain component ")
 							x = u
-							:call(printIdent)
-							:raw(". ")
+							:call(errorIdent)
+							:throw(". ")
 							x = l
 							:call(errorPrintLine)
 						}
 						h = 1
 					} else {
-						:raw("Base expression must be type struct pointer. ")
+						:throw("Base expression must be type struct pointer. ")
 						x = l
 						:call(errorPrintLine)
 					}		
@@ -2296,7 +2303,7 @@
 	:call(push)
 	y = h == 0
 	:if(y){
-		:raw("Left side of assignment must be an Lvalue. ")
+		:throw("Left side of assignment must be an Lvalue. ")
 		x = l
 		:call(errorPrintLine)
 	}
@@ -2315,7 +2322,7 @@
 		:call(semantics_typeResolver_equals)
 		y = y == 0
 		:if(y){
-			:raw("[ = ] Expressions in assignment need to have equal types. ")
+			:throw("[ = ] Expressions in assignment need to have equal types. ")
 			x = l
 			:call(errorPrintLine)
 		}
@@ -2337,7 +2344,7 @@
 				x = x =! 1 # char
 				y = y & x
 				:if(y){
-					:raw("[ +=,-= ] Right side must be int or char. ")
+					:throw("[ +=,-= ] Right side must be int or char. ")
 					x = l
 					:call(errorPrintLine)
 				}
@@ -2350,14 +2357,14 @@
 					:load(y,y)
 					y = y =! 0
 					:if(y){
-						:raw("[ +=,-= ] Right side must be int. ")
+						:throw("[ +=,-= ] Right side must be int. ")
 						x = l
 						:call(errorPrintLine)
 					}
 				} else {
 					y = x =! 1 # char
 					:if(y){
-						:raw("[ +=,-= ] Left side must be int, char or ptr. ")
+						:throw("[ +=,-= ] Left side must be int, char or ptr. ")
 						x = l
 						:call(errorPrintLine)
 					}
@@ -2376,7 +2383,7 @@
 			y = y & x
 			y = y == 0
 			:if(y){
-				:raw("[ /=,*= ] Both expressions have to be integers. ")
+				:throw("[ /=,*= ] Both expressions have to be integers. ")
 				x = l
 				:call(errorPrintLine)
 			}
@@ -2475,11 +2482,11 @@
 		:load(u,u) # load type
 		y = u == 3 # void
 		:if(y){
-			:raw("Variable or field ":)
+			:throw("Variable or field ")
 			x = i + v # ident
 			:load(x,x)
-			:call(printIdent)
-			:raw(" cannot be void. ")
+			:call(errorIdent)
+			:throw(" cannot be void. ")
 			x = x + 3 # line no.
 			:load(x,x)
 			:call(errorPrintLine)
@@ -2513,11 +2520,11 @@
 			:load(x,j)
 			y = x == u
 			:if(y){
-				:raw("Struct ")
+				:throw("Struct ")
 				x = x + 2 # ident
 				:load(x,x)
 				:call(printIdent)
-				:raw(" cannot be recursive (use pointers!). ")
+				:throw(" cannot be recursive (use pointers!). ")
 				x = x + 3 # line no.
 				:load(x,x)
 				:call(errorPrintLine)
@@ -2577,14 +2584,14 @@
 				}
 			}
 			:if(f){
-				:raw("Struct ")
+				:throw("Struct ")
 				x = m - 1
 				:load(x,x)
 				x = x + 2 # ident
 				:load(x,x)
 				x = x + 3 # line no.
-				:call(printIdent)
-				:raw(" cannot be empty. ")
+				:call(errorIdent)
+				:throw(" cannot be empty. ")
 				:load(x,x)
 				:call(errorPrintLine)
 			}
@@ -2605,7 +2612,7 @@
 				:load(u,u)
 				u = u =! 0 # int
 				:if(u){
-					:raw("Array length must be an int. ")
+					:throw("Array length must be an int. ")
 					x = x + 3
 					:load(x,x)
 					:call(errorPrintLine)
@@ -2614,7 +2621,7 @@
 				:load(u,u)
 				u = u == 0
 				:if(u){
-					:raw("Array length cannot be 0. ")
+					:throw("Array length cannot be 0. ")
 					x = x + 3
 					:load(x,x)
 					:call(errorPrintLine)
@@ -2625,7 +2632,7 @@
 				:load(u,u)
 				u = u == 3 # void
 				:if(u){
-					:raw("Array basetype cannot be void. ")
+					:throw("Array basetype cannot be void. ")
 					x = x + 3
 					:load(x,x)
 					:call(errorPrintLine)
@@ -2641,7 +2648,7 @@
 					x = x == 6 # struct
 					y = y | x
 					:if(y){
-						:raw("Function return type cannot be array or struct. ")
+						:throw("Function return type cannot be array or struct. ")
 						x = i + 2 # ident
 						:load(x,x)
 						x = x + 3 # line no
@@ -2670,10 +2677,10 @@
 			:call(semantics_nameResolver_getDeclaration)
 			y = y =! -1
 			:if(y){
-				:raw("Name ")
+				:throw("Name ")
 				x = p
-				:call(printIdent)
-				:raw(" already declared. ")
+				:call(errorIdent)
+				:throw(" already declared. ")
 				x = p + 3
 				:load(x,x)
 				:call(errorPrintLine)
@@ -2697,7 +2704,7 @@
 			u = x == 10 # call
 			y = y | u
 			:if(y){
-				:raw("Only constants allowed in global context. ")
+				:throw("Only constants allowed in global context. ")
 				u = i + 2
 				:load(u,u)
 				u = u + 3
@@ -2760,10 +2767,10 @@
 				:call(semantics_nameResolver_getTypeDeclaration)
 				y = r == -1
 				:if(y){
-					:raw("Undeclared type ")
+					:throw("Undeclared type ")
 					x = p
-					:call(printIdent)
-					:raw(". ")
+					:call(errorIdent)
+					:throw(". ")
 					x = p + 3
 					:load(x,x)
 					:call(errorPrintLine)
@@ -2789,10 +2796,10 @@
 		:call(semantics_nameResolver_getDeclaration)
 		y = r == -1
 		:if(y){
-			:raw("Undeclared name ")
+			:throw("Undeclared name ")
 			x = p
-			:call(printIdent)
-			:raw(". ")
+			:call(errorIdent)
+			:throw(". ")
 			x = p + 3
 			:load(x,x)
 			:call(errorPrintLine)
@@ -2812,10 +2819,10 @@
 			:call(semantics_nameResolver_getTypeDeclaration)
 			y = r == -1
 			:if(y){
-				:raw("Undeclared type ")
+				:throw("Undeclared type ")
 				x = p
-				:call(printIdent)
-				:raw(". ")
+				:call(errorIdent)
+				:throw(". ")
 				x = p + 3
 				:load(x,x)
 				:call(errorPrintLine)
@@ -2835,10 +2842,10 @@
 				:call(semantics_nameResolver_getDeclaration)
 				y = r == -1
 				:if(y){
-					:raw("Undeclared name ")
+					:throw("Undeclared name ")
 					x = p
-					:call(printIdent)
-					:raw(". ")
+					:call(errorIdent)
+					:throw(". ")
 					x = p + 3
 					:load(x,x)
 					:call(errorPrintLine)
@@ -2973,10 +2980,10 @@
 		q = q == t
 		y = y & q
 		:if(y){
-			:raw("Name ")
+			:throw("Name ")
 			x = p
-			:call(printIdent)
-			:raw(" already declared. ")
+			:call(errorIdent)
+			:throw(" already declared. ")
 			x = p + 3
 			:load(x,x)
 			:call(errorPrintLine)
@@ -2996,10 +3003,10 @@
 			q = q == t
 			y = y & q
 			:if(y){
-				:raw("Type ")
+				:throw("Type ")
 				x = p
-				:call(printIdent)
-				:raw(" already declared. ")
+				:call(errorIdent)
+				:throw(" already declared. ")
 				x = p + 3
 				:load(x,x)
 				:call(errorPrintLine)
@@ -3037,10 +3044,10 @@
 				q = q == t
 				y = y & q
 				:if(y){
-					:raw("Parameter ")
+					:throw("Parameter ")
 					x = p
-					:call(printIdent)
-					:raw(" already declared. ")
+					:call(errorIdent)
+					:throw(" already declared. ")
 					x = p + 3
 					:load(x,x)
 					:call(errorPrintLine)
@@ -4532,7 +4539,7 @@
 				:call(errorExpectedX)
 			}
 		} else {
-			:raw("Expected identifier. ")
+			:throw("Expected identifier. ")
 			x = i + 3
 			:load(x,x)
 			:call(errorPrintLine)
@@ -6171,6 +6178,47 @@
 	:call(pop) # restore y
 	y = s
 }
+:fun(errint){
+	s = y
+	:call(push) # save y
+	s = w
+	:call(push) # save w
+	s = z
+	:call(push) # save z
+	s = x
+	:call(push) # save x
+	y = x < 0
+	:if(y){
+		:raw("-")
+		w = x * -1
+	} else {
+		w = x
+	}
+	y = 10
+	x = w / y
+	z = x > 0
+	:while(z){
+		y = y * 10
+		x = w / y
+		z = x > 0
+	}
+	y = y / 10
+	:while(y){
+		x = w / y
+		x = x % 10
+		x = x + 48
+		:uchar(x)
+		y = y / 10
+	}
+	:call(pop) # restore x
+	x = s
+	:call(pop) # restore z
+	z = s
+	:call(pop) # restore w
+	w = s
+	:call(pop) # restore y
+	y = s
+}
 # input: x
 # writes: y
 :fun(convertEscapableChar){
@@ -6194,10 +6242,10 @@
 					:if(y){
 						y = 92
 					} else {
-						:raw("Invalid escape sequence. Line ")
+						:throw("Invalid escape sequence. Line ")
 						x = l
-						:call(putint)
-						:raw("\n")
+						:call(errint)
+						:throw("\n")
 						x = 1
 						:exit(x)
 					}
@@ -6786,6 +6834,36 @@
 	:call(pop)
 	x = s
 }
+:fun(errorIdent){
+	s = x
+	:call(push)
+	s = u
+	:call(push)
+	s = v
+	:call(push)
+	s = y
+	:call(push)
+	u = x + 1
+	:load(u,u) # start
+	v = x + 2
+	:load(v,v) # length
+	v = u + v
+	y = u < v
+	:while(y){
+		:load(x,u)
+		:uchar(x)
+		u = u + 1
+		y = u < v
+	}
+	:call(pop)
+	y = s
+	:call(pop)
+	v = s
+	:call(pop)
+	u = s
+	:call(pop)
+	x = s
+}
 # input: x,y
 # output: y
 :fun(identEquals){
@@ -6851,62 +6929,62 @@
 # Errors
 #
 :fun(errorExpectedX){
-	:raw("Expected ")
+	:throw("Expected ")
 	:putchar(x)
-	:raw(", found token type ")
+	:throw(", found token type ")
 	:load(x,i)
-	:call(putint)
-	:raw(". ")
+	:call(errint)
+	:throw(". ")
 	x = i + 3
 	:load(x,x)
 	:call(errorPrintLine)
 }
 :fun(errorUnmatchedToken){
-	:raw("Unmatched token (type ")
+	:throw("Unmatched token (type ")
 	:load(x,i)
-	:call(putint)
-	:raw("). ")
+	:call(errint)
+	:throw("). ")
 	x = i + 3
 	:load(x,x)
 	:call(errorPrintLine)
 }
 :fun(errorEOFcomment){
-	:raw("EOF reached while parsing comment.")
+	:throw("EOF reached while parsing comment.")
 	x = 1
 	:exit(x)
 }
 :fun(errorInvalidCharConstant){
-	:raw("Invalid char constant. ")
+	:throw("Invalid char constant. ")
 	x = l
 	:call(errorPrintLine)
 }
 :fun(errorLeadingZero){
-	:raw("Invalid int constant (leading zeros). ")
+	:throw("Invalid int constant (leading zeros). ")
 	x = l
 	:call(errorPrintLine)
 }
 :fun(errorConstantTooBig){
-	:raw("Invalid int constant (too big). ")
+	:throw("Invalid int constant (too big). ")
 	x = l
 	:call(errorPrintLine)
 }
 :fun(errorInvalidCharInString){
-	:raw("Invalid char encountered in string literal. ")
+	:throw("Invalid char encountered in string literal. ")
 	x = l
 	:call(errorPrintLine)
 }
 :fun(errorUnmatchedChar){
-	:raw("Unmatched char '")
+	:throw("Unmatched char '")
 	:load(x,i)
-	:putchar(x)
-	:raw("' in file. ")
+	:uchar(x)
+	:throw("'. ")
 	x = l
 	:call(errorPrintLine)
 }
 :fun(errorPrintLine){
-	:raw("Line ")
-	:call(putint)
-	:raw("\n")
+	:throw("Line ")
+	:call(errint)
+	:throw("\n")
 	x = 1
 	:exit(x)
 }

@@ -64,6 +64,10 @@ _special_switch:
 	beq	_special_switch_c
 	cmp	r1,#102		@ f
 	beq	_special_switch_f
+	cmp	r1,#116		@ t
+	beq	_special_switch_t
+	cmp	r1,#117		@ u
+	beq	_special_switch_u
 @ g(etchar)
 _special_switch_g:
 	mov	r7,#4		@ write syscall code
@@ -94,6 +98,21 @@ _special_switch_p:
 	ldr	r2,=__putchar_len2 @ count
 	svc	0
 	b	_special_switch_end
+@ u(throwchar)
+_special_switch_u:
+	mov	r7,#4		@ write syscall code
+	mov	r0,#1		@ fd 1
+	ldr	r1,=__putchar_str1 @ char buffer
+	ldr	r2,=__putchar_len1 @ count
+	svc	0
+	bl	getchar		@ var
+	bl	putchar
+	mov	r7,#4		@ write syscall code
+	mov	r0,#1		@ fd 1
+	ldr	r1,=__uchar_str2 @ char buffer
+	ldr	r2,=__uchar_len2 @ count
+	svc	0
+	b	_special_switch_end
 @ raw(string)
 _special_switch_r:
 	bl	getchar
@@ -116,6 +135,48 @@ _special_switch_r_loop_end:
 	mov	r0,#1		@ fd 1
 	ldr	r1,=__rstring_str1 @ mov r7,#4  mov r0,#1  ldr r1,=s
 	ldr	r2,=__rstring_len1 @ count
+	svc	0
+	ldr	r0,=stringcnt
+	ldr	r0,[r0]
+	bl	putint		@ write string id
+	mov	r0,#1		@ fd 1
+	ldr	r1,=__rstring_str2 @ char buffer
+	ldr	r2,=__rstring_len2 @ count
+	svc	0
+	ldr	r0,=stringcnt
+	ldr	r0,[r0]
+	bl	putint		@ write string id
+	mov	r0,#1		@ fd 1
+	ldr	r1,=__rstring_str3 @ char buffer
+	ldr	r2,=__rstring_len3 @ count
+	svc	0
+	ldr	r1,=stringcnt
+	ldr	r2,[r1]		@ read string count
+	add	r2,r2,#1	@ increment string counter
+	str	r2,[r1]		@ write back string counter
+	b	_special_switch_end
+@ throw(string)
+_special_switch_t:
+	bl	getchar
+	cmp	r0,#34		@ "
+	bne	_special_switch_t @ skip all chars until "
+_special_switch_t_loop:
+	bl	getchar
+	cmp	r0,#34		@ "
+	beq	_special_switch_t_loop_end
+	str	r0,[r5],#4	@ store char on the heap and increment hp
+	cmp	r0,#92		@ \
+	bne	_special_switch_t_loop
+	bl	getchar
+	str	r0,[r5],#4	@ store escaped char and increment hp
+	b	_special_switch_t_loop
+_special_switch_t_loop_end:
+	mov	r0,#0
+	strb	r0,[r5],#4	@ null seperated strings
+	mov	r7,#4		@ write syscall code
+	mov	r0,#1		@ fd 1
+	ldr	r1,=__tstring_str1 @ mov r7,#4  mov r0,#1  ldr r1,=s
+	ldr	r2,=__tstring_len1 @ count
 	svc	0
 	ldr	r0,=stringcnt
 	ldr	r0,[r0]
@@ -807,8 +868,12 @@ __putchar_str1: .ascii "\tldr\tr0,="
 __putchar_len1 = .-__putchar_str1
 __putchar_str2: .ascii "\n\tldr\tr0,[r0]\n\tbl\tputchar\n"
 __putchar_len2 = .-__putchar_str2
+__uchar_str2: .ascii "\n\tldr\tr0,[r0]\n\tbl\tthrowchar\n"
+__uchar_len2 = .-__uchar_str2
 __rstring_str1: .ascii "\tmov\tr7,#4\n\tmov\tr0,#1\n\tldr\tr1,=s"
 __rstring_len1 = .-__rstring_str1
+__tstring_str1: .ascii "\tmov\tr7,#4\n\tmov\tr0,#2\n\tldr\tr1,=s"
+__tstring_len1 = .-__tstring_str1
 __rstring_str2: .ascii "\n\tldr\tr2,=slen"
 __rstring_len2 = .-__rstring_str2
 __rstring_str3: .ascii "\n\tsvc\t0\n"
