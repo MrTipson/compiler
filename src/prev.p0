@@ -806,56 +806,66 @@
 						} else {
 							y = u == 11 # binop -
 							:if(y){
-								:raw("\tsub\tr0,r1,r0\n")
-							} else {
-								y = u == 12 # binop <
+								x = v + 4 # expression type
+								:load(x,x)
+								x = x + 1
+								:load(x,x)
+								y = x == 5 # pointer
 								:if(y){
-									:raw("\tcmp\tr1,r0\n\tmov\tr0,#0\n\tmovlt\tr0,#1\n")
-								} else {
-									y = u == 13 # binop >
-									:if(y){
-										:raw("\tcmp\tr1,r0\n\tmov\tr0,#0\n\tmovgt\tr0,#1\n")
-									} else {
-										y = u == 14 # binop <=
-										:if(y){
-											:raw("\tcmp\tr1,r0\n\tmov\tr0,#0\n\tmovle\tr0,#1\n")
-										} else {
-											y = u == 15 # binop >=
-											:if(y){
-												:raw("\tcmp\tr1,r0\n\tmov\tr0,#0\n\tmovge\tr0,#1\n")
-											} else {
-												y = u == 16 # binop ==
-												:if(y){
-													:raw("\tcmp\tr1,r0\n\tmov\tr0,#0\n\tmoveq\tr0,#1\n")
-												} else {
-													y = u == 17 # binop !=
-													:if(y){
-														:raw("\tcmp\tr1,r0\n\tmov\tr0,#0\n\tmovne\tr0,#1\n")
-													} else {
-														y = u == 18 # binop &
-														v = u == 20 # binop &&
-														y = y | v
-														:if(y){
-															:raw("\tand\tr0,r1,r0\n")
-														} else {
-															y = u == 19 # binop |
-															v = u == 21 # binop ||
-															y = y | v
-															:if(y){
-																:raw("\torr\tr0,r1,r0\n")
-															} else {
-																y = u == 26 # binop ^
-																:if(y){
-																	:raw("\teor\tr0,r1,r0\n")
-																}
-															}
-														}
-													}
-												}
-											}
-										}
+									x = v + 2
+									:load(x,x)
+									x = x + 4
+									:load(x,x)
+									u = x + 1
+									:load(u,u)
+									y = u == 5
+									:if(y){ # expr1 is pointer
+										x = x + 2 # basetype
+										:load(x,x)
+										:call(memory_getTypeSize)
+										:raw("\tldr\tr2,=")
+										x = y
+										:call(putint)
+										:raw("\n\tmul\tr0,r0,r2\n")
+									} else { # expr2 is pointer
+										x = v + 3 # expr2
+										:load(x,x)
+										x = x + 4 # type
+										:load(x,x)
+										x = x + 2 # basetype
+										:load(x,x)
+										:call(memory_getTypeSize)
+										:raw("\tldr\tr2,=")
+										x = y
+										:call(putint)
+										:raw("\n\tmul\tr1,r1,r2\n")
 									}
 								}
+								:raw("\tsub\tr0,r1,r0\n")
+								x = v + 4 # expression type
+								:load(u,x)
+								x = u + 1
+								:load(x,x)
+								y = x == 0 # int
+								x = v + 2 # expr1
+								:load(x,x)
+								x = x + 4 # expr1 type
+								:load(u,x)
+								x = u + 1 # type type
+								:load(x,x)
+								x = x == 5 # expr1 is pointer
+								y = y & x # result is int, but operands are pointer
+								:if(y){
+									x = u + 2
+									:load(x,x)
+									:call(memory_getTypeSize)
+									:raw("\tldr\tr1,=")
+									x = y
+									:call(putint)
+									:raw("\n\tsdiv\tr0,r0,r1\n")
+								}
+							} else {
+								:call(codegen_expression_2andahalf)
 							}
 						}
 					}
@@ -863,6 +873,56 @@
 			}
 		} else {
 			:call(codegen_expression_3)
+		}
+	}
+}
+:fun(codegen_expression_2andahalf){
+	y = u == 12 # binop <
+	:if(y){
+		:raw("\tcmp\tr1,r0\n\tmov\tr0,#0\n\tmovlt\tr0,#1\n")
+	} else {
+		y = u == 13 # binop >
+		:if(y){
+			:raw("\tcmp\tr1,r0\n\tmov\tr0,#0\n\tmovgt\tr0,#1\n")
+		} else {
+			y = u == 14 # binop <=
+			:if(y){
+				:raw("\tcmp\tr1,r0\n\tmov\tr0,#0\n\tmovle\tr0,#1\n")
+			} else {
+				y = u == 15 # binop >=
+				:if(y){
+					:raw("\tcmp\tr1,r0\n\tmov\tr0,#0\n\tmovge\tr0,#1\n")
+				} else {
+					y = u == 16 # binop ==
+					:if(y){
+						:raw("\tcmp\tr1,r0\n\tmov\tr0,#0\n\tmoveq\tr0,#1\n")
+					} else {
+						y = u == 17 # binop !=
+						:if(y){
+							:raw("\tcmp\tr1,r0\n\tmov\tr0,#0\n\tmovne\tr0,#1\n")
+						} else {
+							y = u == 18 # binop &
+							v = u == 20 # binop &&
+							y = y | v
+							:if(y){
+								:raw("\tand\tr0,r1,r0\n")
+							} else {
+								y = u == 19 # binop |
+								v = u == 21 # binop ||
+								y = y | v
+								:if(y){
+									:raw("\torr\tr0,r1,r0\n")
+								} else {
+									y = u == 26 # binop ^
+									:if(y){
+										:raw("\teor\tr0,r1,r0\n")
+									}
+								}
+							}
+						}
+					}
+				}
+			}
 		}
 	}
 }
@@ -1796,6 +1856,8 @@
 		v = u == 11 # binop -
 		y = y | v
 		:if(y){
+			s = v
+			:call(push)
 			u = x + 2
 			v = x + 3
 			:load(x,u)
@@ -1844,11 +1906,33 @@
 					}
 					# type ok, 2nd expression carries over
 				} else {
-					:throw("[ Binop +,- ] One expression must be int, the other can be int, char or pointer. The result has the same type as 1st expression. ")
-					x = l
-					:call(errorPrintLine)
+					v = x == 5
+					x = x == 1
+					v = v | x
+					x = a + 1
+					:load(x,x)
+					v = v & x
+					y = 0
+					:if(v){
+						:load(x,u)
+						y = s
+						:call(semantics_typeResolver_equals)
+					}
+					:if(y){
+						x = 0
+						y = 0
+						:call(semantics_typeResolver_createType)
+						x = m - 5
+						:store(x,m)
+						m = m + 1
+					} else {
+						:throw("[ Binop +,- ] One expression must be int, the other can be int, char or pointer. The result has the same type as 1st expression. ")
+						x = l
+						:call(errorPrintLine)
+					}
 				}
 			}
+			:call(pop)
 		} else {
 			y = u => 12
 			v = u =< 15 # binop >
@@ -2425,7 +2509,7 @@
 	v = v =! 1
 	u = u | v
 	:if(u){
-		:raw("[TypeEquals] Invalid input")
+		:throw("[TypeEquals] Invalid input")
 		x = l
 		:call(errorPrintLine)
 	}
