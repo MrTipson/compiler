@@ -1,0 +1,24 @@
+void putint(int val);
+int write(int fd, char* buf, int count);
+
+struct abc{
+	int a;
+	bool b;
+	char c;
+	int d;
+};
+
+int main() {
+	putint(sizeof(abc[5]));
+	write(1,"\n",1);
+	putint(sizeof(int));
+	write(1,"\n",1);
+	putint(sizeof(abc[5]*));
+	write(1,"\n",1);
+	putint(sizeof(void*));
+	write(1,"\n",1);
+	putint(sizeof(bool));
+	write(1,"\n",1);
+	putint(sizeof(void));
+	write(1,"\n",1);
+}

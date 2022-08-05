@@ -64,6 +64,7 @@ Binop \|\| | 21
 Binop ^  | 26
 ident    | 22
 const    | 23
+sizeof	 | 32
 
 ## Memory structure
 Type\Offset | 0 | 1 | 2 | 3 | 4

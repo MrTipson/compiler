@@ -964,6 +964,15 @@
 						}
 					}
 				}
+			} else {
+				y = u == 32 # sizeof
+				x = x + 2 # expr
+				:load(x,x)
+				:call(memory_getTypeSize)
+				:raw("\tldr\tr0,=")
+				x = y
+				:call(putint)
+				:raw("\n")
 			}
 		}
 	}
@@ -1308,6 +1317,8 @@
 	} else {
 		y = u == 1 # char
 		v = u == 2 # bool
+		y = y | v
+		v = u == 3 # void
 		y = y | v
 		:if(y){
 			y = 1
@@ -2289,6 +2300,16 @@
 						x = l
 						:call(errorPrintLine)
 					}		
+				} else {
+					y = u == 32 # sizeof
+					:if(y){
+						x = 0 # int
+						y = 0
+						:call(semantics_typeResolver_createType)
+						x = m - 5
+						:store(x,m)
+						m = m + 1
+					}
 				}
 			}
 		}
@@ -4314,6 +4335,49 @@
 				}
 				:raw("enclxpr ")
 				i = i + 4
+			} else {
+				y = x == 47 # sizeof
+				:if(y){
+					i = i + 4
+					:load(x,i)
+					y = x == 14 # (
+					:if(y){
+						i = i + 4
+						f = 1
+						:call(syntax_isType)
+						:if(f){
+							:throw("Expected type, found ")
+							:load(x,i)
+							:call(errint)
+							:throw(".\n")
+							x = 1
+							:exit(x)
+						} else {
+							:load(x,i)
+							y = x =! 15 # )
+							:if(y){
+								x = 15 # )
+								:call(errorExpectedX)
+							}
+						}
+					} else {
+						x = 14 # (
+						:call(errorExpectedX)
+					}
+					s = m - 5 # type cell
+					x = 2 # expression
+					:store(x,m)
+					m = m + 1
+					x = 32
+					:store(x,m) # type
+					m = m + 1
+					:store(s,m) # token
+					m = m + 3 # skip two
+					i = i + 4
+					:if(d){
+						:raw("sizeof ")
+					}
+				}
 			}
 		}
 	}
@@ -4704,6 +4768,9 @@
 								:call(tokenize_isKeyword_return)
 								:if(f){
 									:call(tokenize_isKeyword_struct)
+									:if(f){
+										:call(tokenize_isKeyword_sizeof)
+									}
 								}
 							}
 						}
@@ -4986,6 +5053,38 @@
 		i = i + 1 # increment file (we loaded but didnt increment)
 		:if(d){
 			:raw("STRUCT ")
+		}
+	}
+}
+:fun(tokenize_isKeyword_sizeof){
+	:load(z,i) # 6th character
+	i = i + 1
+	:load(x,i) # 7th character should be non-identifier
+	i = i - 1
+	:call(tokenize_isKeyword_helper) # y contains result
+	x = p == 115 # s
+	y = y & x
+	x = q == 105 # i
+	y = y & x
+	x = r == 122 # z
+	y = y & x
+	x = s == 101 # e
+	y = y & x
+	x = t == 111 # o
+	y = y & x
+	x = z == 102 # f
+	y = y & x
+	:if(y){ # match
+		f = 0 # set match flag
+		x = 47 # type 47
+		:store(x,m)
+		m = m + 3 # skip optional field
+		x = l
+		:store(x,m)
+		m = m + 1
+		i = i + 1 # increment file (we loaded but didnt increment)
+		:if(d){
+			:raw("SIZEOF ")
 		}
 	}
 }
