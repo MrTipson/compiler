@@ -1,8 +1,6 @@
 void putint(int val);
 int write(int fd, char* cbuf, int count);
 
-void test(){}
-
 int[10] arr;
 int main(){
 	int i = 0;
@@ -17,6 +15,12 @@ int main(){
 	int* ptr = &arr[0];
 	while(i++ < 10){
 		putint(*ptr++);
+		write(1," ",1);
+	}
+	i--;
+	ptr--;
+	while(i-- > 0){
+		putint(*ptr--);
 		write(1," ",1);
 	}
 	write(1,"\n",1);

@@ -1,13 +1,12 @@
 void putint(int val);
 int write(int fd, char* buf, int count);
 
-
 int main(int argc, char** argv){
 	int[10] arr;
 	putint(&arr[5]-&arr[1]);
 
 	bool[10] arr2;
-	putint(&arr2[5]-&arr2[1]);
+	putint((&arr2[5]-1)-(&arr2[1]+1));
 
 	struct abc {
 		int x;
