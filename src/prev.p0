@@ -1744,6 +1744,8 @@
 	:call(push)
 	s = p
 	:call(push)
+	s = c
+	:call(push)
 	# x has call address (end)
 	x = x + 3
 	:load(x,x)
@@ -1779,9 +1781,11 @@
 					c = c + 1
 				}
 			}
-			y = c => 1
+			y = c == 1
 			p = x =! 11 # argument
 			y = y & p
+			p = c > 1
+			y = y | p
 		}
 		y = 1
 		:while(y){ # skip all non parameter/function end block
@@ -1831,6 +1835,8 @@
 	:load(k,k)
 	:store(k,m)
 	m = m + 1
+	:call(pop)
+	c = s
 	:call(pop)
 	p = s
 	:call(pop)
