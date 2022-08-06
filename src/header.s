@@ -1,4 +1,3 @@
-@ Define my Raspberry Pi
 .syntax unified         @ modern syntax
 
 @ Program code
@@ -8,4 +7,4 @@
 .global exit
 .global break
 
-.include "src/stdlib.s"
+.include "src/basicio.s"
