@@ -1,0 +1,21 @@
+void printf(char* format, void* arg1, void* arg2);
+void putint(int val);
+
+int fibonacci(int n){
+	if(n < 2){
+		return n;
+	}
+	int a = 0;
+	int b = 1;
+	while(n-- >= 2){
+		int c = a + b;
+		a = b;
+		b = c;
+	}
+	return b;
+}
+
+int main(int argc, char** argv) {
+	int x = 10;
+	printf("Fibonacci(%d)=%d", (void*)x, (void*)fibonacci(x));
+}

@@ -1063,6 +1063,8 @@
 	}
 }
 :fun(codegen_call){
+	s = c
+	:call(push)
 	s = z
 	:call(push)
 	z = x + 3
@@ -1080,9 +1082,12 @@
 	u = z + 1
 	:load(u,u)
 	u = u =! 1 # end
+	c = 0
 	y = y | u
 	:while(y){
 		y = x == 11 # arg
+		u = c == 0
+		y = y & u
 		:if(y){
 			x = z + 1
 			:load(x,x)
@@ -1104,6 +1109,18 @@
 					:exit(x)
 				}
 			}
+		} else {
+			y = x == 10 # call
+			:if(y){
+				x = z + 1
+				:load(x,x)
+				y = x == 0 # start
+				:if(y){
+					c = c + 1
+				} else {
+					c = c - 1
+				}
+			}
 		}
 		z = z + 5
 		:load(x,z)
@@ -1111,6 +1128,8 @@
 		u = z + 1
 		:load(u,u)
 		u = u =! 1 # end
+		y = y | u
+		u = c > 0
 		y = y | u
 	}
 	:raw("\tbl\tF")
@@ -1120,6 +1139,8 @@
 	:raw("\n")
 	:call(pop)
 	z = s
+	:call(pop)
+	c = s
 }
 :fun(codegen_isMain){
 	s = x
