@@ -21,3 +21,58 @@ void __putint(int num){
 		write(1, &c, 1);
 	}
 }
+
+void printf(char* format, void* arg1, void* arg2){
+	void*[2] arr;
+	arr[0] = arg1;
+	arr[1] = arg2;
+	fprintf(1, format, (void**)&arr);
+}
+
+void fprintf(int fd, char* format, void** args) {
+	char[1000] cbuf;
+	int count = 0;
+	while(*format != (char)0) {
+		if(*format == '%'){
+			format++;
+			if(*format == 'd'){
+				int num = (int)*args++;
+				if(num == 0) {
+					cbuf[count++] = '0';
+				} else {
+					if(num < 0){
+						cbuf[count++] = '-';
+						num = -num;
+					}
+					int y = 10;
+					int x = num / y;
+					while(x > 0){
+						y *= 10;
+						x = num / y;
+					}
+					y /= 10;
+					while(y != 0){
+						cbuf[count++] = num / y % 10 + '0';
+						y /= 10;
+					}
+				}
+				format++;
+			} else if(*format == 's'){
+				char* str = (char*)*args;
+				while(*str != (char)0){
+					cbuf[count++] = *str++;
+				}
+				format++;
+			} else if(*format == '%'){
+				cbuf[count++] = '%';
+				format++;
+			} else {
+				write(2, "Invalid format specifier.\n",26);
+				return;
+			}
+		} else {
+			cbuf[count++] = *format++;
+		}
+	}
+	write(fd,(char*)&cbuf,count);
+}

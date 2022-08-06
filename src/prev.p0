@@ -3,7 +3,7 @@
 	:if(d){
 		:raw("/*\n")
 	}
-	a = 5000 # stack pointer
+	a = 20000 # stack pointer
 	:call(readFile)
 	b = m
 	:call(tokenize)
@@ -41,8 +41,11 @@
 		:if(y){
 			x = i + 1
 			:load(x,x)
-			y = 1
-			:call(codegen_expression)
+			y = x =! -1
+			:if(y){
+				y = 1
+				:call(codegen_expression)
+			}
 			:raw("\tb\tF")
 			x = f
 			:call(printIdent)
@@ -57,107 +60,7 @@
 			} else {
 				y = x == 7 # assignment
 				:if(y){
-					x = i + 2 # expr1
-					:load(v,x)
-					x = v
-					y = 0
-					:call(codegen_expression)
-					:raw("\tsub\tsp,sp,#4\n\tstr\tr0,[sp]\n")
-					x = i + 3 # expr2
-					:load(x,x)
-					y = 1
-					:call(codegen_expression)
-					x = v + 4 # expression type
-					:load(x,x)
-					:call(memory_getTypeSize)
-					v = y
-					x = i + 1 # type of assignment
-					:load(x,x)
-					y = x == 0
-					:raw("\tldr\tr1,[sp],#4\n")
-					:if(y){
-						y = v == 1
-						:if(y){
-							:raw("\tstrb\tr0,[r1]\n")
-						} else {
-							y = v == 4
-							:if(y){
-								:raw("\tstr\tr0,[r1]\n")
-							} else {
-								:throw("Internal error.\n")
-								x = 1
-								:exit(x)
-							}
-						}
-					} else {
-						y = x == 1 # +=
-						:if(y){
-							y = v == 1
-							:if(y){
-								:raw("\tldrb\tr2,[r1]\n\tadd\tr0,r2,r0\n\tstrb\tr0,[r1]\n")
-							} else {
-								y = v == 4
-								:if(y){
-									:raw("\tldr\tr2,[r1]\n\tadd\tr0,r2,r0\n\tstr\tr0,[r1]\n")
-								} else {
-									:throw("Internal error. ")
-									x = 1
-									:exit(x)
-								}
-							}
-						} else {
-							y = x == 2 # -=
-							:if(y){
-								y = v == 1
-								:if(y){
-									:raw("\tldrb\tr2,[r1]\n\tsub\tr0,r2,r0\n\tstrb\tr0,[r1]\n")
-								} else {
-									y = v == 4
-									:if(y){
-										:raw("\tldr\tr2,[r1]\n\tsub\tr0,r2,r0\n\tstr\tr0,[r1]\n")
-									} else {
-										:throw("Internal error.\n")
-										x = 1
-										:exit(x)
-									}
-								}
-							} else {
-								y = x == 3 # /=
-								:if(y){
-									y = v == 1
-									:if(y){
-										:raw("\tldrb\tr2,[r1]\n\tsdiv\tr0,r2,r0\n\tstrb\tr0,[r1]\n")
-									} else {
-										y = v == 4
-										:if(y){
-											:raw("\tldr\tr2,[r1]\n\tsdiv\tr0,r2,r0\n\tstr\tr0,[r1]\n")
-										} else {
-											:throw("Internal error.\n")
-											x = 1
-											:exit(x)
-										}
-									}
-								} else {
-									y = x == 4 # *=
-									:if(y){
-										y = v == 1
-										:if(y){
-											:raw("\tldrb\tr2,[r1]\n\tmul\tr0,r2,r0\n\tstrb\tr0,[r1]\n")
-										} else {
-											y = v == 4
-											:if(y){
-												:raw("\tldr\tr2,[r1]\n\tmul\tr0,r2,r0\n\tstr\tr0,[r1]\n")
-											} else {
-												:throw("Internal error.\n")
-												x = 1
-												:exit(x)
-											}
-										}
-									}
-								}
-							}
-						}
-					}
+					:call(codegen_assign)
 				} else {
 					y = x == 8 # if/else
 					:if(y){
@@ -341,6 +244,109 @@
 				:throw("Internal error.\n")
 				x = 1
 				:exit(x)
+			}
+		}
+	}
+}
+:fun(codegen_assign){
+	x = i + 2 # expr1
+	:load(v,x)
+	x = v
+	y = 0
+	:call(codegen_expression)
+	:raw("\tsub\tsp,sp,#4\n\tstr\tr0,[sp]\n")
+	x = i + 3 # expr2
+	:load(x,x)
+	y = 1
+	:call(codegen_expression)
+	x = v + 4 # expression type
+	:load(x,x)
+	:call(memory_getTypeSize)
+	v = y
+	x = i + 1 # type of assignment
+	:load(x,x)
+	y = x == 0
+	:raw("\tldr\tr1,[sp],#4\n")
+	:if(y){
+		y = v == 1
+		:if(y){
+			:raw("\tstrb\tr0,[r1]\n")
+		} else {
+			y = v == 4
+			:if(y){
+				:raw("\tstr\tr0,[r1]\n")
+			} else {
+				:throw("Internal error.\n")
+				x = 1
+				:exit(x)
+			}
+		}
+	} else {
+		y = x == 1 # +=
+		:if(y){
+			y = v == 1
+			:if(y){
+				:raw("\tldrb\tr2,[r1]\n\tadd\tr0,r2,r0\n\tstrb\tr0,[r1]\n")
+			} else {
+				y = v == 4
+				:if(y){
+					:raw("\tldr\tr2,[r1]\n\tadd\tr0,r2,r0\n\tstr\tr0,[r1]\n")
+				} else {
+					:throw("Internal error. ")
+					x = 1
+					:exit(x)
+				}
+			}
+		} else {
+			y = x == 2 # -=
+			:if(y){
+				y = v == 1
+				:if(y){
+					:raw("\tldrb\tr2,[r1]\n\tsub\tr0,r2,r0\n\tstrb\tr0,[r1]\n")
+				} else {
+					y = v == 4
+					:if(y){
+						:raw("\tldr\tr2,[r1]\n\tsub\tr0,r2,r0\n\tstr\tr0,[r1]\n")
+					} else {
+						:throw("Internal error.\n")
+						x = 1
+						:exit(x)
+					}
+				}
+			} else {
+				y = x == 3 # /=
+				:if(y){
+					y = v == 1
+					:if(y){
+						:raw("\tldrb\tr2,[r1]\n\tsdiv\tr0,r2,r0\n\tstrb\tr0,[r1]\n")
+					} else {
+						y = v == 4
+						:if(y){
+							:raw("\tldr\tr2,[r1]\n\tsdiv\tr0,r2,r0\n\tstr\tr0,[r1]\n")
+						} else {
+							:throw("Internal error.\n")
+							x = 1
+							:exit(x)
+						}
+					}
+				} else {
+					y = x == 4 # *=
+					:if(y){
+						y = v == 1
+						:if(y){
+							:raw("\tldrb\tr2,[r1]\n\tmul\tr0,r2,r0\n\tstrb\tr0,[r1]\n")
+						} else {
+							y = v == 4
+							:if(y){
+								:raw("\tldr\tr2,[r1]\n\tmul\tr0,r2,r0\n\tstr\tr0,[r1]\n")
+							} else {
+								:throw("Internal error.\n")
+								x = 1
+								:exit(x)
+							}
+						}
+					}
+				}
 			}
 		}
 	}
@@ -726,10 +732,29 @@
 					:if(y){
 						:raw("\tmvn\tr0,r0\n")
 					} else { # *
-						x = a + 1
-						:load(x,x)
-						:if(x){
-							:raw("\tldr\tr0,[r0]\n")
+						y = a + 1
+						:load(y,y)
+						:if(y){
+							:call(break)
+							x = x + 4
+							:load(x,x)
+							x = x + 2
+							:load(x,x)
+							:call(memory_getTypeSize)
+							:call(break)
+							x = y == 1
+							:if(x){
+								:raw("\tldrb\tr0,[r0]\n")
+							} else {
+								x = y == 4
+								:if(x){
+									:raw("\tldr\tr0,[r0]\n")
+								} else {
+									:throw("Internal error. ")
+									x = 1
+									:exit(x)
+								}
+							}
 						}
 					}
 				}
@@ -3002,32 +3027,10 @@
 				v = u == 0 # another start of if
 				y = y | v
 			}
+			x = a + 1
+			:load(m,x)
 			y = u == 1 # else
 			:if(y){
-				i = i - 5 # move one cell back so the else starts a new recursive resolver
-			}
-		} else { # else 
-			y = x =! 8 # if/else
-			u = i + 1
-			:load(u,u)
-			u = u =! 2 # end
-			y = y | u
-			:while(y){
-				y = x == 0 # declaration
-				u = x == 12 # type declaration
-				y = y | u
-				:if(y){
-					:call(semantics_nameResolver_handleDeclaration)
-				} else {
-					y = x == 8 # if
-					u = x == 9 # while
-					y = y | u
-					:if(y){
-						:call(semantics_nameResolver_recursive)
-					} else {
-						:call(semantics_nameResolver_resolveNames)
-					}
-				}
 				i = i + 5
 				:load(x,i)
 				y = x =! 8 # if/else
@@ -3035,6 +3038,30 @@
 				:load(u,u)
 				u = u =! 2 # end
 				y = y | u
+				:while(y){
+					y = x == 0 # declaration
+					u = x == 12 # type declaration
+					y = y | u
+					:if(y){
+						:call(semantics_nameResolver_handleDeclaration)
+					} else {
+						y = x == 8 # if
+						u = x == 9 # while
+						y = y | u
+						:if(y){
+							:call(semantics_nameResolver_recursive)
+						} else {
+							:call(semantics_nameResolver_resolveNames)
+						}
+					}
+					i = i + 5
+					:load(x,i)
+					y = x =! 8 # if/else
+					u = i + 1
+					:load(u,u)
+					u = u =! 2 # end
+					y = y | u
+				}
 			}
 		}
 	} else { # while
