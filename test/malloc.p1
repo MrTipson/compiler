@@ -1,0 +1,24 @@
+void* malloc(int size);
+int write(int fd, char* buf, int count);
+void putint(int val);
+
+void main(){
+	int* arr = (int*) malloc(50*sizeof(int));
+	int i = 0;
+	int* ptr = arr;
+	while(i < 50){
+		*ptr = i++ + 1;
+		ptr++;
+	}
+	bool* arr2 = (bool*) malloc(50*sizeof(bool));
+	i = 0;
+	while(i++ < 50){
+		*arr2++ = false;
+	}
+	i = 0;
+	ptr = arr;
+	while(i++ < 50){
+		putint(*ptr++);
+		write(1," ",1);
+	}
+}
