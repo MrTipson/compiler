@@ -2099,7 +2099,7 @@
 				:if(y){
 					x = x + 2
 					:load(x,x)
-					:call(printIdent)
+					:call(errorIdent)
 					:throw(" is a function, not a variable. ")
 					x = l
 					:call(errorPrintLine)
@@ -2653,7 +2653,7 @@
 				:throw("Struct ")
 				x = x + 2 # ident
 				:load(x,x)
-				:call(printIdent)
+				:call(errorIdent)
 				:throw(" cannot be recursive (use pointers!). ")
 				x = x + 3 # line no.
 				:load(x,x)
