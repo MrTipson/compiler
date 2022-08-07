@@ -29,7 +29,7 @@ bin/stdio.o: src/stdio.p1
 	bin/p1 < src/stdio.p1 > bin/stdio.s
 	as -mcpu=$(CPU) -mfpu=$(FPU) -o bin/stdio.o bin/stdio.s
 
-test bin/$(FILE) bin/$(FILE).o:  bin/p1 bin/unistd.o bin/stdio.o bin/stdlib.o
+test bin/$(FILE) bin/$(FILE).o:  bin/p1 bin/unistd.o bin/stdio.o bin/stdlib.o test/$(FILE).p1
 	bin/p1 < test/$(FILE).p1 > bin/$(FILE).s
 	as -mcpu=$(CPU) -mfpu=$(FPU) -o bin/$(FILE).o bin/$(FILE).s
 	ld -o bin/$(FILE) bin/$(FILE).o bin/unistd.o bin/stdio.o bin/stdlib.o
