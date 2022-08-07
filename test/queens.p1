@@ -1,0 +1,66 @@
+void printf(char* format, void* arg1, void* arg2);
+
+int N;
+
+void main(){
+	int[8] positions;
+	N = 8;
+	queens(&positions, 0);
+	printBoard(&positions);
+}
+
+bool queens(int[8]* positions, int currentQueen) {
+	bool finished;
+	bool valid;
+	int i;
+	int j;
+	if(currentQueen == N) finished = true;
+	else {
+		i = 0;
+		finished = false;
+		// Try to place queen on all rows
+		while(i < N  && !finished) {
+			valid = true;
+			j = 0;
+
+			// Check if previous queens do not attack the new one
+			while(j < currentQueen && valid) {
+				valid = !queensAttack(j, (*positions)[j], currentQueen, i);
+				j++;
+			}
+			// If queens do not attack themselves, place queens and continue
+			if(valid) {
+				// Place next queen
+				(*positions)[currentQueen] = i;
+				finished = queens(positions, currentQueen + 1);
+			}
+			// Try next row
+			i++;
+		}
+	}
+	return finished;
+}
+
+bool queensAttack(int x1, int y1, int x2, int y2) {
+	return abs(x1 - x2) == 0 || abs(y1 - y2) == 0 || abs(x1 - x2) == abs(y1 - y2);
+}
+
+int abs(int x) {
+	if (x < 0)
+		x = -x;
+	return x;
+}
+
+// functions for printing
+void printBoard(int[8]* board) {
+	int i = 0;
+	char* row = "| | | | | | | | |";
+	printf("-----------------\n", null, null);
+	while(i < 8) {
+		row[(*board)[i]*2+1] = 'X';
+		printf("%s\n", (void*)row, null);
+		row[(*board)[i]*2+1] = ' ';
+		printf("-----------------\n", null, null);
+		i++;
+	}
+}
