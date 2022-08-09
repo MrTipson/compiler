@@ -735,13 +735,11 @@
 						y = a + 1
 						:load(y,y)
 						:if(y){
-							:call(break)
 							x = x + 4
 							:load(x,x)
 							x = x + 2
 							:load(x,x)
 							:call(memory_getTypeSize)
-							:call(break)
 							x = y == 1
 							:if(x){
 								:raw("\tldrb\tr0,[r0]\n")

@@ -22,7 +22,9 @@ Support was added for constants in all of the binary expressions.
 ### I/O:
  - :getchar(*var*)
  - :putchar(*var*)
+ - :uchar(*var*) - putchar for stderr
  - :raw(*constant string*)
+ - :throw(*constant string*) - raw for stderr
 
 *var* is destination/source, always read stdin and write stdout.
 cstring is utility function that prints out a string constant.
