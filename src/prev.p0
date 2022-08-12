@@ -718,7 +718,16 @@
 		v = u == 30 # cast
 		y = y | v
 		:if(y){
-			# nothing needs to be done
+			:if(u){
+				x = x + 4 # type
+				:load(x,x)
+				x = x + 1 # type type
+				:load(x,x)
+				y = x == 1 # char
+				:if(y){
+					:raw("\tmov\tr0,#256\n\tsdiv\tr2,r1,r0\n\tmls\tr0,r2,r0,r1\n")
+				}
+			}
 		} else {
 			y = u == 5 # -
 			:if(y){
@@ -1934,7 +1943,7 @@
 				x = y =! 5 # ptr
 				v = v & x
 				:if(v){
-					:throw("[ Binop +,- ] One expression must be int, the other can be int, char or pointer. The result has the same type as 1st expression. ")
+					:throw("[ Binop +,- ] One expression must be int, the other can be int, char or pointer. ")
 					x = l
 					:call(errorPrintLine)
 				}
@@ -1950,7 +1959,7 @@
 					y = x =! 5 # ptr
 					v = v & y
 					:if(v){
-						:throw("[ Binop +,- ] One expression must be int, the other can be int, char or pointer. The result has the same type as 1st expression. ")
+						:throw("[ Binop +,- ] One expression must be int, the other can be int, char or pointer. ")
 						x = l
 						:call(errorPrintLine)
 					}
@@ -1976,7 +1985,7 @@
 						:store(x,m)
 						m = m + 1
 					} else {
-						:throw("[ Binop +,- ] One expression must be int, the other can be int, char or pointer. The result has the same type as 1st expression. ")
+						:throw("[ Binop +,- ] One expression must be int, the other can be int, char or pointer. ")
 						x = l
 						:call(errorPrintLine)
 					}
