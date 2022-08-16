@@ -4060,7 +4060,7 @@
 		:store(u,m) #expr2
 		m = m + 2 # skip one
 		:if(d){
-			:raw("binop><")
+			:raw("binop>< ")
 		}
 		y = f == 0
 		:if(y){

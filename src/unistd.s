@@ -2,7 +2,7 @@
 
 @ Program code
 .text
-.align  2
+.align  1
 
 .global Fwrite
 Fwrite:
