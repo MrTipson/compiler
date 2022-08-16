@@ -50,3 +50,6 @@ Call
 
 ### Parsing
 : is at the beginning of all special functions, after which only the first character is checked (:call and :c behave the same).
+
+### Syntax weirdness
+Don't add extra spaces/characters inside keyword calls. Don't write an empty if block and an else in the same line. Closing brace and else must also be in the same line. If in doubt, check how its done in [prev.p0](../src/prev.p0). The syntax is not very robust, and that was kind of the point.
