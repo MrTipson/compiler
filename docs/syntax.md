@@ -1,18 +1,3 @@
-## Definition
-prg -> decl {decl}
-
-decl -> struct ident {type ident; {type ident;}};
-
-decl -> type ident;
-
-decl -> type ident = expr;
-
-decl -> type ident ([param {, param}]){[stmt {,stmt}]}
-
-param -> type ident
-
-type -> void | char | int | bool
-
 # Expression grammar
 a | b
 --|--

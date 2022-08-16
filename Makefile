@@ -5,6 +5,9 @@ all: p0
 
 p0: bin/p0
 p1:	bin/p1
+unistd: bin/unistd.o
+stdlib: bin/stdlib.o
+stdio: bin/stdio.o
 
 bin/p0: bin/p0.o
 	ld -o $@ $+
