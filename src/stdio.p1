@@ -22,21 +22,21 @@ void __putint(int num){
 	}
 }
 
-void printf(char* format, void* arg1, void* arg2){
-	void*[2] arr;
+void printf(char* format, int arg1, int arg2){
+	int[2] arr;
 	arr[0] = arg1;
 	arr[1] = arg2;
-	fprintf(1, format, (void**)&arr);
+	fprintf(1, format, &arr[0]);
 }
 
-void fprintf(int fd, char* format, void** args) {
+void fprintf(int fd, char* format, int* args) {
 	char[1000] cbuf;
 	int count = 0;
 	while(*format != (char)0) {
 		if(*format == '%'){
 			format++;
 			if(*format == 'd'){
-				int num = (int)*args++;
+				int num = *args++;
 				if(num == 0) {
 					cbuf[count++] = '0';
 				} else {
@@ -58,7 +58,7 @@ void fprintf(int fd, char* format, void** args) {
 				}
 				format++;
 			} else if(*format == 's'){
-				char* str = (char*)*args;
+				char* str = (char*)*args++;
 				while(*str != (char)0){
 					cbuf[count++] = *str++;
 				}
