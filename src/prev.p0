@@ -3188,13 +3188,11 @@
 			s = m
 			:call(push)
 			:while(y){
+				:call(semantics_nameResolver_resolveNames)
+				:call(semantics_nameResolver_handleDeclaration)
 				i = i + 5
 				:load(x,i)
 				y = x =! 12
-				:if(y){
-					:call(semantics_nameResolver_handleDeclaration)
-					y = 1
-				}
 			}
 			t = t - 1
 			:call(pop)
