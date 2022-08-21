@@ -10,8 +10,8 @@ I -> JI' | I' -> == JI' \| != JI' \| ε
 J -> KJ' | J' -> < KJ' \| > KJ' \| <= KJ' \| >= KJ' \| ε
 K -> LK' | K' -> + LK' \| - LK' \| ε
 L -> ML' | L' -> * ML' \| / ML' \| % ML' \| ε
-M -> ++M \| --M \| +M \| -M \| !M \| &M \| *M \| (type)M \| N
-N -> ON' | N' -> ++N' \| --N' \| [E]N' \| .identN' \| ε
+M -> ++M \| --M \| +M \| -M \| !M \| &M \| *M \| ~M \| (type)M \| N
+N -> ON' | N' -> ++N' \| --N' \| [E]N' \| .identN' \| ->identN' \| ε
 O -> ident \| const \| (E)
 
 ## Expression types
