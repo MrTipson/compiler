@@ -6433,7 +6433,7 @@
 	:call(push) # save x
 	y = x < 0
 	:if(y){
-		:raw("-")
+		:throw("-")
 		w = x * -1
 	} else {
 		w = x
