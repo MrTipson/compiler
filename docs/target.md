@@ -38,13 +38,16 @@ stmt -> **if** **(** expr **)** *(* stmt | **{** *{* stmt *}* **}** *)* *[* **el
 stmt -> **while** **(** expr **)** *(* stmt | **{** *{* stmt *}* **}** *)*
 > the complications above (in the if and while clauses) are because there doesnt exist a production 'stmt -> **{** *{* stmt *}* **}**
 
+stmt -> **return** *[* expr *]* **;**\
+stmt -> vardecl\
+stmt -> typedecl
+
 expr -> const\
 expr -> identifier\
 expr -> identifier **(** *[* expr *{* **,** expr *}* *]* **)**\
-expr -> **(** type **)** expr\
 expr -> **(** expr **)**\
-expr -> expr *(* **&** | **|** | **&&** | **||** | **==** | **!=** | **<** | **>** | **<=** | **>=** | **\*** | **/** | **%** | **+** | **-** | **^** *)* expr\
-expr -> *(* **!** | **+** | **-** | **&** | **\*** | **++** | **--** | **~** *)* expr\
+expr -> expr *(* **&** | **|** | **&&** | **||** | **==** | **!=** | **<** | **>** | **<=** | **>=** | **\*** | **/** | **%** | **+** | **-** | **^** | **~** *)* expr\
+expr -> *(* **!** | **+** | **-** | **&** | **\*** | **++** | **--** | **~** | **(** type **)** *)* expr\
 expr -> expr *(* **[** expr **]** | **++** | **--** | **.** identifier | **->** identifier *)*\
 expr -> **sizeof** **(** type **)**
 
