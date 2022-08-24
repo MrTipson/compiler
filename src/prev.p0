@@ -710,23 +710,21 @@
 	v = u == 30 # cast
 	y = y | v
 	:if(y){
+		v = x
 		x = x + 2 # expr1
 		:load(x,x)
 		y = 1
 		:call(codegen_expression)
-		y = u == 4 # +
-		v = u == 30 # cast
-		y = y | v
+		y = u == 30 # cast
 		:if(y){
-			:if(u){
-				x = x + 4 # type
-				:load(x,x)
-				x = x + 1 # type type
-				:load(x,x)
-				y = x == 1 # char
-				:if(y){
-					:raw("\tmov\tr0,#256\n\tsdiv\tr2,r1,r0\n\tmls\tr0,r2,r0,r1\n")
-				}
+			:call(break)
+			x = v + 4 # type
+			:load(x,x)
+			x = x + 1 # type type
+			:load(x,x)
+			y = x == 1 # char
+			:if(y){
+				:raw("\tmov\tr1,#256\n\tsdiv\tr2,r0,r1\n\tmls\tr0,r2,r1,r0\n")
 			}
 		} else {
 			y = u == 5 # -
