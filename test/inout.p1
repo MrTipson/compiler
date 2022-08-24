@@ -1,0 +1,18 @@
+int read(int fd, char* cbuf, int count);
+int write(int fd, char* cbuf, int count);
+
+int main () {
+	char buf;
+	bool newLine = false;
+	while(read(0, &buf, 1) > 0){
+		if (buf == '\n') {
+			if(newLine){
+				return 0;
+			}
+			newLine = true;
+		} else {
+			newLine = false;
+		}
+		write(1, &buf, 1);
+	}
+}

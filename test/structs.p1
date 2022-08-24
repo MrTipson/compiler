@@ -3,6 +3,7 @@ int write(int fd, char* cbuf, int count);
 
 struct Point {
 	int x;
+	char[3] arr;
 	bool isImportant;
 	int y;
 };
@@ -12,12 +13,20 @@ int main(int argc, char** argv) {
 	p.x = 5;
 	p.isImportant = false;
 	p.y = 10;
+	p.arr[0] = 'a';	p.arr[1] = 'b';	p.arr[2] = 'c';
 	printPoint(&p);
 	Point r;
-	r.x = -1;
-	r.isImportant = true;
-	r.y = 24;
+	setPoint(&r);
 	printPoint(&r);
+}
+
+void setPoint(Point* point) {
+	point->x = -1;
+	point->isImportant = true;
+	point->y = 24;
+	point->arr[0] = 'c';
+	point->arr[1] = 'b';
+	point->arr[2] = 'a';
 }
 
 void printPoint(Point* point) {
@@ -27,5 +36,7 @@ void printPoint(Point* point) {
 	putint(point->y);
 	write(1," ) is ", 6);
 	if(!point->isImportant) write(1, "not ", 4);
-	write(1,"important.\n",11);
+	write(1,"important.",10);
+	write(1,&point->arr[0],3);
+	write(1,"\n",1);
 }

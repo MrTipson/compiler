@@ -1,0 +1,121 @@
+int socket(int domain, int type, int protocol);
+int bind(int sockfd, sockaddr_in* addr, int addrlen);
+int listen(int sockfd, int backlog);
+int close(int fd);
+int fork();
+void exit(int status);
+int send(int sockfd, void* buf, int len, int flags);
+int recv(int sockfd, void* buf, int len, int flags);
+int accept(int sockfd, sockaddr_in* addr, int* addrlen);
+int waitid(int idtype, int id, void* infop, int options);
+void* malloc(int size);
+
+void printf(char* format, int arg1, int arg2);
+
+struct sockaddr_in {
+	char[2]	sin_family;
+	char[2] sin_port;
+	int[2]	sin_addr;
+	char[8]	sin_zero;
+};
+void setSockAddr(sockaddr_in* addr, int port) {
+	addr->sin_family[0] = (char)2; 			addr->sin_family[1] = (char)0; // AF_INET
+	addr->sin_port[0] = (char)(port/256); 			addr->sin_port[1] = (char)(port%256); // reverse byte order (htons)
+	addr->sin_addr[0] = 0; 					addr->sin_addr[1] = 0; // INADDR_ANY
+	int i = 0;
+	while(i < 8) addr->sin_zero[i++] = (char) 0;
+}
+void break(){}
+int BUFFER_SIZE = 100;
+int PORT = 5681;
+int main(){
+	//Spremenjlivka za preverjane izhodnega statusa funkcij
+	int iResult;
+	/*
+	Ustvarimo nov vtic, ki bo poslusal
+	in sprejemal nove kliente preko TCP/IP protokola
+	*/
+	int listener = socket(2, 1, 0); // AF_INET, SOCK_STREAM
+	if (listener < 0) {
+		printf("Error creating socket %d\n", listener, 0);
+		return 1;
+	}
+	printf("Poslusalec %d\n", listener, 0);
+	sockaddr_in addr;
+	setSockAddr(&addr, PORT);
+	// Vtic povezemo z ustreznimi vrati
+	// printf("%d %d\n", (int)addr.sin_family[0],(int)addr.sin_family[1]);
+	// printf("%d %d\n", (int)addr.sin_port[0],(int)addr.sin_port[1]);
+	iResult = 0;
+	iResult = bind(listener, &addr, sizeof(sockaddr_in));
+	if(iResult < 0) {
+		printf("Bind failed %d\n",iResult,0);
+		close(listener);
+		return 1;
+    }
+
+	//Zacnemo poslusati
+	iResult = listen(listener, 5);
+	if(iResult < 0) {
+		printf("Listen failed %d\n",iResult,0);
+		close(listener);
+		return 1;
+	}
+	printf("Poslusam %d na portu %d\n", listener, PORT);
+
+	//Definiramo nov vtic in medpomnilik
+	int clientSock = -69;
+	/*
+	V zanki sprejemamo nove povezave
+	in jih strezemo (najvec eno naenkrat)
+	*/
+	while (true)
+	{
+		printf("Cakam povezavo %d.\n", listener, 0);
+		//Sprejmi povezavo in ustvari nov vtic
+		clientSock = accept(listener, (sockaddr_in*) null, (int*) null);
+		if (clientSock < -1) {
+			printf("Accept failed %d\n",clientSock,0);
+			close(listener);
+			return 1;
+		}
+		printf("%d\n", clientSock,0);
+		if(fork() == 0){
+			if(fork() == 0){
+				char* buff = (char*) malloc(BUFFER_SIZE * sizeof(char));
+				//Postrezi povezanemu klientu
+				iResult = recv(clientSock, (void*) buff, BUFFER_SIZE, 0);
+				while (iResult > 0) {
+					if (iResult > 0) {
+						printf("Bytes received: %d\n", iResult, 0);
+
+						//Vrni prejete podatke posiljatelju
+						iResult = send(clientSock, (void*) buff, iResult, 0);
+						if (iResult < 0) {
+							printf("send failed! %d\n", iResult, 0);
+							close(clientSock);
+							exit(1);
+						}
+						printf("Bytes sent: %d\n", iResult, 0);
+						//Sprejmi podatke
+						iResult = recv(clientSock, (void*) buff, BUFFER_SIZE, 0);
+					}
+					else if (iResult == 0)
+						printf("Connection closing...\n", 0, 0);
+					else{
+						printf("recv failed! %d\n", iResult, 0);
+						close(clientSock);
+						exit(1);
+					}
+				}
+				close(clientSock);
+			}
+			exit(0);
+		} else {
+			waitid(2,0,null,0);
+		}
+		
+	}
+	//Pocistimo vse vtice
+	close(listener);
+}
