@@ -39,11 +39,12 @@ Fwrite:
 
 .global Fopen
 Fopen:
-	ldr	r0,[sp,#4]
-	ldr	r1,[sp,#0]
+	ldr	r0,[sp,#8]
+	ldr	r1,[sp,#4]
+	ldr	r2,[sp,#0]
 	mov	r7,#5
 	svc	0
-	add	sp,sp,#8
+	add	sp,sp,#12
 	bx	lr
 
 .global Fclose

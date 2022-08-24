@@ -1,0 +1,19 @@
+void fprintf(int fd, char* format, int* args);
+int open(char* filename, int flags, int mode);
+int close(int fd);
+int read(int fd, char* cbuf, int count);
+int write(int fd, char* cbuf, int count);
+
+int main(int argc, char** argv) {
+	if(argc != 2) {
+		fprintf(1, "Provide filename in arguments\n", (int*) null);
+	}
+	int fd = open(argv[1], 512 | 64 | 2, 438); // O_TRUNC | O_CREAT | O_RDWR, 438 deca = 666 octa
+	char[100] buf;
+	int n = read(0, &buf[0], 100);
+	while(n > 0){
+		write(fd, &buf[0], n);
+		n = read(0, &buf[0], 100);
+	}
+	close(fd);
+}
