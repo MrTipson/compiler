@@ -5,7 +5,7 @@ This repository contains everything necessary to bootstrap a compiler for a C-li
 ```
 git clone https://github.com/MrTipson/compiler.git
 cd compiler
-make p1
+make
 ```
 
 ### Running a program

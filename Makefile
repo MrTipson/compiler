@@ -1,7 +1,7 @@
 CPU = cortex-a7
 FPU = neon-vfpv4
 # Makefile
-all: p0
+all: p1 unistd stdlib stdio
 
 p0: bin/p0
 p1:	bin/p1
