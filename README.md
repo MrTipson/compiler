@@ -21,8 +21,8 @@ bin/p1 < myprogram.p1 > myprogram.s
 as -o myprogram.o myprogram.s
 ld -o myprogram myprogram.o
 # if you'd like to link syscalls (bin/unistd.o), malloc (bin/stdlib.o) or stdio (bin/stdio.o),
-# add them to the ld arguments (and don't forget to build them - 'make stdlib stdio unistd').
-# 'make test' links all of them automatically.
+# add them to the ld arguments (and don't forget to build them - 'make').
+# 'make programname' links all of them automatically.
 ```
 
 ### Overview
