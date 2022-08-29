@@ -109,4 +109,5 @@ int main(){
 	}
 	// Close server socket
 	close(listener);
+	return 0;
 }

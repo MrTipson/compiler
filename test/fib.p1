@@ -15,7 +15,7 @@ int fibonacci(int n){
 	return b;
 }
 
-int main(int argc, char** argv) {
+void main(int argc, char** argv) {
 	int x = 10;
 	printf("Fibonacci(%d)=%d", (void*)x, (void*)fibonacci(x));
 }

@@ -46,10 +46,10 @@
 				y = 1
 				:call(codegen_expression)
 			}
-			:raw("\tb\tF")
+			:raw("\tb\tFE")
 			x = f
 			:call(printIdent)
-			:raw("_end\n")
+			:raw("\n")
 		} else {
 			y = x == 6 # expression statement
 			:if(y){
@@ -182,10 +182,10 @@
 									y = x == 1 # end
 									y = y & q
 									:if(y){
-										:raw("\tmov\tr0,#0\nF")
+										:raw("\tmov\tr0,#0\nFE")
 										x = f
 										:call(printIdent)
-										:raw("_end:\n\tldr\tfp,[sp,#4]\n\tldr\tlr,[sp]\n")
+										:raw(":\n\tldr\tfp,[sp,#4]\n\tldr\tlr,[sp]\n")
 										x = i + 2 # frame size
 										:load(x,x)
 										:raw("\tldr\tr1,=")
@@ -2885,6 +2885,13 @@
 		:load(x,i)
 		y = x == 3 # function
 		:if(y){
+			c = i # flag: function reachable return ; in theory this could cause trouble if i = 0, but i think thats impossible
+			x = i + 3
+			:load(x,x)
+			y = x == 2 # is declaration?
+			:if(y){
+				c = 0
+			}
 			t = t + 1
 			s = m
 			:call(push)
@@ -2906,12 +2913,36 @@
 					:if(y){
 						:call(semantics_nameResolver_recursive)
 					} else {
+						y = x == 5 # return
+						:if(y){
+							c = 0 # reachable return; unset flag
+						}
 						:call(semantics_nameResolver_resolveNames)
 					}
 				}
 				i = i + 5
 				:load(x,i)
 				y = x =! 3 # function end
+			}
+			:if(c){
+				x = i + 3 # function end/decl ?
+				:load(x,x)
+				y = x == 1 # function end (ignore decl)
+				x = c + 1 # function type
+				:load(x,x)
+				x = x + 1 # type type
+				:load(x,x)
+				x = x =! 3 # void
+				y = y & x
+				:call(break)
+				:if(y){
+					x = c + 2 # function ident
+					:load(x,x)
+					:call(errorIdent)
+					:throw(" doesn't have a reachable return statement.\n")
+					x = 1
+					:exit(x)
+				}
 			}
 			:call(pop)
 			m = s

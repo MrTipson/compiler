@@ -1,5 +1,5 @@
 void printf(char* format, int a, int b);
 
-int main(int argc, char** argv){
+void main(int argc, char** argv){
 	printf("Test%%%s\n%d", (int)"abc\n", 123);
 }

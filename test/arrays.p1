@@ -2,7 +2,7 @@ void putint(int val);
 int write(int fd, char* cbuf, int count);
 
 int[10] arr;
-int main(){
+void main(){
 	int i = 0;
 	while(i < 10){
 		arr[i] = i++ + 1;

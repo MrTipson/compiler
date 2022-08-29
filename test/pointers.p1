@@ -1,6 +1,6 @@
 int write(int fd, char* cbuf, int count);
 
-int main(){
+void main(){
 	bool[20] div;
 	int i = 0;
 	bool* bptr = (bool*) &div;
