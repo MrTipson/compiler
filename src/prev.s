@@ -300,6 +300,8 @@ _special_switch_c_loop:
 	b	_special_switch_end
 @ f(un)
 _special_switch_f:
+	mov	r0,#70		@ F
+	bl	putchar
 	bl	getchar
 _special_switch_f_loop:
 	bl	putchar
@@ -856,7 +858,7 @@ skipspaces_l:
 cbuf: .byte 0,0
 stringcnt: .word 0
 labelcnt: .word 0
-__header_str: .ascii ".include \"src/header.s\"\n\n_start:\n\tbl\tmain\n\tmov\tr0,#0\n\tbl\texit\n\n"
+__header_str: .ascii ".include \"src/header.s\"\n\n_start:\n\tbl\tFmain\n\tmov\tr0,#0\n\tbl\texit\n\n"
 __header_len = .-__header_str
 __dataseg_str: .ascii "\n.data\ncbuf: .byte 0,0\n"
 __dataseg_len = .-__dataseg_str
@@ -956,7 +958,7 @@ __stmt_store_str1: .ascii "\tldr\tr1,="
 __stmt_store_len1 = .-__stmt_store_str1
 __stmt_store_str2: .ascii "\n\tstr\tr0,[r1]\n"
 __stmt_store_len2 = .-__stmt_store_str2
-__call_str: .ascii "\tbl\t"
+__call_str: .ascii "\tbl\tF"
 __call_len = .-__call_str
 __fun_str1: .ascii ":\n\tpush\t{lr}\n"
 __fun_len1 = .-__fun_str1
