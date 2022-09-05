@@ -1,4 +1,4 @@
-void printf(char* format, void* arg1, void* arg2);
+void printf(char* format, int arg1, int arg2);
 void putint(int val);
 
 int fibonacci(int n){
@@ -17,5 +17,5 @@ int fibonacci(int n){
 
 void main(int argc, char** argv) {
 	int x = 10;
-	printf("Fibonacci(%d)=%d", (void*)x, (void*)fibonacci(x));
+	printf("Fibonacci(%d)=%d", x, fibonacci(x));
 }

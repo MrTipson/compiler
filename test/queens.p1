@@ -1,4 +1,4 @@
-void printf(char* format, void* arg1, void* arg2);
+void printf(char* format, int arg1, int arg2);
 
 int N;
 
@@ -55,12 +55,12 @@ int abs(int x) {
 void printBoard(int[8]* board) {
 	int i = 0;
 	char* row = "| | | | | | | | |";
-	printf("-----------------\n", null, null);
+	printf("-----------------\n", 0, 0);
 	while(i < 8) {
 		row[(*board)[i]*2+1] = 'X';
-		printf("%s\n", (void*)row, null);
+		printf("%s\n", (int)row, 0);
 		row[(*board)[i]*2+1] = ' ';
-		printf("-----------------\n", null, null);
+		printf("-----------------\n", 0, 0);
 		i++;
 	}
 }
