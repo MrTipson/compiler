@@ -36,10 +36,15 @@ bin/stdio.o: src/stdio.p1
 clean:
 	rm -vf $(filter-out .gitignore, $(wildcard bin/*))
 
-% : test/%.p1 bin/p1 bin/unistd.o bin/stdio.o bin/stdlib.o
-	bin/p1 < $< > bin/$@.s
-	as -mcpu=$(CPU) -mfpu=$(FPU) -o bin/$@.o bin/$@.s
-	ld -o bin/$@ bin/$@.o bin/unistd.o bin/stdio.o bin/stdlib.o
+.PRECIOUS: bin/%
+% : test/%.p1 bin/%
+	bin/$@
+
+
+bin/% : test/%.p1 all
+	bin/p1 < $< > $@.s
+	as -mcpu=$(CPU) -mfpu=$(FPU) -o $@.o $@.s
+	ld -o $@ $@.o bin/unistd.o bin/stdio.o bin/stdlib.o
 
 sort: test/insertionsort.s test/insertionsort.p0 test/insertionsort.p1 all
 	bin/p1 < test/insertionsort.p1 > bin/insertionsort_p1.s
