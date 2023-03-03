@@ -1,0 +1,12 @@
+baseURL = 'http://example.org/'
+languageCode = 'en-us'
+title = 'Compiler'
+theme = 'hugo-theme-techdoc'
+
+[params]
+    # Source Code repository section
+    github_repository = "https://github.com/MrTipson/compiler"
+
+    # Documentation Menu section
+    # Menu style settings
+    menu_style = "slide-menu" # "open-menu" or "slide-menu" or "" blank is as no sidebar
