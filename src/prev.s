@@ -1,6 +1,15 @@
 .include "src/header.s"
 .global _special_switch_i
 .global _dataseg_string_loop
+
+.macro write string,length
+	mov	r7,#4		@ write syscall
+	mov	r0,#1		@ stdout
+	ldr r1,=\string
+	ldr r2,=\length
+	svc	0
+.endm
+
 _start:
 	bl	main
 
@@ -70,36 +79,24 @@ _special_switch:
 	beq	_special_switch_u
 @ g(etchar)
 _special_switch_g:
-	ldr	r1,=__getchar_str1 @ char buffer
-	ldr	r2,=__getchar_len1 @ count
-	bl	write
+	write __getchar_str1,__getchar_len1
 	bl	getchar		@ var
 	bl	putchar
-	ldr	r1,=__getchar_str2 @ char buffer
-	ldr	r2,=__getchar_len2 @ count
-	bl	write
+	write __getchar_str2,__getchar_len2
 	b	_special_switch_end
 @ p(utchar)
 _special_switch_p:
-	ldr	r1,=__putchar_str1 @ char buffer
-	ldr	r2,=__putchar_len1 @ count
-	bl	write
+	write __putchar_str1,__putchar_len1
 	bl	getchar		@ var
 	bl	putchar
-	ldr	r1,=__putchar_str2 @ char buffer
-	ldr	r2,=__putchar_len2 @ count
-	bl	write
+	write __putchar_str2,__putchar_len2
 	b	_special_switch_end
 @ u(throwchar)
 _special_switch_u:
-	ldr	r1,=__putchar_str1 @ char buffer
-	ldr	r2,=__putchar_len1 @ count
-	bl	write
+	write __putchar_str1,__putchar_len1
 	bl	getchar		@ var
 	bl	putchar
-	ldr	r1,=__uchar_str2 @ char buffer
-	ldr	r2,=__uchar_len2 @ count
-	bl	write
+	write __uchar_str2,__uchar_len2
 	b	_special_switch_end
 @ raw(string)
 _special_switch_r:
@@ -119,21 +116,15 @@ _special_switch_r_loop:
 _special_switch_r_loop_end:
 	mov	r0,#0
 	strb	r0,[r5],#4	@ null seperated strings
-	ldr	r1,=__rstring_str1 @ mov r7,#4  mov r0,#1  ldr r1,=s
-	ldr	r2,=__rstring_len1 @ count
-	bl	write
+	write __rstring_str1,__rstring_len1
 	ldr	r0,=stringcnt
 	ldr	r0,[r0]
 	bl	putint		@ write string id
-	ldr	r1,=__rstring_str2 @ char buffer
-	ldr	r2,=__rstring_len2 @ count
-	bl	write
+	write __rstring_str2,__rstring_len2
 	ldr	r0,=stringcnt
 	ldr	r0,[r0]
 	bl	putint		@ write string id
-	ldr	r1,=__rstring_str3 @ char buffer
-	ldr	r2,=__rstring_len3 @ count
-	bl	write
+	write __rstring_str3,__rstring_len3
 	ldr	r1,=stringcnt
 	ldr	r2,[r1]		@ read string count
 	add	r2,r2,#1	@ increment string counter
@@ -157,21 +148,15 @@ _special_switch_t_loop:
 _special_switch_t_loop_end:
 	mov	r0,#0
 	strb	r0,[r5],#4	@ null seperated strings
-	ldr	r1,=__tstring_str1 @ mov r7,#4  mov r0,#1  ldr r1,=s
-	ldr	r2,=__tstring_len1 @ count
-	bl	write
+	write __tstring_str1,__tstring_len1
 	ldr	r0,=stringcnt
 	ldr	r0,[r0]
 	bl	putint		@ write string id
-	ldr	r1,=__rstring_str2 @ char buffer
-	ldr	r2,=__rstring_len2 @ count
-	bl	write
+	write __rstring_str2,__rstring_len2
 	ldr	r0,=stringcnt
 	ldr	r0,[r0]
 	bl	putint		@ write string id
-	ldr	r1,=__rstring_str3 @ char buffer
-	ldr	r2,=__rstring_len3 @ count
-	bl	write
+	write __rstring_str3,__rstring_len3
 	ldr	r1,=stringcnt
 	ldr	r2,[r1]		@ read string count
 	add	r2,r2,#1	@ increment string counter
@@ -179,17 +164,11 @@ _special_switch_t_loop_end:
 	b	_special_switch_end
 @ i(f)
 _special_switch_i:
-	ldr	r1,=__load_var_str1	@ ldr r0,=
-	ldr	r2,=__load_var_len1
-	bl	write
+	write __load_var_str1,__load_var_len1
 	bl	getchar
 	bl	putchar
-	ldr	r1,=__load_var_str2	@ ldr r0,[r0]
-	ldr	r2,=__load_var_len2
-	bl	write
-	ldr	r1,=__if_str1		@ cmp r0,#0   beq Lneg
-	ldr	r2,=__if_len1
-	bl	write
+	write __load_var_str2,__load_var_len2
+	write __if_str1,__if_len1
 	ldr	r2,=labelcnt
 	ldr	r1,[r2]
 	mov	r0,r1
@@ -209,26 +188,18 @@ _special_switch_i_skip:
 _special_switch_w:
 	ldr	r4,=labelcnt
 	ldr	r3,[r4]
-	ldr	r1,=__while_str1	@ Lloop
-	ldr	r2,=__while_len1
-	bl	write
+	write __while_str1,__while_len1
 	mov	r0,r3		@ id
 	bl	putint
 	mov	r0,#58		@ :
 	bl	putchar
 	mov	r0,#10		@ \n
 	bl	putchar
-	ldr	r1,=__load_var_str1	@ ldr r0,=
-	ldr	r2,=__load_var_len1
-	bl	write
+	write __load_var_str1,__load_var_len1
 	bl	getchar
 	bl	putchar
-	ldr	r1,=__load_var_str2	@ ldr r0,[r0]
-	ldr	r2,=__load_var_len2
-	bl	write
-	ldr	r1,=__while_str2	@ cmp r0,#0  beq Lloop_end
-	ldr	r2,=__while_len2
-	bl	write
+	write __load_var_str2,__load_var_len2
+	write __while_str2,__while_len2
 	mov	r0,r3		@ id
 	bl	putint
 	mov	r0,#10		@ \n
@@ -240,20 +211,14 @@ _special_switch_w:
 	b	_special_switch_end
 @ e(xit)
 _special_switch_e:
-	ldr	r1,=__exit_str1 @ char buffer
-	ldr	r2,=__exit_len1 @ count
-	bl	write
+	write __exit_str1,__exit_len1
 	bl	getchar		@ var
 	bl	putchar
-	ldr	r1,=__exit_str2 @ char buffer
-	ldr	r2,=__exit_len2 @ count
-	bl	write
+	write __exit_str2,__exit_len2
 	b	_special_switch_end
 @ c(all)
 _special_switch_c:
-	ldr	r1,=__call_str @ char buffer
-	ldr	r2,=__call_len @ count
-	bl	write
+	write __call_str,__call_len
 	bl	getchar
 _special_switch_c_loop:
 	bl	putchar
@@ -273,9 +238,7 @@ _special_switch_f_loop:
 	bl	getchar
 	cmp	r0,#41		@ )
 	bne	_special_switch_f_loop
-	ldr	r1,=__fun_str1 @ char buffer
-	ldr	r2,=__fun_len1 @ count
-	bl	write
+	write __fun_str1,__fun_len1
 	mov	r0,#4
 	mov	r1,#-1
 	push	{r0,r1}
@@ -339,14 +302,10 @@ _special_switch_s:
 	svc	0
 @ end
 @ store variable to memory at index
-	ldr	r1,=__store_str1@ ldr r1,=
-	ldr	r2,=__store_len1
-	bl	write
+	write __store_str1,__store_len1
 	mov	r0,r3		@ dst
 	bl	putchar
-	ldr	r1,=__store_str2@ ldr r0,[r0, LSL #2]   str r0,[r1]
-	ldr	r2,=__store_len2
-	bl	write
+	write __store_str2,__store_len2
 	b	_special_switch_end
 _special_switch_end:
 	bl	getchar
@@ -371,14 +330,10 @@ rcurly:		@ not a function
 	mov	r0,#11		@ error 11 - misplaced }
 	bl	exit
 rcurly_if:
-	ldr	r1,=__if_str3 @ char buffer
-	ldr	r2,=__if_len3 @ count
-	bl	write
+	write __if_str3,__if_len3
 	mov	r0,r4		@ id
 	bl	putint
-	ldr	r1,=__if_str4 @ char buffer
-	ldr	r2,=__if_len4 @ count
-	bl	write
+	write __if_str4,__if_len4
 	mov	r0,r4		@ id
 	bl	putint
 	mov	r0,#58		@ :
@@ -396,9 +351,7 @@ rcurly_if_skip:
 	push	{r3,r4}
 	b	rcurly_end
 rcurly_else:
-	ldr	r1,=__if_str5 @ Lend
-	ldr	r2,=__if_len5 @ count
-	bl	write
+	write __if_str5,__if_len5
 	mov	r0,r4		@ id
 	bl	putint
 	mov	r0,#58		@ :
@@ -407,14 +360,10 @@ rcurly_else:
 	bl	putchar
 	b	rcurly_end
 rcurly_while:
-	ldr	r1,=__while_str3 @ b Lloop
-	ldr	r2,=__while_len3 @ count
-	bl	write
+	write __while_str3,__while_len3
 	mov	r0,r4		@ id
 	bl	putint
-	ldr	r1,=__while_str4 @ Lloop_end
-	ldr	r2,=__while_len4 @ count
-	bl	write
+	write __while_str4,__while_len4
 	mov	r0,r4		@ id
 	bl	putint
 	mov	r0,#58		@ :
@@ -423,9 +372,7 @@ rcurly_while:
 	bl	putchar
 	b	rcurly_end
 rcurly_fun:
-	ldr	r1,=__fun_str2 @ b Lloop
-	ldr	r2,=__fun_len2 @ count
-	bl	write
+	write __fun_str2,__fun_len2
 	b	rcurly_end
 rcurly_end:
 	b	_loop1_cond
@@ -454,9 +401,7 @@ assign_const:
 assign_const1:
 	push	{r1,r2,r3,r7,lr}
 	mov	r3,r0
-	ldr	r1,=__stmt_const1_str @ char buffer
-	ldr	r2,=__stmt_const1_len @ count
-	bl	write
+	write __stmt_const1_str,__stmt_const1_len
 	mov	r0,r3
 assign_const1_loop:
 	bl	putchar
@@ -479,9 +424,7 @@ assign_const1_end:
 assign_const2:
 	push	{r1,r2,r3,r7,lr}
 	mov	r3,r0
-	ldr	r1,=__stmt_const2_str @ char buffer
-	ldr	r2,=__stmt_const2_len @ count
-	bl	write
+	write __stmt_const2_str,__stmt_const2_len
 	mov	r0,r3
 assign_const2_loop:
 	bl	putchar
@@ -549,42 +492,30 @@ assign_binop_end:
 	mov	r0,#1		@ fd 1
 	svc	0
 assign_write_mem:
-	ldr	r1,=__stmt_store_str1
-	ldr	r2,=__stmt_store_len1
-	bl	write
+	write __stmt_store_str1,__stmt_store_len1
 	pop	{r0}
 	bl	putchar
-	ldr	r1,=__stmt_store_str2
-	ldr	r2,=__stmt_store_len2
-	bl	write
+	write __stmt_store_str2,__stmt_store_len2
 	pop	{lr}
 	bx	lr
 
 loadvar_r0:
 	push	{r1,r2,r3,lr}
 	mov	r3,r0
-	ldr	r1,=__load_var_str1
-	ldr	r2,=__load_var_len1
-	bl	write
+	write __load_var_str1,__load_var_len1
 	mov	r0,r3
 	bl	putchar
-	ldr	r1,=__load_var_str2
-	ldr	r2,=__load_var_len2
-	bl	write
+	write __load_var_str2,__load_var_len2
 	pop	{r1,r2,r3,lr}
 	bx	lr
 
 loadvar_r1:
 	push	{r1,r2,r3,lr}
 	mov	r3,r0
-	ldr	r1,=__load_var_str1_r1
-	ldr	r2,=__load_var_len1_r1
-	bl	write
+	write __load_var_str1_r1,__load_var_len1_r1
 	mov	r0,r3
 	bl	putchar
-	ldr	r1,=__load_var_str2_r1
-	ldr	r2,=__load_var_len2_r1
-	bl	write
+	write __load_var_str2_r1,__load_var_len2_r1
 	pop	{r1,r2,r3,lr}
 	bx	lr
 
@@ -672,27 +603,21 @@ assign_or:
 
 header:
 	push	{r0,r1,r2,r7,lr}
-	ldr	r1,=__header_str @ char buffer
-	ldr	r2,=__header_len @ count
-	bl	write
+	write __header_str,__header_len
 	pop	{r0,r1,r2,r7,lr}
 	bx	lr
 
 dataseg:
 	push	{r0,r1,r2,r3,r4,r7,lr}
 @ dataseg header
-	ldr	r1,=__dataseg_str @ char buffer
-	ldr	r2,=__dataseg_len @ count
-	bl	write
+	write __dataseg_str,__dataseg_len
 @ dataseg header end
 @ variables
 	mov	r3,#97		@ a
 _dataseg_loop:
 	mov	r0,r3
 	bl	putchar
-	ldr	r1,=__variable_str @ char buffer
-	ldr	r2,=__variable_len @ count
-	bl	write
+	write __variable_str,__variable_len
 	add	r3,r3,#1
 	cmp	r3,#122		@ z
 	ble	_dataseg_loop
@@ -709,9 +634,7 @@ _dataseg_string_loop:
 	mov	r0,r3
 	bl	putint
 	push	{r1,r2}
-	ldr	r1,=__rstrdata_str1 @ `: .ascii "`
-	ldr	r2,=__rstrdata_len1 @ count
-	bl	write
+	write __rstrdata_str1,__rstrdata_len1
 	pop	{r1,r2}
 _dataseg_str_literal:
 	ldr	r0,[r1],#4
@@ -722,14 +645,10 @@ _dataseg_str_literal:
 _dataseg_str_literal_end:
 @ close string literal
 	push	{r1,r2}		@ save r2 (string count)
-	ldr	r1,=__rstrdata_str2 @ char buffer
-	ldr	r2,=__rstrdata_len2 @ count
-	bl	write
+	write __rstrdata_str2,__rstrdata_len2
 	mov	r0,r3
 	bl	putint
-	ldr	r1,=__rstrdata_str3 @ char buffer
-	ldr	r2,=__rstrdata_len3 @ count
-	bl	write
+	write __rstrdata_str3,__rstrdata_len3
 	mov	r0,r3
 	bl	putint
 	mov	r0,#10		@ \n
@@ -739,10 +658,7 @@ _dataseg_str_literal_end:
 	b	_dataseg_string_loop
 _dataseg_string_end:
 @ heap label
-	mov	r0,#1		@ fd 1
-	ldr	r1,=__mem_str	@ char buffer
-	ldr	r2,=__mem_len	@ count
-	svc	0
+	write __mem_str,__mem_len
 	pop	{r0,r1,r2,r3,r4,r7,lr}
 	bx	lr
 
