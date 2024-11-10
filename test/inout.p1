@@ -7,7 +7,7 @@ void main () {
 	while(read(0, &buf, 1) > 0){
 		if (buf == '\n') {
 			if(newLine){
-				return 0;
+				return;
 			}
 			newLine = true;
 		} else {
