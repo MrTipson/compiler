@@ -2,60 +2,58 @@
 	:call(readInt)
 	l = y;
 	i = 0;
-	y = i < l
+	y = i l <
 	:while(y) {
 		:call(readInt)
 		:store(y,i)
-		i = i + 1
-		y = i < l
+		i = i 1 +
+		y = i l <
 	}
 	# Print unsorted array
 	i = 0
 	:raw("Before: ")
-	y = i < l
+	y = i l <
 	:while(y) {
 		:load(x,i)
 		:call(putInt)
 		:raw(", ")
-		i = i + 1
-		y = i < l
+		i = i 1 +
+		y = i l <
 	}
 	# Call sort
 	:call(insertionsort)
 	# Print sorted array
 	i = 0
 	:raw("\nAfter: ")
-	y = i < l
+	y = i l <
 	:while(y) {
 		:load(x,i)
 		:call(putInt)
 		:raw(", ")
-		i = i + 1
-		y = i < l
+		i = i 1 +
+		y = i l <
 	}
 }
 
 :fun(insertionsort) {
 	i = 0
-	y = l - 1
-	y = i < y
+	y = i l 1 - <
 	:while(y) {
 		:load(a,i)
-		j = i + 1
+		j = i 1 +
 		:load(b,j)
-		y = a > b
+		y = a b >
 		:if(y) {
 			:store(b,i)
 			:store(a,j)
-			y = i > 0
+			y = i 0 >
 			:if(y){
-				i = i - 1
+				i = i 1 -
 			}
 		} else {
-			i = i + 1
+			i = i 1 +
 		}
-		y = l - 1
-		y = i < y
+		y = i l 1 - <
 	}
 }
 
@@ -64,62 +62,46 @@
 	x = 0;
 	:getchar(c)
 	# Delimiters that are skipped
-	y = c == 10 # \n
-	z = c == 32 # ' '
-	y = y | z
-	z = c == 44 # ,
-	y = y | z
+	# '\n' | ' ' | ','
+	y = c 10 == c 32 == | c 44 == |
 	:while(y) {
 		:getchar(c)
 		# Delimiters that are skipped
-		y = c == 10 # \n
-		z = c == 32 # ' '
-		y = y | z
-		z = c == 44 # ,
-		y = y | z
+		# '\n' | ' ' | ','
+		y = c 10 == c 32 == | c 44 == |
 	}
-	y = c == 45 # -
+	y = c 45 == # -
 	:if(y) {
-		s = -1
+		s = 0 1 -
 		:getchar(c)
 	}
-	y = c => 48 # 0
-	z = c =< 57 # 9
-	y = y & z
+	y = c 48 => c 57 =< & # 0-9
 	:while(y) {
-		x = x * 10
-		x = x + c
-		x = x - 48
+		x = x 10 * c + 48 -
 		:getchar(c)
-		y = c => 48 # 0
-		z = c =< 57 # 9
-		y = y & z
+		y = c 48 => c 57 =< & # 0-9
 	}
-	y = x * s
+	y = x s *
 }
 
 :fun(putInt){
-	y = x < 0
+	y = x 0 <
 	:if(y){
 		:raw("-")
-		w = x * -1
+		w = x 0 1 - *
 	} else {
 		w = x
 	}
 	y = 10
-	x = w / y
-	z = x > 0
+	z = w y / 0 >
 	:while(z){
-		y = y * 10
-		x = w / y
-		z = x > 0
+		y = y 10 *
+		z = w y / 0 >
 	}
-	y = y / 10
+	y = y 10 /
 	:while(y){
-		x = w / y
-		x = x % 10
-		x = x + 48
+		x = w y / 10 % 48 +
 		:putchar(x)
-		y = y / 10
+		y = y 10 /
 	}
 }
