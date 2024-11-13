@@ -34,26 +34,6 @@ bin/stdio.o: src/stdio.p1
 
 .phony: clean
 clean:
-	rm -vf $(filter-out .gitignore, $(wildcard bin/*))
+	rm -rvf $(filter-out .gitignore, $(wildcard bin/*))
 
-.PRECIOUS: bin/%
-% : test/%.p1 bin/%
-	bin/$@
-
-
-bin/% : test/%.p1 all
-	bin/p1 < $< > $@.s
-	as -mcpu=$(CPU) -mfpu=$(FPU) -o $@.o $@.s
-	ld -o $@ $@.o bin/unistd.o bin/stdio.o bin/stdlib.o
-
-sort: test/insertionsort.s test/insertionsort.p0 test/insertionsort.p1 all
-	bin/p1 < test/insertionsort.p1 > bin/insertionsort_p1.s
-	as -mcpu=$(CPU) -mfpu=$(FPU) -o bin/insertionsort_p1.o bin/insertionsort_p1.s
-	ld -o bin/insertionsort_p1 bin/insertionsort_p1.o bin/stdio.o bin/stdlib.o bin/unistd.o
-
-	bin/p0 < test/insertionsort.p0 > bin/insertionsort_p0.s
-	as -mcpu=$(CPU) -mfpu=$(FPU) -o bin/insertionsort_p0.o bin/insertionsort_p0.s
-	ld -o bin/insertionsort_p0 bin/insertionsort_p0.o
-
-	as -mcpu=$(CPU) -mfpu=$(FPU) -o bin/insertionsort_asm.o test/insertionsort.s
-	ld -o bin/insertionsort_asm bin/insertionsort_asm.o
+include test/Makefile
