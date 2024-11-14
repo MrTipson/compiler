@@ -166,10 +166,7 @@ _special_switch_t_loop_end:
 	b	_special_switch_end
 @ i(f)
 _special_switch_i:
-	write __load_var_str1,__load_var_len1
-	bl	getchar
-	bl	putchar
-	write __load_var_str2,__load_var_len2
+	bl	expression_entry
 	write __if_str1,__if_len1
 	ldr	r2,=labelcnt
 	ldr	r1,[r2]
@@ -197,10 +194,7 @@ _special_switch_w:
 	bl	putchar
 	mov	r0,#10		@ \n
 	bl	putchar
-	write __load_var_str1,__load_var_len1
-	bl	getchar
-	bl	putchar
-	write __load_var_str2,__load_var_len2
+	bl	expression_entry
 	write __while_str2,__while_len2
 	mov	r0,r3		@ id
 	bl	putint
@@ -213,10 +207,8 @@ _special_switch_w:
 	b	_special_switch_end
 @ e(xit)
 _special_switch_e:
-	write __exit_str1,__exit_len1
-	bl	getchar		@ var
-	bl	putchar
-	write __exit_str2,__exit_len2
+	bl	expression_entry
+	write __exit_str,__exit_len
 	b	_special_switch_end
 @ c(all)
 _special_switch_c:
@@ -253,13 +245,7 @@ _special_switch_l:
 	cmp	r0,#44		@ ,
 	movne	r0,#44
 	bne	exit		@ error 44 - missing ,
-	bl	skipspaces
-@ load index
-	write __load_var_str1,__load_var_len1
-	bl	putchar
-	write __load_var_str2,__load_var_len2
-@ end
-@ load memory at index and store variable
+	bl	expression_entry
 	write __load_str1,__load_len1
 	pop	{r0}
 	bl	putchar
@@ -267,23 +253,12 @@ _special_switch_l:
 	b	_special_switch_end
 @ s(tore)
 _special_switch_s:
-	bl	skipspaces
-	push	{r0}
-	bl	skipspaces
+	bl	expression_entry
 	cmp	r0,#44		@ ,
 	movne	r0,#44
 	bne	exit		@ error 44 - missing ,
-	bl	skipspaces
-@ load index
-	write __load_var_str1,__load_var_len1	@ ldr r0,=
-	bl	putchar
-	write __load_var_str2,__load_var_len2
-@ end
-@ store variable to memory at index
-	write __store_str1,__store_len1
-	pop	{r0}
-	bl	putchar
-	write __store_str2,__store_len2
+	bl	expression_entry
+	write __store_str,__store_len
 	b	_special_switch_end
 _special_switch_end:
 	bl	getchar
@@ -439,8 +414,7 @@ expression_operator:
 	beq	expression_geq
 	cmp	r0,#33		@ =!
 	beq	expression_neq
-	mov	r0,#7
-	bl	exit		@ error 7 - bad op
+@ if no expression matches, we just fall through and return
 expression_end:
 	pop	{lr}
 	bx	lr
@@ -634,13 +608,11 @@ __rstrdata_str2: .ascii "\"\nslen"
 __rstrdata_len2 = .-__rstrdata_str2
 __rstrdata_str3: .ascii " = .-s"
 __rstrdata_len3 = .-__rstrdata_str3
-__exit_str1: .ascii "\tldr\tr0,="
-__exit_len1 = .-__exit_str1
-__exit_str2: .ascii "\n\tldrb\tr0,[r0]\n\tbl\texit\n"
-__exit_len2 = .-__exit_str2
+__exit_str: .ascii "\n\tpop\t{r0}\n\tbl\texit\n"
+__exit_len = .-__exit_str
 __variable_str: .ascii ": .word 0\n"
 __variable_len = .-__variable_str
-__if_str1: .ascii "\tcmp\tr0,#0\n\tbeq\tLneg"
+__if_str1: .ascii "\tpop\t{r0}\n\tcmp\tr0,#0\n\tbeq\tLneg"
 __if_len1 = .-__if_str1
 __if_str3: .ascii "\tb\tLend"
 __if_len3 = .-__if_str3
@@ -656,20 +628,18 @@ __load_var_str3: .ascii "\tpush\t{r0}\n"
 __load_var_len3 = .-__load_var_str3
 __while_str1: .ascii "Lloop"
 __while_len1 = .-__while_str1
-__while_str2: .ascii "\tcmp\tr0,#0\n\tbeq\tLloop_end"
+__while_str2: .ascii "\tpop\t{r0}\n\tcmp\tr0,#0\n\tbeq\tLloop_end"
 __while_len2 = .-__while_str2
 __while_str3: .ascii "\tb\tLloop"
 __while_len3 = .-__while_str3
 __while_str4: .ascii "\nLloop_end"
 __while_len4 = .-__while_str4
-__load_str1: .ascii "\tldr\tr1,="
+__load_str1: .ascii "\tpop\t{r0}\n\tldr\tr1,="
 __load_len1 = .-__load_str1
 __load_str2: .ascii "\n\tldr\tr2,=mem\n\tldr\tr0,[r2, r0, LSL #2]\n\tstr\tr0,[r1]\n"
 __load_len2 = .-__load_str2
-__store_str1: .ascii "\tldr\tr1,="
-__store_len1 = .-__store_str1
-__store_str2: .ascii "\n\tldr\tr1,[r1]\n\tldr\tr2,=mem\n\tstr\tr1,[r2,r0, LSL #2]\n"
-__store_len2 = .-__store_str2
+__store_str: .ascii "\tpop\t{r0,r1}\n\tldr\tr2,=mem\n\tstr\tr1,[r2,r0, LSL #2]\n"
+__store_len = .-__store_str
 __stmt_const_str1: .ascii "\tmov\tr0,#"
 __stmt_const_len1 = .-__stmt_const_str1
 __stmt_const_str2: .ascii "\n\tpush\t{r0}\n"
