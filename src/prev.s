@@ -21,11 +21,11 @@ main:
 	bl	header		@ print out header
 	b	_loop1_cond	@ while check cond
 _loop1_start:
-	cmp	r0,#9		@ tab character
+	cmp	r0,'\t'
 	beq	_loop1_cond
-	cmp	r0,#32		@ space character
+	cmp	r0,' '
 	beq	_loop1_cond
-	cmp	r0,#10		@ line feed
+	cmp	r0,'\n'
 	moveq	r6,#0		@ turn comment mode off
 	beq	_loop1_cond
 	cmp	r6,#1		@ ? is comment mode on
@@ -33,9 +33,9 @@ _loop1_start:
 	cmp	r0,#35		@ # (begin comment)
 	moveq	r6,#1
 	beq	_loop1_cond
-	cmp	r0,#125		@ }
+	cmp	r0,'}'
 	beq	rcurly
-	cmp	r0,#58		@ :
+	cmp	r0,':'
 	beq	special		@ one of special functions (getchar, putchar, if, while, exit)
 	blne	assign		@ any of the assign statements
 _loop1_cond:
@@ -52,32 +52,32 @@ special:
 	mov	r1,r0		@ save first character of keyword
 _loop2:
 	bl	getchar
-	cmp	r0,#40		@ '('
+	cmp	r0,'('
 	bne	_loop2		@ skip all characters between first and (
 _special_switch:
-	cmp	r1,#103		@ g
+	cmp	r1,'g'
 	beq	_special_switch_g
-	cmp	r1,#112		@ p
+	cmp	r1,'p'
 	beq	_special_switch_p
-	cmp	r1,#114		@ r
+	cmp	r1,'r'
 	beq	_special_switch_r
-	cmp	r1,#105		@ i
+	cmp	r1,'i'
 	beq	_special_switch_i
-	cmp	r1,#119		@ w
+	cmp	r1,'w'
 	beq	_special_switch_w
-	cmp	r1,#101		@ e
+	cmp	r1,'e'
 	beq	_special_switch_e
-	cmp	r1,#108		@ l
+	cmp	r1,'l'
 	beq	_special_switch_l
-	cmp	r1,#115		@ s
+	cmp	r1,'s'
 	beq	_special_switch_s
-	cmp	r1,#99		@ c
+	cmp	r1,'c'
 	beq	_special_switch_c
-	cmp	r1,#102		@ f
+	cmp	r1,'f'
 	beq	_special_switch_f
-	cmp	r1,#116		@ t
+	cmp	r1,'t'
 	beq	_special_switch_t
-	cmp	r1,#117		@ u
+	cmp	r1,'u'
 	beq	_special_switch_u
 @ g(etchar)
 _special_switch_g:
@@ -103,14 +103,14 @@ _special_switch_u:
 @ raw(string)
 _special_switch_r:
 	bl	getchar
-	cmp	r0,#34		@ "
+	cmp	r0,'"'
 	bne	_special_switch_r @ skip all chars until "
 _special_switch_r_loop:
 	bl	getchar
-	cmp	r0,#34		@ "
+	cmp	r0,'"'
 	beq	_special_switch_r_loop_end
 	str	r0,[r5],#4	@ store char on the heap and increment hp
-	cmp	r0,#92		@ \
+	cmp	r0,'\\'
 	bne	_special_switch_r_loop
 	bl	getchar
 	str	r0,[r5],#4	@ store escaped char and increment hp
@@ -135,21 +135,21 @@ _special_switch_r_loop_end:
 @ throw(string)
 _special_switch_t:
 	bl	getchar
-	cmp	r0,#34		@ "
+	cmp	r0,'"'
 	bne	_special_switch_t @ skip all chars until "
 _special_switch_t_loop:
 	bl	getchar
-	cmp	r0,#34		@ "
+	cmp	r0,'"'
 	beq	_special_switch_t_loop_end
 	str	r0,[r5],#4	@ store char on the heap and increment hp
-	cmp	r0,#92		@ \
+	cmp	r0,'\\'
 	bne	_special_switch_t_loop
 	bl	getchar
 	str	r0,[r5],#4	@ store escaped char and increment hp
 	b	_special_switch_t_loop
 _special_switch_t_loop_end:
 	mov	r0,#0
-	strb	r0,[r5],#4	@ null seperated strings
+	strb	r0,[r5],#4	@ null separated strings
 	write __tstring_str1,__tstring_len1
 	ldr	r0,=stringcnt
 	ldr	r0,[r0]
@@ -172,7 +172,7 @@ _special_switch_i:
 	ldr	r1,[r2]
 	mov	r0,r1
 	bl	putint
-	mov	r0,10		@ \n
+	mov	r0,'\n'
 	bl	putchar
 	mov	r0,#1
 	mov r8,r1
@@ -181,7 +181,7 @@ _special_switch_i:
 	str	r1,[r2]
 _special_switch_i_skip:
 	bl	getchar
-	cmp	r0,#123
+	cmp	r0,'{'
 	bne	_special_switch_i_skip
 	b	_special_switch_end
 @ w(hile)
@@ -191,18 +191,18 @@ _special_switch_w:
 	write __while_str1,__while_len1
 	mov	r0,r3		@ id
 	bl	putint
-	mov	r0,#58		@ :
+	mov	r0,':'
 	bl	putchar
-	mov	r0,#10		@ \n
+	mov	r0,'\n'
 	bl	putchar
 	bl	expression_entry
 	write __while_str2,__while_len2
 	mov	r0,r3		@ id
 	bl	putint
-	mov	r0,#10		@ \n
+	mov	r0,'\n'
 	bl	putchar
-	mov	r0,#3
-	mov r8,#-1
+	mov	r0,#3		@ while
+	mov r8,#-1		@ invalid if chain label
 	push	{r0,r3,r8}
 	add	r3,r3,#1
 	str	r3,[r4]
@@ -219,20 +219,20 @@ _special_switch_c:
 _special_switch_c_loop:
 	bl	putchar
 	bl	getchar
-	cmp	r0,#41		@ )
+	cmp	r0,')'
 	bne	_special_switch_c_loop
-	mov	r0,#10		@ \n
+	mov	r0,'\n'
 	bl	putchar
 	b	_special_switch_end
 @ f(un)
 _special_switch_f:
-	mov	r0,#70		@ F
+	mov	r0,'F'		 @ function label prefix
 	bl	putchar
 	bl	getchar
 _special_switch_f_loop:
 	bl	putchar
 	bl	getchar
-	cmp	r0,#41		@ )
+	cmp	r0,')'
 	bne	_special_switch_f_loop
 	write __fun_str1,__fun_len1
 	mov	r0,#4
@@ -245,8 +245,8 @@ _special_switch_l:
 	bl	skipspaces
 	push	{r0}	@ :load 1st arg
 	bl	skipspaces
-	cmp	r0,#44		@ ,
-	movne	r0,#44
+	cmp	r0,','
+	movne	r0,','
 	bne	exit		@ error 44 - missing ,
 	bl	expression_entry
 	write __load_str1,__load_len1
@@ -257,8 +257,8 @@ _special_switch_l:
 @ s(tore)
 _special_switch_s:
 	bl	expression_entry
-	cmp	r0,#44		@ ,
-	movne	r0,#44
+	cmp	r0,','
+	movne	r0,','
 	bne	exit		@ error 44 - missing ,
 	bl	expression_entry
 	write __store_str,__store_len
@@ -267,7 +267,7 @@ _special_switch_end:
 	bl	getchar
 	cmp	r0,#0
 	beq	_special_endskip
-	cmp	r0,#10
+	cmp	r0,'\n'
 	beq	_special_endskip
 	b	_special_switch_end
 _special_endskip:
@@ -295,18 +295,18 @@ rcurly_if:
 	write __if_str4,__if_len4
 	mov	r0,r4		@ id
 	bl	putint
-	mov	r0,#58		@ :
+	mov	r0,':'
 	bl	putchar
-	mov	r0,#10		@ \n
+	mov	r0,'\n'
 	bl	putchar
 	bl	skipspaces
-	cmp	r0,#101		@ e
+	cmp	r0,'e'
 	bne	rcurly_else
 rcurly_if_skip:
 	bl	getchar
-	cmp	r0,#105
+	cmp	r0,'i'
 	beq	rcurly_another_if
-	cmp	r0,#123		@ {
+	cmp	r0,'{'
 	bne	rcurly_if_skip
 	mov	r3,#2		@ set else mode
 	push	{r3,r4,r8}
@@ -315,14 +315,14 @@ rcurly_else:
 	write __if_str5,__if_len5
 	mov	r0,r8		@ id
 	bl	putint
-	mov	r0,#58		@ :
+	mov	r0,':'
 	bl	putchar
-	mov	r0,#10		@ \n
+	mov	r0,'\n'
 	bl	putchar
 	b	rcurly_end
 rcurly_another_if:
 	bl	getchar
-	cmp	r0,#40		@ '('
+	cmp	r0,'('
 	bne	rcurly_another_if	@ skip all characters between first and (
 	bl	expression_entry
 	write __if_str1,__if_len1
@@ -330,7 +330,7 @@ rcurly_another_if:
 	ldr	r1,[r2]
 	mov	r0,r1
 	bl	putint
-	mov	r0,10		@ \n
+	mov	r0,'\n'
 	bl	putchar
 	mov	r0,#1
 	push	{r0,r1,r8}
@@ -344,9 +344,9 @@ rcurly_while:
 	write __while_str4,__while_len4
 	mov	r0,r4		@ id
 	bl	putint
-	mov	r0,#58		@ :
+	mov	r0,':'
 	bl	putchar
-	mov	r0,#10		@ \n
+	mov	r0,'\n'
 	bl	putchar
 	b	rcurly_end
 rcurly_fun:
@@ -359,7 +359,7 @@ assign:
 	push	{lr}
 	push	{r0}		@ destination
 	bl	skipspaces
-	cmp	r0,61		@ =
+	cmp	r0,'='
 	bne	exit		@ error 61 - missing =
 	bl	expression_entry
 	write __stmt_store_str1,__stmt_store_len1
@@ -374,33 +374,33 @@ expression_entry:
 expression:
 	bl	skipspaces
 expression_noskip:
-	cmp r0,#10		@ \n
+	cmp r0,'\n'
 	beq expression_end
-	cmp	r0,#48		@ 0
+	cmp	r0,'0'
 	blt expression_variable
-	cmp	r0,#57		@ 9
+	cmp	r0,'9'
 	bgt	expression_variable
 expression_const:
 	write __stmt_const_str1,__stmt_const_len1
 expression_const_loop:
 	bl	putchar
 	bl	getchar
-	cmp	r0,#48		@ 0
+	cmp	r0,'0'
 	blt	expression_const_end
-	cmp	r0,#57		@ 9
+	cmp	r0,'9'
 	bgt	expression_const_end
 	b	expression_const_loop
 expression_const_end:
 	write __stmt_const_str2,__stmt_const_len2
-	cmp	r0,#32		@ space
+	cmp	r0,' '
 	beq	expression
-	cmp	r0,#9		@ tab
+	cmp	r0,'\t'
 	beq	expression
 	b	expression_noskip
 expression_variable:
-	cmp	r0,#97		@ a
+	cmp	r0,'a'
 	blt expression_operator
-	cmp r0,#122		@ z
+	cmp r0,'z'
 	bgt expression_operator
 	write __load_var_str1,__load_var_len1
 	bl	putchar
@@ -408,36 +408,36 @@ expression_variable:
 	write __load_var_str3,__load_var_len3
 	b	expression
 expression_operator:
-	cmp	r0,#43		@ +
+	cmp	r0,'+'
 	beq	expression_add
-	cmp	r0,#45		@ -
+	cmp	r0,'-'
 	beq	expression_sub
-	cmp	r0,#42		@ *
+	cmp	r0,'*'
 	beq	expression_mul
-	cmp	r0,#47		@ /
+	cmp	r0,'/'
 	beq	expression_div
-	cmp	r0,#37		@ %
+	cmp	r0,'%'
 	beq	expression_mod
-	cmp	r0,#62		@ >
+	cmp	r0,'>'
 	beq	expression_gt
-	cmp	r0,#60		@ <
+	cmp	r0,'<'
 	beq	expression_lt
-	cmp	r0,#38		@ &
+	cmp	r0,'&'
 	beq	expression_and
-	cmp	r0,#124		@ |
+	cmp	r0,'|'
 	beq	expression_or
-	cmp	r0,#35		@ #
+	cmp	r0,'#'
 	beq	expression_comment
-	cmp	r0,#61		@ =
+	cmp	r0,'='
 	bne	expression_end
 	bl	getchar
-	cmp	r0,#61		@ ==
+	cmp	r0,'='
 	beq	expression_eq
-	cmp	r0,#60		@ =<
+	cmp	r0,'<'
 	beq	expression_leq
-	cmp	r0,#62		@ =>
+	cmp	r0,'>'
 	beq	expression_geq
-	cmp	r0,#33		@ =!
+	cmp	r0,'!'
 	beq	expression_neq
 @ if no expression matches, we just fall through and return
 expression_end:
@@ -512,13 +512,13 @@ dataseg:
 	write __dataseg_str,__dataseg_len
 @ dataseg header end
 @ variables
-	mov	r3,#97		@ a
+	mov	r3,'a'
 _dataseg_loop:
 	mov	r0,r3
 	bl	putchar
 	write __variable_str,__variable_len
 	add	r3,r3,#1
-	cmp	r3,#122		@ z
+	cmp	r3,'z'
 	ble	_dataseg_loop
 @ strings (r4 already contains cbuf addr)
 	ldr	r2,=stringcnt
@@ -528,7 +528,7 @@ _dataseg_loop:
 _dataseg_string_loop:
 	cmp	r3,r2
 	bge	_dataseg_string_end
-	mov	r0,#115		@ s
+	mov	r0,'s'
 	bl	putchar
 	mov	r0,r3
 	bl	putint
@@ -550,7 +550,7 @@ _dataseg_str_literal_end:
 	write __rstrdata_str3,__rstrdata_len3
 	mov	r0,r3
 	bl	putint
-	mov	r0,#10		@ \n
+	mov	r0,'\n'
 	bl	putchar
 	pop	{r1,r2}		@ retrieve r2 (string count)
 	add	r3,r3,#1	@ increment string index
@@ -581,7 +581,7 @@ putint_unroll:
 	ldr	r3,=cbuf
 putint_unroll_loop:
 	pop	{r1}
-	add	r1,r1,#48	@ offset remainder by ascii 0
+	add	r1,r1,'0'
 	mov	r0,r1
 	bl	putchar
 	sub	r2,r2,#1
@@ -594,9 +594,9 @@ skipspaces:	@ returns read character in r0
 	push	{lr}
 skipspaces_l:
 	bl	getchar
-	cmp	r0,#32		@ space
+	cmp	r0,' '
 	beq	skipspaces_l
-	cmp	r0,#9		@ tab
+	cmp	r0,'\t'
 	beq	skipspaces_l
 	pop	{lr}
 	bx	lr
