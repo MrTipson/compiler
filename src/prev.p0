@@ -210,46 +210,27 @@
 	v = y
 	:load(x,i 1 +) # type of assignment
 	:raw("\tldr\tr1,[sp],#4\n")
-	:if(x 0 ==){ # =
-		:if(v 1 ==){
-			:raw("\tstrb\tr0,[r1]\n")
-		} elif(v 4 ==){
-			:raw("\tstr\tr0,[r1]\n")
-		} else {
-			:call(errorInternal)
-		}
-	} elif(x 1 ==){ # +=
-		:if(v 1 ==){ # byte
-			:raw("\tldrb\tr2,[r1]\n\tadd\tr0,r2,r0\n\tstrb\tr0,[r1]\n")
-		} elif(v 4 ==){ # word
-			:raw("\tldr\tr2,[r1]\n\tadd\tr0,r2,r0\n\tstr\tr0,[r1]\n")
-		} else {
-			:call(errorInternal)
-		}
-	} elif(x 2 ==){ # -=
-		:if(v 1 ==){ # byte
-			:raw("\tldrb\tr2,[r1]\n\tsub\tr0,r2,r0\n\tstrb\tr0,[r1]\n")
-		} elif(v 4 ==){ # word
-			:raw("\tldr\tr2,[r1]\n\tsub\tr0,r2,r0\n\tstr\tr0,[r1]\n")
-		} else {
-			:call(errorInternal)
-		}
-	} elif(x 3 ==){ # /=
-		:if(v 1 ==){ # byte
-			:raw("\tldrb\tr2,[r1]\n\tsdiv\tr0,r2,r0\n\tstrb\tr0,[r1]\n")
-		} elif(v 4 ==){ # word
-			:raw("\tldr\tr2,[r1]\n\tsdiv\tr0,r2,r0\n\tstr\tr0,[r1]\n")
-		} else {
-			:call(errorInternal)
-		}
-	} elif(x 4 ==){ # *=
-		:if(v 1 ==){ # byte
-			:raw("\tldrb\tr2,[r1]\n\tmul\tr0,r2,r0\n\tstrb\tr0,[r1]\n")
-		} elif(v 4 ==){ # word
-			:raw("\tldr\tr2,[r1]\n\tmul\tr0,r2,r0\n\tstr\tr0,[r1]\n")
-		} else {
-			:call(errorInternal)
-		}
+	:if(v 1 =! v 4 =! &){
+		:call(errorInternal)
+	}
+	:if(v 1 == x 0 =! &){ # byte
+		:raw("\tldrb\tr2,[r1]\n")
+	} elif(v 4 == x 0 =! &){ # word
+		:raw("\tldr\tr2,[r1]\n")
+	}
+	:if(x 1 ==){
+		:raw("\tadd\tr0,r2,r0\n")
+	} elif(x 2 ==){
+		:raw("\tsub\tr0,r2,r0\n")
+	} elif(x 3 ==){
+		:raw("\tsdiv\tr0,r2,r0\n")
+	} elif(x 4 ==){
+		:raw("\tmul\tr0,r2,r0\n")
+	}
+	:if(v 1 ==){ # byte
+		:raw("\n\tstrb\tr0,[r1]\n")
+	} elif(v 4 ==){ # word
+		:raw("\n\tstr\tr0,[r1]\n")
 	}
 }
 :fun(codegen_dataseg){
