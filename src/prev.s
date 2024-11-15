@@ -175,7 +175,8 @@ _special_switch_i:
 	mov	r0,10		@ \n
 	bl	putchar
 	mov	r0,#1
-	push	{r0,r1}
+	mov r8,r1
+	push	{r0,r1,r8}
 	add	r1,r1,#1
 	str	r1,[r2]
 _special_switch_i_skip:
@@ -201,7 +202,8 @@ _special_switch_w:
 	mov	r0,#10		@ \n
 	bl	putchar
 	mov	r0,#3
-	push	{r0,r3}
+	mov r8,#-1
+	push	{r0,r3,r8}
 	add	r3,r3,#1
 	str	r3,[r4]
 	b	_special_switch_end
@@ -235,7 +237,8 @@ _special_switch_f_loop:
 	write __fun_str1,__fun_len1
 	mov	r0,#4
 	mov	r1,#-1
-	push	{r0,r1}
+	mov r8,#-1
+	push	{r0,r1,r8}
 	b	_special_switch_end
 @ l(oad)
 _special_switch_l:
@@ -271,7 +274,10 @@ _special_endskip:
 	b	_loop1_cond
 
 rcurly:		@ not a function
-	pop	{r3,r4}		@ get current state (if 1/else 2/while 3/fun 4) and label number
+	@ r3 .. enclosing statement if:1 else:2 while:3 fun:4
+	@ r4 .. statement's label number
+	@ r8 .. chained if end label number
+	pop	{r3,r4,r8}
 	cmp	r3,#1		@ if
 	beq	rcurly_if
 	cmp	r3,#2		@ else
@@ -284,7 +290,7 @@ rcurly:		@ not a function
 	bl	exit
 rcurly_if:
 	write __if_str3,__if_len3
-	mov	r0,r4		@ id
+	mov	r0,r8		@ end label
 	bl	putint
 	write __if_str4,__if_len4
 	mov	r0,r4		@ id
@@ -298,20 +304,39 @@ rcurly_if:
 	bne	rcurly_else
 rcurly_if_skip:
 	bl	getchar
+	cmp	r0,#105
+	beq	rcurly_another_if
 	cmp	r0,#123		@ {
 	bne	rcurly_if_skip
 	mov	r3,#2		@ set else mode
-	push	{r3,r4}
+	push	{r3,r4,r8}
 	b	rcurly_end
 rcurly_else:
 	write __if_str5,__if_len5
-	mov	r0,r4		@ id
+	mov	r0,r8		@ id
 	bl	putint
 	mov	r0,#58		@ :
 	bl	putchar
 	mov	r0,#10		@ \n
 	bl	putchar
 	b	rcurly_end
+rcurly_another_if:
+	bl	getchar
+	cmp	r0,#40		@ '('
+	bne	rcurly_another_if	@ skip all characters between first and (
+	bl	expression_entry
+	write __if_str1,__if_len1
+	ldr	r2,=labelcnt
+	ldr	r1,[r2]
+	mov	r0,r1
+	bl	putint
+	mov	r0,10		@ \n
+	bl	putchar
+	mov	r0,#1
+	push	{r0,r1,r8}
+	add	r1,r1,#1
+	str	r1,[r2]
+	b	_special_switch_i_skip
 rcurly_while:
 	write __while_str3,__while_len3
 	mov	r0,r4		@ id
