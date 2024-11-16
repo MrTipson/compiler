@@ -1,0 +1,1077 @@
+#
+# Phase 2 - Syntax analisys
+#
+:fun(syntax){
+	:if(d){
+		:raw("\nPhase 2 - Syntax analisys\n")
+	}
+	i = b
+	g = e 4 - # dont count safety token
+	:while(i g <){
+		f = 1
+		w = i # save old place of token parsing
+		o = m # save old memory pointer
+		:call(syntax_isDeclaration)
+		:if(f){
+			# restore if matching changed anything
+			i = w
+			m = o
+			:call(syntax_isTypeDeclaration)
+			:if(f){
+				i = w
+				m = o
+				:call(syntax_isFunction)
+				:if(f){
+					:call(errorUnmatchedToken)
+				}
+			}
+		}
+	}
+}
+:fun(syntax_isParameter){
+	:call(syntax_isType)
+	:load(x,i)
+	:if(f 0 == x 2 == &){ # match found & x == ID
+		:store(4,m) # parameter
+		:store(m 5 -,m 1 +) # type was written in last cell
+		:store(i,m 2 +) # identifier is current token
+		:store(0 1 -,m 4 +)
+		m = m 5 + # move token index
+		i = i 4 +
+		:if(d){
+			:raw("PAR ")
+		}
+	} else {
+		f = 1
+	}
+}
+:fun(syntax_isFunction){
+	:call(syntax_isType)
+	:load(x,i)
+	:if(f 0 == x 2 == &){ # <type> <ident>
+		:store(3,m) # function
+		:store(m 5 -,m 1 +) # type was written in last cell
+		:store(i,m 2 +) # identifier is current token
+		:store(0,m 3 +) # start of function block
+		s = m 3 + # save start of function memory location
+		:call(push)
+		m = m 5 +
+		i = i 4 +
+		:load(x,i)
+		:if(x 14 ==){ # (
+			i = i 4 +
+			:load(x,i)
+			y = x 15 =! # x != ')'
+			:if(y){ # undo first increment of while loop
+				i = i 4 -
+			}
+			:while(y){
+				i = i 4 +
+				f = 1
+				:call(syntax_isParameter)
+				:if(f){
+					:call(errorUnmatchedToken)
+				}
+				:load(x,i)
+				y = x 21 == # ,
+			}
+			:if(x 15 =!){ # expect ')'
+				x = 41  # )
+				:call(errorExpectedX)
+			}
+			i = i 4 +
+			:load(x,i)
+			:if(x 22 ==){ # x == ';' ; function declaration
+				:load(y,a 1 +)
+				:store(2,y) # overwrite memory as function declaration start
+				:if(d){
+					:raw("FUNDECL ")
+				} 
+			} else {
+				:if(x 16 =!){ # x != '{'
+					x = 123 # {
+					:call(errorExpectedX)
+				}
+				i = i 4 +
+				:load(x,i)
+				:while(x 17 =!){ # x != '}'
+					f = 1
+					:call(syntax_isStatement)
+					:if(f){
+						:call(errorUnmatchedToken)
+					}
+					:load(x,i)
+				}
+				:if(d){
+					:raw("FUN ")
+				} 
+			}
+			i = i 4 +
+			:load(y,a 1 +)
+			:store(m,y 1 +)
+			:store(3,m) # function
+			:store(1,m 3 +) # function end block
+			m = m 5 +
+			f = 0 # set match flag
+		} else {
+			f = 1
+		}
+		:call(pop)
+	} else {
+		f = 1
+	}
+}
+:fun(syntax_isStatement){
+	s = w
+	:call(push)
+	s = o
+	:call(push)
+	w = i
+	o = m
+	:call(syntax_isDeclaration)
+	:if(f){
+		i = w
+		m = o
+		:call(syntax_isReturn)
+		:if(f){
+			i = w
+			m = o
+			:call(syntax_isAssign)
+			:if(f){
+				i = w
+				m = o
+				:call(syntax_isIf)
+				:if(f){
+					i = w
+					m = o
+					:call(syntax_isWhile)
+					:if(f){
+						i = w
+						m = o
+						:call(syntax_isExprStmt)
+						:if(f){
+							i = w
+							m = o
+							:call(syntax_isTypeDeclaration)
+						}
+					}
+				}
+			}
+		}
+	}
+	:call(pop)
+	o = s
+	:call(pop)
+	w = s
+}
+:fun(syntax_isReturn){
+	:load(x,i)
+	:if(x 27 ==){ # return
+		i = i 4 +
+		:load(x,i)
+		:if(x 22 ==){ # ;
+			i = i 4 +
+			:store(5,m) # return
+			:store(0 1 -,m 1 +) # expression
+			m = m 5 +
+			f = 0 # set match flag
+			:if(d){
+				:raw("RET ")
+			}
+		} else {
+			:call(syntax_isExpression)
+			:load(x,i)
+			:if(f 0 == x 22 == &){ # x == ;
+				i = i 4 +
+				:store(5,m) # return
+				:store(m 5 -,m 1 +) # expression
+				m = m 5 +
+				f = 0 # set match flag
+				:if(d){
+					:raw("RET ")
+				}
+			} else {
+				f = 1
+			}
+		}
+	}
+}
+:fun(syntax_isAssign){
+	:call(syntax_isExpression)
+	:load(x,i)
+	:if(f 0 == x 1 == &){ # any of the assignments
+		:load(s,i 1 +)
+		:call(push)
+		s = m 5 -
+		:call(push)
+		i = i 4 +
+		:call(syntax_isExpression)
+		:load(x,i)
+		:call(pop) # expr1 mem
+		z = s
+		:call(pop) # assignment op
+		:if(f 0 == x 22 == &){ # x == ;
+			i = i 4 +
+			:store(7,m) # assignment
+			:store(s,m 1 +) # assignment op
+			:store(z,m 2 +) # expression1
+			:store(m 5 -,m 3 +) # expression 2
+			m = m 5 +
+			# match flag already 0
+			:if(d){
+				:raw("ASS ")
+			}
+		} else {
+			f = 1
+		}
+	} else {
+		f = 1
+	}
+}
+:fun(syntax_isIf){
+	:load(x,i)
+	:if(x 11 ==){ # if
+		i = i 4 +
+		:load(x,i)
+		:if(x 14 ==){ # (
+			i = i 4 +
+			f = 1
+			:call(syntax_isExpression)
+			:load(x,i)
+			:if(f 0 == x 15 == &){ # x == )
+				i = i 4 +
+				:store(8,m) # if/else
+				:store(0,m 1 +) # if
+				:store(m 5 -,m 2 +) # expression is last cell
+				m = m 5 +
+				:load(x,i)
+				:if(x 16 ==){ # {
+					i = i 4 +
+					:load(x,i)
+					:while(x 17 =!){ # }
+						f = 1
+						:call(syntax_isStatement)
+						:if(f){
+							:call(errorUnmatchedToken)
+						}
+						:load(x,i)
+					}
+					i = i 4 +
+				} else {
+					f = 1
+					:call(syntax_isStatement)
+					:if(f){
+						:call(errorUnmatchedToken)
+					}
+				}
+				:load(x,i)
+				:if(x 12 ==){ # else
+					:if(d){
+						:raw("IF ")
+					}
+					:store(8,m) # if/else
+					:store(1,m 1 +) # else
+					m = m 5 +
+					i = i 4 +
+					:load(x,i)
+					:if(x 16 ==){ # {
+						i = i 4 +
+						:load(x,i)
+						:while(x 17 =!){ # }
+							f = 1
+							:call(syntax_isStatement)
+							:if(f){
+								:call(errorUnmatchedToken)
+							}
+							:load(x,i)
+						}
+						i = i 4 +
+					} else {
+						f = 1
+						:call(syntax_isStatement)
+						:if(f){
+							:call(errorUnmatchedToken)
+						}
+					}
+					:store(8,m) # if/else
+					:store(2,m 1 +) # end
+					m = m 5 +
+					:if(d){
+						:raw("ELSE ")
+					}
+				} else {
+					:store(8,m) # if/else
+					:store(2,m 1 +) # end
+					m = m 5 +
+					:if(d){
+						:raw("IF ")
+					}
+				}
+			} else {
+				f = 1
+			}
+		}
+	}
+}
+:fun(syntax_isWhile){
+	:load(x,i)
+	:load(u,i 4 +)
+	:if(x 13 == u 14 == &){ # x == while & u == (
+		i = i 8 + # move 2 tokens ahead
+		:call(syntax_isExpression)
+		:load(x,i)
+		:if(f 0 == x 15 == &){ # <expr> & x == )
+			i = i 4 +
+			:store(9,m) # while
+			:store(0,m 1 +) # start
+			:store(m 5 -,m 2 +) # expression is last cell
+			m = m 5 +
+			:load(x,i)
+			:if(x 16 ==){ # {
+				i = i 4 +
+				:load(x,i)
+				:while(x 17 =!){ # }
+					f = 1
+					:call(syntax_isStatement)
+					:if(f){
+						:call(errorUnmatchedToken)
+					}
+					:load(x,i)
+				}
+				i = i 4 +
+			} else {
+				f = 1
+				:call(syntax_isStatement)
+				:if(f){
+					:call(errorUnmatchedToken)
+				}
+			}
+			:store(9,m) # while
+			:store(1,m 1 +) # end
+			m = m 5 +
+			:if(d){
+				:raw("WHILE ")
+			}
+		}
+	}
+}
+:fun(syntax_isExprStmt){
+	:call(syntax_isExpression)
+	:load(x,i)
+	:if(f 0 == x 22 == &){ # <expr> & x == ;
+		i = i 4 +
+		:store(6,m) # expr stmt
+		:store(m 5 -,m 1 +) # expression
+		m = m 5 +
+		f = 0 # set match flag
+		:if(d){
+			:raw("EXP ")
+		}
+	} else {
+		f = 1
+	}
+}
+:fun(syntax_isExpression){
+	:call(syntax_isExpression_f)
+	:if(f 0 ==){
+		f = 1
+		:call(syntax_isExpression_ee)
+	}
+}
+:fun(syntax_isExpression_ee){
+	:load(x,i)
+	:if(x 42 ==){ # ||
+		i = i 4 +
+		s = m 5 -
+		:call(push) # expr1
+		:call(syntax_isExpression_f)
+		:store(2,m) # expression
+		:store(21,m 1 +) # ||
+		:call(pop) # expr1
+		:store(s,m 2 +) # expr1
+		:store(m 5 -,m 3 +) #expr2
+		m = m 5 +
+		:if(d){
+			:raw("binop|| ")
+		}
+		:if(f 0 ==){
+			f = 1
+			:call(syntax_isExpression_ee)
+		}
+	} else {
+		f = 0
+	}
+}
+:fun(syntax_isExpression_f){
+	:call(syntax_isExpression_g)
+	:if(f 0 ==){
+		f = 1
+		:call(syntax_isExpression_ff)
+	}
+}
+:fun(syntax_isExpression_ff){
+	:load(x,i)
+	:if(x 41 ==){ # &&
+		i = i 4 +
+		s = m 5 -
+		:call(push) # expr1
+		:call(syntax_isExpression_g)
+		:store(2,m) # expression
+		:store(20,m 1 +) # &&
+		:call(pop) # expr1
+		:store(s,m 2 +) # expr1
+		:store(m 5 -,m 3 +) #expr2
+		m = m 5 +
+		:if(d){
+			:raw("binop&& ")
+		}
+		:if(f 0 ==){
+			f = 1
+			:call(syntax_isExpression_ff)
+		}
+	} else {
+		f = 0
+	}
+}
+:fun(syntax_isExpression_g){
+	:call(syntax_isExpression_x)
+	:if(f 0 ==){
+		f = 1
+		:call(syntax_isExpression_gg)
+	}
+}
+:fun(syntax_isExpression_gg){
+	:load(x,i)
+	:if(x 29 ==){ # |
+		i = i 4 +
+		s = m 5 -
+		:call(push) # expr1
+		:call(syntax_isExpression_x)
+		:store(2,m) # expression
+		:store(19,m 1 +) # |
+		:call(pop) # expr1
+		:store(s,m 2 +) # expr1
+		:store(m 5 -,m 3 +) #expr2
+		m = m 5 +
+		:if(d){
+			:raw("binop| ")
+		}
+		:if(f 0 ==){
+			f = 1
+			:call(syntax_isExpression_gg)
+		}
+	} else {
+		f = 0
+	}
+}
+:fun(syntax_isExpression_x){
+	:call(syntax_isExpression_h)
+	:if(f 0 ==){
+		f = 1
+		:call(syntax_isExpression_xx)
+	}
+}
+:fun(syntax_isExpression_xx){
+	:load(x,i)
+	:if(x 44 ==){ # ^
+		i = i 4 +
+		s = m 5 -
+		:call(push) # expr1
+		:call(syntax_isExpression_h)
+		:store(2,m) # expression
+		:store(26,m 1 +) # ^
+		:call(pop) # expr1
+		:store(s,m 2 +) # expr1
+		:store(m 5 -,m 3 +) #expr2
+		m = m 5 +
+		:if(d){
+			:raw("binop^ ")
+		}
+		:if(f 0 ==){
+			f = 1
+			:call(syntax_isExpression_xx)
+		}
+	} else {
+		f = 0
+	}
+}
+:fun(syntax_isExpression_h){
+	:call(syntax_isExpression_i)
+	:if(f 0 ==){
+		f = 1
+		:call(syntax_isExpression_hh)
+	}
+}
+:fun(syntax_isExpression_hh){
+	:load(x,i)
+	:if(x 28 ==){ # &
+		i = i 4 +
+		s = m 5 -
+		:call(push) # expr1
+		:call(syntax_isExpression_i)
+		:store(2,m) # expression
+		:store(18,m 1 +) # &
+		:call(pop) # expr1
+		:store(s,m 2 +) # expr1
+		:store(m 5 -,m 3 +) #expr2
+		m = m 5 +
+		:if(d){
+			:raw("binop& ")
+		}
+		:if(f 0 ==){
+			f = 1
+			:call(syntax_isExpression_hh)
+		}
+	} else {
+		f = 0
+	}
+}
+:fun(syntax_isExpression_i){
+	:call(syntax_isExpression_j)
+	:if(f 0 ==){
+		f = 1
+		:call(syntax_isExpression_ii)
+	}
+}
+:fun(syntax_isExpression_ii){
+	:load(x,i)
+	:if(x 30 == x 31 == |){ # x == '==' | x == '!='
+		i = i 4 +
+		s = m 5 -
+		:call(push) # expr1
+		:if(x 30 ==){
+			s = 16 # ==
+		} else {
+			s = 17 # !=
+		}
+		:call(push) # op
+		:call(syntax_isExpression_j)
+		:store(2,m) # expression
+		:call(pop) # op
+		:store(s,m 1 +) # type
+		:call(pop) # expr1
+		:store(s,m 2 +) # expr1
+		:store(m 5 -,m 3 +) #expr2
+		m = m 5 +
+		:if(d){
+			:raw("binop!== ")
+		}
+		:if(f 0 ==){
+			f = 1
+			:call(syntax_isExpression_ii)
+		}
+	} else {
+		f = 0
+	}
+}
+:fun(syntax_isExpression_j){
+	:call(syntax_isExpression_k)
+	:if(f 0 ==){
+		f = 1
+		:call(syntax_isExpression_jj)
+	}
+}
+:fun(syntax_isExpression_jj){
+	:load(x,i)
+	# x == '<' | x == '>' | x == '<=' | x == '>='
+	:if(x 32 == x 33 == | x 34 == | x 35 == |){
+		i = i 4 +
+		s = m 5 -
+		:call(push) # expr1
+		s = x 20 - # offset of new codes
+		:call(push) # op
+		:call(syntax_isExpression_k)
+		:store(2,m) # expression
+		:call(pop) # op
+		:store(s,m 1 +) # type
+		:call(pop) # expr1
+		:store(s,m 2 +) # expr1
+		:store(m 5 -,m 3 +) #expr2
+		m = m 5 +
+		:if(d){
+			:raw("binop>< ")
+		}
+		:if(f 0 ==){
+			f = 1
+			:call(syntax_isExpression_jj)
+		}
+	} else {
+		f = 0
+	}
+}
+:fun(syntax_isExpression_k){
+	:call(syntax_isExpression_l)
+	:if(f 0 ==){
+		f = 1
+		:call(syntax_isExpression_kk)
+	}
+}
+:fun(syntax_isExpression_kk){
+	:load(x,i)
+	:if(x 39 == x 40 == |){ # x == '+' | x == '-'
+		i = i 4 +
+		s = m 5 -
+		:call(push) # expr1
+		s = x 29 -
+		:call(push) # op
+		:call(syntax_isExpression_l)
+		:store(2,m) # expression
+		:call(pop) # op
+		:store(s,m 1 +) # type
+		:call(pop) # expr1
+		:store(s,m 2 +) # expr1
+		:store(m 5 -,m 3 +) #expr2
+		m = m 5 +
+		:if(d){
+			:raw("binop+- ")
+		}
+		:if(f 0 ==){
+			f = 1
+			:call(syntax_isExpression_kk)
+		}
+	} else {
+		f = 0
+	}
+}
+:fun(syntax_isExpression_l){
+	:call(syntax_isExpression_m)
+	:if(f 0 ==){
+		f = 1
+		:call(syntax_isExpression_ll)
+	}
+}
+:fun(syntax_isExpression_ll){
+	:load(x,i)
+	:if(x 36 == x 37 == | x 38 == |){ # x == '*' | x == '/' | x == '%'
+		i = i 4 +
+		s = m 5 -
+		:call(push) # expr1
+		s = x 29 -
+		:call(push) # op
+		:call(syntax_isExpression_m)
+		:store(2,m) # expression
+		:call(pop)
+		:store(s,m 1 +) # op
+		:call(pop) # expr1
+		:store(s,m 2 +) # expr1
+		:store(m 5 -,m 3 +) #expr2
+		m = m 5 +
+		:if(d){
+			:raw("binop/*% ")
+		}
+		:if(f 0 ==){
+			f = 1
+			:call(syntax_isExpression_ll)
+		}
+	} else {
+		f = 0
+	}
+}
+:fun(syntax_isExpression_m){
+	:load(x,i)
+	s = 0
+	:if(x 25 ==){ # ++
+		s = 2 # pref ++
+	} elif(x 26 ==){ # --
+		s = 3 # pref --
+	} elif(x 39 ==){ # +
+		s = 4 # pref +
+	} elif(x 40 ==){ # -
+		s = 5 # pref -
+	} elif(x 24 ==){ # !
+		s = 6 # pref !
+	} elif(x 43 ==){ # ~
+		s = 27 # pref ~
+	} elif(x 28 ==){ # &
+		s = 28 # &
+	} elif(x 36 ==){ # *
+		s = 29 # *
+	}
+	:if(x 14 ==){ # x == '(' ; cast expression
+		s = i
+		:call(push)
+		s = m
+		:call(push)
+		i = i 4 +
+		f = 1
+		:call(syntax_isType)
+		:load(x,i)
+		:if(f 0 == x 15 == &){ # <type> & x == ')'
+			:call(pop)
+			:call(pop)
+			s = m 5 -
+			:call(push)
+			s = 30
+			y = 1
+		} else {
+			:call(pop)
+			m = s
+			:call(pop)
+			i = s
+			f = 1
+			s = 0 # make sure s is 0 because we didn't match
+		}
+	}
+	:if(s){
+		:if(d){
+			:raw("prefix ")
+		}
+		i = i 4 +
+		:call(push)
+		:call(syntax_isExpression_m)
+		:store(2,m) # expression
+		:call(pop)
+		:store(s,m 1 +) # type
+		:store(m 5 -,m 2 +) # inner expression
+		:if(s 30 ==){ # cast expression
+			:call(pop)
+			:store(s, m 3 +) # type is in expr2
+		}
+		m = m 5 +
+	} else {
+		:call(syntax_isExpression_n)
+	}
+}
+:fun(syntax_isExpression_n){
+	:call(syntax_isExpression_o)
+	:call(syntax_isExpression_nn)
+}
+:fun(syntax_isExpression_nn){
+	:load(x,i)
+	:if(x 25 == x 26 == |){ # x == '++' | x == '--'
+		:if(x 25 ==){
+			x = 0 # ++
+		} else {
+			x = 1 # --
+		}
+		:store(2,m) # expression
+		:store(x,m 1 +) # id
+		:store(m 5 -,m 2 +) # expr is in previous cell
+		m = m 5 +
+		i = i 4 +
+		:if(d){
+			:raw("postinc ")
+		}
+		:call(syntax_isExpression_nn)
+	} elif(x 18 ==){ # [
+		s = m 5 -
+		:call(push)
+		i = i 4 +
+		f = 1
+		:call(syntax_isExpression)
+		:call(pop)
+		:load(x,i)
+		:if(f 0 == x 19 == &){ # <expr> & x == ']'
+			:store(2,m) # expression
+			:store(24,m 1 +) # array access id
+			:store(s,m 2 +) # base expression
+			:store(m 5 -,m 3 +) # expression in previous cell
+			m = m 5 +
+			i = i 4 +
+			:if(d){
+				:raw("arr ")
+			}
+			:call(syntax_isExpression_nn)
+		}
+	} elif(x 20 ==){ # .
+		i = i 4 +
+		:load(x,i)
+		:if(x 2 ==){ # ident
+			:store(2,m) # expression
+			:store(25,m 1 +) # comp acess
+			:store(m 5 -,m 2 +) # base expression in previous cell
+			:store(i,m 3 +) # token (component)
+			m = m 5 +
+			i = i 4 +
+			:if(d){
+				:raw("comp ")
+			}
+			:call(syntax_isExpression_nn)
+		} else {
+			f = 1
+		}
+	} elif(x 46 ==){ # ->
+		i = i 4 +
+		:load(x,i)
+		:if(x 2 ==){ # ident
+			:store(2,m) # expression
+			:store(31,m 1 +) # comp acess (from pointer)
+			:store(m 5 -,m 2 +) # base expression
+			:store(i,m 3 +) # token (component)
+			m = m 5 +
+			i = i 4 +
+			:if(d){
+				:raw("ptrcomp ")
+			}
+			:call(syntax_isExpression_nn)
+		} else {
+			f = 1
+		}
+	}
+}
+:fun(syntax_isExpression_o){
+	:load(x,i)
+	:if(x 2 ==){ # ident
+		:load(x,i 4 +)
+		:if(x 14 ==){ # x == '(' function call
+			# Starting memory entry for call
+			s = m
+			:call(push)
+			:store(10,m) # call
+			:store(0,m 1 +) # start
+			:store(i,m 2 +) # ident
+			m = m 5 +
+			# Finish writing memory
+			i = i 8 + # consume 2 tokens
+			:load(x,i)
+			y = x 15 =! # x != ')'
+			:if(y){ # undo first increment of while loop
+				i = i 4 -
+			}
+			:while(y){
+				i = i 4 +
+				f = 1
+				:call(syntax_isExpression)
+				:if(f){
+					:call(errorUnmatchedToken)
+				}
+				:store(11,m) # argument
+				:store(m 5 -,m 1 +)
+				m = m 5 +
+				:load(x,i)
+				y = x 21 == # ,
+			}
+			:if(x 15 =!){ # )
+				x = 41 # )
+				:call(errorExpectedX)
+			}
+			:if(d){
+				:raw("call ")
+			}
+			# Ending memory entry for call
+			:store(10,m) # call
+			:store(1,m 1 +) # end
+			:call(pop)
+			:store(s,m 3 +)
+			m = m 5 +
+		} else { # ident
+			x = 2
+			:store(2,m) # expression
+			:store(22,m 1 +) # type = ident
+			:store(i,m 2 +) # token
+			m = m 5 +
+			:if(d){
+				:raw("ident ")
+			}
+		}
+		i = i 4 +
+		f = 0
+	} elif(x 3 ==){ # const
+		:store(2,m) # expression
+		:store(23,m 1 +) # type
+		:store(i,m 2 +) # token
+		m = m 5 +
+		i = i 4 +
+		f = 0
+		:if(d){
+			:raw("const ")
+		}
+	} elif(x 14 ==){ # (
+		:if(d){
+			:raw("startencl ")
+		}
+		i = i 4 +
+		:call(syntax_isExpression)
+		:load(x,i)
+		:if(x 15 =!){ # )
+			x = 41 # )
+			:call(errorExpectedX)
+		}
+		:raw("enclxpr ")
+		i = i 4 +
+	} elif(x 47 ==){ # sizeof
+		i = i 4 +
+		:load(x,i)
+		:if(x 14 ==){ # (
+			i = i 4 +
+			f = 1
+			:call(syntax_isType)
+			:load(x,i)
+			:if(f){
+				:throw("Expected type, found ")
+				:call(errint)
+				:throw(".\n")
+				:exit(1)
+			} else {
+				:if(x 15 =!){ # )
+					x = 15 # )
+					:call(errorExpectedX)
+				}
+			}
+		} else {
+			x = 14 # (
+			:call(errorExpectedX)
+		}
+		:store(2,m) # expression
+		:store(32,m 1 +) # expr id = typeof
+		:store(m 5 -,m 2 +) # type cell
+		m = m 5 +
+		i = i 4 +
+		:if(d){
+			:raw("sizeof ")
+		}
+	}
+}
+:fun(syntax_isType){
+	:load(x,i)
+	f = 1
+	:if(x 0 ==){ # type token
+		:store(1,m) # type
+		:load(x,i 1 +)
+		:store(x,m 1 +) # type id
+		m = m 5 +
+		i = i 4 +
+		:load(x,i)
+		f = 0 # set match flag
+	} elif(x 2 ==){ # ident token
+		:store(1,m) # type
+		:store(6,m 1 +) # type id = name type 
+		:store(i,m 2 +) # basetype is the ident
+		m = m 5 +
+		i = i 4 +
+		f = 0 # set match flag
+	}
+	y = f 0 ==
+	:while(y){
+		:load(x,i)
+		:if(x 36 ==){ # *
+			:store(1,m) # type
+			:store(5,m 1 +) # type id = pointer type
+			:store(m 5 -,m 2 +) # basetype is last type
+			m = m 5 +
+			i = i 4 +
+		} else {
+			:load(u,i 4 +)
+			:load(v,i 8 +)
+			:if(x 18 == u 3 == & v 19 == &){ # x == '[' && u == <const> && v == ']'
+				:store(1,m) # type
+				:store(4,m 1 +) # type id = array type
+				:store(m 5 -,m 2 +) # basetype is last type
+				:store(i 4 +,m 3 +) # length is the const token
+				m = m 5 +
+				i = i 12 +
+			} else {
+				y = 0
+			}
+		}
+	}
+}
+:fun(syntax_isDeclaration){
+	:call(syntax_isType)
+	:load(x,i)
+	l = i # save identifier location
+	:if(f 0 == x 2 == &){ # <type> <ident>
+		i = i 4 +
+		:load(x,i)
+		:if(x 22 ==){ # x = ';' ; <type> <ident>;
+			:store(0,m) # declaration
+			:store(m 5 -,m 1 +) # type was written in previous cell
+			:store(0 1 -,m 2 +) # no expression
+			:store(l,m 3 +) # identifier
+			:store(0 1 -,m 4 +)
+			m = m 5 +
+			i = i 4 +
+			f = 0 # set match flag
+			:if(d){
+				:raw("DECL ")
+			}
+		} else {
+			:load(z,i 1 +) # load id
+			:if(x 1 == z 0 == &){ # x == assignment & z == '=' ; <type> <ident> = 
+				i = i 4 +
+				n = m 5 - # save type location
+				f = 1
+				:call(syntax_isExpression)
+				:load(x,i)
+				:if(f 0 == x 22 == &){ # expr matched & x == ';' ; type ident = expr ;
+					i = i 4 +
+					:store(0,m)
+					:store(n,m 1 +) # type location was saved in n
+					:store(m 5 -,m 2 +) # expression in previous cell
+					:store(l,m 3 +)
+					:store(0 1 -,m 4 +)
+					m = m 5 +
+					:if(d){
+						:raw("INIT ")
+					}
+				} else {
+					f = 1 # no match
+				}
+			} else {
+				f = 1 # no match
+			}
+		}
+	} else {
+		f = 1 # no match
+	}
+}
+:fun(syntax_isTypeDeclaration){
+	:load(x,i)
+	:if(x 45 ==){ # struct
+		i = i 4 +
+		:load(x,i)
+		:if(x 2 ==){ # ident
+			:store(12,m) # struct
+			:store(0,m 1 +) # start
+			:store(i,m 2 +)
+			:store(0 1 -,m 3 +)
+			m = m 5 +
+			i = i 4 +
+			:load(x,i)
+			:if(x 16 ==){ # {
+				i = i 4 +
+				:load(x,i)
+				:while(x 17 =!){ # }
+					f = 1
+					:call(syntax_isParameter)
+					:if(f){
+						:call(errorUnmatchedToken)
+					}
+					:load(x,i)
+					:if(x 22 =!){ # ;
+						x = 59 # ;
+						:call(errorExpectedX)
+					}
+					:if(x 0 1 - ==){ # EOF
+						:raw("End of file reached while parsing struct.")
+						x = 1
+						:exit(x)
+					}
+					i = i 4 +
+					:load(x,i)
+				}
+				:store(12,m) # struct
+				:store(1,m 1 +) # end
+				m = m 5 +
+				i = i 4 +
+				:load(x,i)
+				:if(x 22 =!){ # ;
+					x = 59 # ;
+					:call(errorExpectedX)
+				} 
+				i = i 4 +
+				f = 0
+				:if(d){
+					:raw("TYPEDECL ")
+				}
+			} else {
+				x = 123 # {
+				:call(errorExpectedX)
+			}
+		} else {
+			:throw("Expected identifier. ")
+			:load(x,i 3 +)
+			:call(errorPrintLine)
+		}
+	}
+}

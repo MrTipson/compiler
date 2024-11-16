@@ -1,0 +1,611 @@
+#
+# Phase 1 - Tokenize
+#
+:fun(tokenize){
+	:if(d){
+		:raw("Phase 1 - Tokenization\n")
+	}
+	l = 1 # line count
+	i = 0 # file index
+	:while(i b <){ # read through the file
+		f = 1 # flag for matches ( 0 => stop trying to match)
+		:call(tokenize_isComment)
+		:if(f){
+			:call(tokenize_isWhitespace)
+			:if(f){
+				:call(tokenize_isKeyword)
+				:if(f){
+					:call(tokenize_isConstant)
+					:if(f){
+						:call(tokenize_isSymbol)
+						:if(f){
+							:call(tokenize_isIdentifier)
+							:if(f){
+								:call(errorUnmatchedChar)
+							}
+						}
+					}
+				}
+			}
+		}
+		c = i b < # Update condition
+	}
+	# End of tokens
+	x = 0 1 -
+	:store(x,m)
+	:store(x,m 1 +)
+	:store(x,m 2 +)
+	:store(x,m 3 +)
+	m = m 4 +
+}
+# Match comment
+:fun(tokenize_isComment){
+	:load(x,i)
+	:if(x 47 == i 1 + b < &){ # '/' & i+1 < b
+		:load(x,i 1 +)
+		:if(x 47 ==){ # x == '/'
+			f = 0 # set match flag
+			i = i 2 + # increment file index
+			:load(x,i)
+			:while(x 10 =! i b < &){ # skip characters until end of line
+				i = i 1 + # increment file index
+				:load(x,i)
+			}
+		} elif(x 42 ==){ # '*' ; multiline comment
+			v = 0
+			i = i 1 +
+			y = 1
+			:while(y){
+				:if(i b =>){
+					:call(errorEOFcomment)
+				}
+				:load(x,i)
+				i = i 1 +
+				:if(x 42 ==){ # '*'
+					v = 1
+				} else {
+					:if(x 47 == v &){ # /
+						y = 0
+					}
+					v = 0
+					:if(x 10 ==){# \n
+						l = l 1 +
+					}
+				}
+			}
+		}
+	}
+}
+# Match whitespace
+:fun(tokenize_isWhitespace){
+	:load(x,i)
+	:while(x 10 == x 9 == | x 32 == | x 13 == |){ # x == '\n' | x == '\t' | x == ' ' | x == '\r'
+		:if(x 10 ==){ # \n
+			l = l 1 + # increment line counter
+		}
+		f = 0
+		i = i 1 +
+		:load(x,i)
+	}
+}
+# Match keywords
+:fun(tokenize_isKeyword){
+	# Preload 4 characters in p,q,r,s,t
+	:load(p,i)
+	:load(q,i 1 +)
+	:load(r,i 2 +)
+	f = 0 # set match flag preemptively
+	x = r # 3rd character should be non-identifier
+	:call(tokenize_isKeyword_helper) # y contains result
+	:if(p 105 == q 102 == & y &){ # if_
+		:store(11,m) # type 11
+		i = i 2 + # consume 2 characters
+		:if(d){
+			:raw("IF ")
+		}
+	} else { # keywords of length >= 3
+		:load(s,i 3 +)
+		x = s # 4th character should be non-identifier
+		:call(tokenize_isKeyword_helper) # y contains result
+		:if(p 105 == q 110 == & r 116 == & y &){ # int_
+			:store(0,m) # type 0
+			:store(0,m 1 +) # id 0 (int)
+			i = i 3 + # consume 3 characters
+			:if(d){
+				:raw("INT ")
+			}
+		} else { # keywords of length >= 4
+			:load(t,i 4 +)
+			x = t # 5th character should be non-identifier
+			:call(tokenize_isKeyword_helper) # y contains result
+			:if(p 98 == q 111 == & r 111 == & s 108 == & y &){ # bool_
+				:store(0,m) # type 0
+				:store(2,m 1 +) # id 2 (bool)
+				i = i 4 + # consume 4 characters
+				:if(d){
+					:raw("BOOL ")
+				}
+			} elif(p 99 == q 104 == & r 97 == & s 114 == & y &){ # char_
+				:store(0,m) # type 0
+				:store(1,m 1 +) # id 1 (char)
+				i = i 4 +
+				:if(d){
+					:raw("CHAR ")
+				}
+			} elif(p 118 == q 111 == & r 105 == & s 100 == & y &){ # void_
+				:store(0,m) # type 0
+				:store(3,m 1 +) # id 3 (void)
+				:store(0,m 2 +) # TODO: check if this is necessary
+				i = i 4 + # consume 4 characters
+				:if(d){
+					:raw("VOID ")
+				}
+			} elif(p 101 == q 108 == & r 115 == & s 101 == & y &){ # else_
+				:store(12,m) # type 1
+				i = i 4 + # consume 4 characters
+				:if(d){
+					:raw("ELSE ")
+				}
+			} elif(p 116 == q 114 == & r 117 == & s 101 == & y &){ # true_
+				:store(3,m) # type 3 (constant)
+				:store(2,m 1 +) # id 2 (constant(bool))
+				:store(1,m 2 +) # value
+				i = i 4 +
+				:if(d){
+					:raw("CBOOL(1) ")
+				}
+			} elif(p 110 == q 117 == & r 108 == & s 108 == & y &){ # null_
+				:store(3,m) # type 3 (constant)
+				:store(4,m 1 +) # id 4 (constant(voidptr))
+				:store(0,m 2 +) # value
+				i = i 4 +
+				:if(d){
+					:raw("NULL ")
+				}
+			} else { # keywords of length >= 5
+				:load(u,i 5 +)
+				x = u
+				:call(tokenize_isKeyword_helper) # y contains result
+				:if(y p 119 == & q 104 == & r 105 == & s 108 == & t 101 == &){ # while_
+					:store(13,m) # while
+					i = i 5 + # consume 5 characters
+					:if(d){
+						:raw("WHILE ")
+					}
+				} elif(p 102 == q 97 == & r 108 == & s 115 == & t 101 == & y &){ # false_
+					:store(3,m) # type 3 (constant)
+					:store(2,m 1 +) # id 2 (constant(bool))
+					:store(0,m 2 +) # value
+					i = i 5 +
+					:if(d){
+						:raw("CBOOL(0) ")
+					}
+				} else { # keywords of length >= 6
+					:load(x,i 6 +)
+					:call(tokenize_isKeyword_helper) # y contains result
+					:if(y p 114 == & q 101 == & r 116 == & s 117 == & t 114 == & u 110 == &){ # return_
+						:store(27,m) # return
+						i = i 6 + # consume 6 characters
+						:if(d){
+							:raw("RETURN ")
+						}
+					} elif(y p 115 == & q 116 == & r 114 == & s 117 == & t 99 == & u 116 == &){ # struct_
+						:store(45,m) # struct
+						i = i 6 + # consume 6 characters
+						:if(d){
+							:raw("STRUCT ")
+						}
+					} elif(y p 115 == & q 105 == & r 122 == & s 101 == & t 111 == & u 102 == &){ # sizeof_
+						:store(47,m) # sizeof
+						i = i 6 + # consume 6 characters
+						:if(d){
+							:raw("SIZEOF ")
+						}
+					} else {
+						f = 1 # we didn't match
+					}
+				}
+			}
+		}
+	}
+	:if(f 0 == ){
+		:store(l,m 3 +)
+		m = m 4 +
+	}
+}
+# input x
+# output y
+:fun(tokenize_isKeyword_helper){ # check if char is not identifier
+	# !(x >= '0' & x <= '9' | x >= 'A' & x <= 'Z' | x == '_' | x >= 'a' & x <= 'z')
+	y = 1 x 48 => x 57 =< & x 65 => x 90 =< & | x 95 == | x 97 => x 122 =< & | -
+}
+:fun(tokenize_isSymbol){
+	:load(x,i)
+	:load(z,i 1 +)
+	f = 0 # set match flag
+	:if(x 43 == z 61 == &){ # +=
+		:store(1,m) # token type
+		:store(1,m 1 +) # id 1 (+=)
+		i = i 2 +
+		:if(d){
+			:raw("ADDEQ ")
+		}
+	} elif(x 45 == z 61 == &){ # -=
+		:store(1,m) # token type
+		:store(2,m 1 +) # id 2 (-=)
+		i = i 2 +
+		:if(d){
+			:raw("SUBEQ ")
+		}
+	} elif(x 47 == z 61 == &){ # /=
+		:store(1,m) # token type
+		:store(3,m 1 +) # id 3 (/=)
+		i = i 2 +
+		:if(d){
+			:raw("DIVEQ ")
+		}
+	} elif(x 42 == z 61 == &){ # *=
+		:store(1,m) # token type
+		:store(4,m 1 +) # id 4 (*=)
+		i = i 2 +
+		:if(d){
+			:raw("MULEQ ")
+		}
+	} elif(x 43 == z 43 == &){ # ++
+		:store(25,m) # token type
+		i = i 2 +
+		:if(d){
+			:raw("INC ")
+		}
+	} elif(x 45 == z 45 == &){ # -=
+		:store(26,m) # token type
+		i = i 2 +
+		:if(d){
+			:raw("DEC ")
+		}
+	} elif(x 61 == z 61 == &){ # ==
+		:store(30,m) # token type
+		i = i 2 +
+		:if(d){
+			:raw("EQ ")
+		}
+	} elif(x 33 == z 61 == &){ # !=
+		:store(31,m) # token type
+		i = i 2 +
+		:if(d){
+			:raw("NEQ ")
+		}
+	} elif(x 60 == z 61 == &){ # <=
+		:store(34,m) # token type
+		i = i 2 +
+		:if(d){
+			:raw("LEQ ")
+		}
+	} elif(x 62 == z 61 == &){
+		:store(35,m) # token type
+		i = i 2 +
+		:if(d){
+			:raw("GEQ ")
+		}
+	} elif(x 38 == z 38 == &){ # &&
+		:store(41,m) # token type
+		i = i 2 +
+		:if(d){
+			:raw("AND ")
+		}
+	} elif(x 124 == z 124 == &){ # ||
+		:store(42,m) # token type
+		i = i 2 +
+		:if(d){
+			:raw("OR ")
+		}
+	} elif(x 45 == z 62 == &){ # ->
+		:store(46,m) # token type
+		i = i 2 +
+		:if(d){
+			:raw("ARROW ")
+		}
+	} elif(x 40 ==){ # (
+		:store(14,m) # token type
+		i = i 1 +
+		:if(d){
+			:raw("LPARENT ")
+		}
+	} elif(x 41 == ){ # )
+		:store(15,m) # token type
+		i = i 1 +
+		:if(d){
+			:raw("RPARENT ")
+		}
+	} elif(x 123 ==){ # {
+		:store(16,m) # token type
+		i = i 1 +
+		:if(d){
+			:raw("LCURLY ")
+		}
+	} elif(x 125 ==){ # {
+		:store(17,m) # token type
+		i = i 1 +
+		:if(d){
+			:raw("RCURLY ")
+		}
+	} elif(x 91 ==){ # [
+		:store(18,m) # token type
+		i = i 1 +
+		:if(d){
+			:raw("LBRACK ")
+		}
+	} elif(x 93 ==){ # ]
+		:store(19,m) # token type
+		i = i 1 +
+		:if(d){
+			:raw("RBRACK ")
+		}
+	} elif(x 46 ==){ # .
+		:store(20,m) # token type
+		i = i 1 +
+		:if(d){
+			:raw("PERIOD ")
+		}
+	} elif(x 44 ==){ # ,
+		:store(21,m)
+		i = i 1 +
+		:if(d){
+			:raw("COMMA ")
+		}
+	} elif(x 59 ==){ # ;
+		:store(22,m)
+		i = i 1 +
+		:if(d){
+			:raw("SEMICOLON ")
+		}
+	} elif(x 58 ==){ # :
+		:store(23,m)
+		i = i 1 +
+		:if(d){
+			:raw("COLON ")
+		}
+	} elif(x 61 ==){ # =
+		:store(1,m) # type 1
+		:store(0, m 1 +) # id 0
+		i = i 1 +
+		:if(d){
+			:raw("ASSIGN ")
+		}
+	} elif(x 33 ==){ # !
+		:store(24,m)
+		i = i 1 +
+		:if(d){
+			:raw("EXCL ")
+		}
+	} elif(x 38 ==){ # &
+		:store(28,m)
+		i = i 1 +
+		:if(d){
+			:raw("BITAND ")
+		}
+	} elif(x 124 ==){ # |
+		:store(29,m)
+		i = i 1 +
+		:if(d){
+			:raw("BITOR ")
+		}
+	} elif(x 60 ==){ # <
+		:store(32,m)
+		i = i 1 +
+		:if(d){
+			:raw("LT ")
+		}
+	} elif(x 62 ==){ # >
+		:store(33,m)
+		i = i 1 +
+		:if(d){
+			:raw("GT ")
+		}
+	} elif(x 42 ==){ # *
+		:store(36,m)
+		i = i 1 +
+		:if(d){
+			:raw("MUL ")
+		}
+	} elif(x 47 ==){ # /
+		:store(37,m)
+		i = i 1 +
+		:if(d){
+			:raw("DIV ")
+		}
+	} elif(x 37 ==){ # %
+		:store(38,m)
+		i = i 1 +
+		:if(d){
+			:raw("MOD ")
+		}
+	} elif(x 43 ==){ # +
+		:store(39,m)
+		i = i 1 +
+		:if(d){
+			:raw("ADD ")
+		}
+	} elif(x 45 ==){ # -
+		:store(40,m)
+		i = i 1 +
+		:if(d){
+			:raw("SUB ")
+		}
+	} elif(x 126 ==){ # ~
+		:store(43,m)
+		i = i 1 +
+		:if(d){
+			:raw("BITNOT ")
+		}
+	} elif(x 94 ==){ # ^
+		:store(44,m)
+		i = i 1 +
+		:if(d){
+			:raw("BITXOR ")
+		}
+	} else {
+		f = 1 # we didn't match
+	}
+	# Shared code for writing the line number and moving the memory index
+	:if(f 0 ==) {
+		:store(l,m 3 +)
+		m = m 4 +
+	}
+}
+:fun(tokenize_isConstant){
+	:call(tokenize_isConstant_char)
+	:if(f){
+		:call(tokenize_isConstant_int)
+		:if(f){
+			:call(tokenize_isConstant_string)
+		}
+	}
+	:if(f 0 ==){
+		:store(l,m 3 +)
+		m = m 4 +
+	}
+}
+
+:fun(tokenize_isConstant_char){
+	:load(p,i)
+	:load(q,i 1 +)
+	x = q
+	:call(isValidChar)
+	:if(y p 39 == &){ # p == ' & q == char
+		:if(q 92 ==){ # \
+			:load(x,i 2 +)
+			:call(convertEscapableChar) # result in y
+			q = y
+			:load(p,i 3 +)
+			r = 4 # shruld consume 4 characters
+		} else {
+			:load(p,i 2 +)
+			r = 3 # shruld consume 3 characters
+		}
+		:if(p 39 ==){ # '
+			f = 0 # set match flag
+			:store(3,m) # type 3 (constant)
+			:store(1,m 1 +) # id 1 (constant(char))
+			:store(q,m 2 +) # value
+			i = i r +
+			:if(d){
+				:raw("CCHAR(")
+				:call(putint)
+				:raw(") ")
+			}
+		} else {
+			:call(errorInvalidCharConstant)
+		}
+	}
+}
+:fun(tokenize_isConstant_int){
+	w = i
+	:load(x,i)
+	v = x 48 == # 0
+	:if(x 48 => x 57 =< &){ # x >= '0' & x <= '9'
+		z = 0
+		:while(x 48 => x 57 =< &){ # x >= '0' & x <= '9'
+			z = z 10 *
+			:if(z 0 <){
+				:call(errorConstantTooBig)
+			}
+			z = z x 48 - +
+			i = i 1 +
+			:load(x,i)
+		}
+		:if(z 0 > v &){
+			:call(errorLeadingZero)
+		}
+		f = 0 # set flag
+		:store(3,m) # type 3
+		:store(0,m 1 +) # id 0 (constant(int))
+		:store(z,m 2 +) # value
+		:if(d){
+			:raw("CINT(")
+			x = z
+			:call(putint)
+			:raw(") ")
+		}
+	} else {
+		i = w
+	}
+}
+:fun(tokenize_isConstant_string){
+	:load(x,i)
+	:if(x 34 ==){ # "
+		z = i
+		y = 1
+		:while(y){
+			i = i 1 +
+			:load(x,i)
+			:if(x 92 ==){ # \
+				i = i 1 +
+				:load(x,i)
+				:call(convertEscapableChar)
+				y = 1
+			} else {
+				:call(isValidChar)
+				:if(1 y -){
+					:call(errorInvalidCharInString)
+				}
+				y = x 34 =! # "
+			}
+		}
+		i = i 1 + # move past "
+		f = 0 # set flag
+		:store(3,m) # type 3 (constant)
+		:store(3,m 1 +) # id 3 (constant(string))
+		:store(z,m 2 +) # start
+		:if(d){
+			:raw("CSTRING(")
+			y = 1
+			:while(y){
+				:load(x,z)
+				z = z 1 +
+				:putchar(x)
+				:if(x 92 ==){ # \
+					:load(x,z)
+					z = z 1 +
+					:putchar(x)
+				} else {
+					y = x 34 =! # "
+				}
+			}
+			:raw(") ")
+		}
+	}
+}
+:fun(tokenize_isIdentifier){
+	:load(x,i)
+	z = i
+	w = 0 # length
+	# x == '_' | x >= 'A' & x <= 'Z' | x >= 'a' & x <= 'z'
+	y = x 95 == x 65 => x 90 =< & | x 97 => x 122 =< & |
+	:if(y){
+		f = 0 # set match flag
+		:while(y){
+			w = w 1 +
+			i = i 1 +
+			:load(x,i)
+			:call(tokenize_isKeyword_helper) # returns 1 in y if its NOT an identifier char
+			y = 1 y -
+		}
+		f = 0 # set flag
+		:store(2,m) # type 2
+		:store(z,m 1 +) # start of identifier
+		:store(w,m 2 +) # length
+		:store(l,m 3 +) # line number
+		m = m 4 +
+		:if(d){
+			:raw("IDENT(")
+			w = z w + # end
+			:while(z w <){
+				:load(x,z)
+				:putchar(x)
+				z = z 1 +
+			}
+			:raw(") ")
+		}
+	}
+}

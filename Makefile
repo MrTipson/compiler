@@ -15,8 +15,8 @@ bin/p0: bin/p0.o
 bin/p0.o: src/prev.s src/header.s src/basicio.s
 	as -mcpu=$(CPU) -mfpu=$(FPU) -o $@ $<
 
-bin/p1.s: bin/p0 src/prev.p0
-	bin/p0 < src/prev.p0 > bin/p1.s
+bin/p1.s: bin/p0
+	cat src/*.p0 | bin/p0 > bin/p1.s
 
 bin/p1: bin/p1.s
 	as -mcpu=$(CPU) -mfpu=$(FPU) -o bin/p1.o bin/p1.s

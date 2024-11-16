@@ -1,0 +1,11 @@
+#
+# Phase 0 - Read file
+#
+:fun(readFile){
+	:getchar(x)
+	:while(x){
+		:store(x,m)
+		m = m 1 +
+		:getchar(x)
+	}
+}

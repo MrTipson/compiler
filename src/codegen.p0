@@ -1,0 +1,717 @@
+#
+# Phase 5 - Code generation
+#
+:fun(codegen){
+	i = e
+	c = 0
+	q = 0 # function flag
+	f = 0 1 - # current function ident
+	:raw(".syntax\tunified\n\n.text\n.align\t1\n\n")
+	:while(i g <){
+		:load(x,i)
+		:if(x 5 ==){ # return
+			:load(x,i 1 +)
+			:if(x 0 1 - =!){ # return has expression
+				y = 1
+				:call(codegen_expression)
+			}
+			:raw("\tb\tFE")
+			x = f
+			:call(printIdent)
+			:raw("\n")
+		} elif(x 6 ==){ # expression statement
+			:load(x,i 1 +)
+			y = 1
+			:call(codegen_expression)
+		} elif(x 7 ==){ # assignment
+			:call(codegen_assign)
+		} elif(x 8 ==){ # if/else
+			:load(x,i 1 +)
+			:if(x 0 ==){ # if
+				#:raw("IF")
+				:load(x,i 2 +) # expr
+				y = 1
+				:call(codegen_expression)
+				:raw("\tcmp\tr0,#0\n\tbeq\tLneg_")
+				x = c
+				:call(putint)
+				:raw("\n")
+				s = c
+				:call(push)
+				c = c 1 +
+				s = 1 # flag to print neg label
+				:call(push)
+			} elif(x 1 ==){ # else
+				#:raw("ELSE")
+				:call(pop)
+				:call(pop)
+				x = s
+				:raw("\tb\tLend_")
+				:call(putint)
+				:raw("\nLneg_")
+				:call(putint)
+				:raw(":\n")
+				s = x
+				:call(push)
+				s = 0
+				:call(push)
+			} else {
+				#:raw("ENDIF")
+				:call(pop)
+				y = s
+				:call(pop)
+				x = s
+				:if(y){
+					:raw("Lneg_")
+					:call(putint)
+					:raw(":\n")
+				}
+				:raw("Lend_")
+				:call(putint)
+				:raw(":\n")
+			}
+		} elif(x 9 ==){ # while
+			:load(x,i 1 +)
+			:if(x 0 ==){ # start
+				:raw("Lcond_")
+				x = c
+				c = c 1 +
+				:call(putint)
+				:raw(":\n")
+				s = x
+				:call(push)
+				:load(x,i 2 +) # cond
+				y = 1
+				:call(codegen_expression)
+				:raw("\tcmp\tr0,#0\n\tbeq\tLend_")
+				:load(x,a 1 +)
+				:call(putint)
+				:raw("\n")
+			} else {
+				:raw("\tb\tLcond_")
+				:call(pop)
+				x = s
+				:call(putint)
+				:raw("\nLend_")
+				:call(putint)
+				:raw(":\n")
+			}
+		} elif(x 3 ==){ # function
+			:load(x,i 3 +)
+			:if(x 0 ==){ # start
+				q = 1
+				:load(x,i 2 +)
+				:call(codegen_isMain)
+				:if(y){
+					:raw(".global\t_start\n_start:\n\tadd\tr2,sp,#4\n\tstr\tr2,[sp,#-4]\n\tsub\tsp,sp,#4\n\tbl\tFmain\n\tmov\tr7,#1\n\tsvc\t0\n")
+				}
+				:raw("\n.global F")
+				:call(printIdent)
+				:raw("\nF")
+				:call(printIdent)
+				f = x
+				:raw(":\n")
+				:load(x,i 4 +) # function end pointer
+				:load(u,x 2 +) # frame size
+				:load(v,x 4 +) # params size
+				:raw("\tldr\tr1,=")
+				x = u v -
+				:call(putint)
+				:raw("\n\tsub\tsp,sp,r1\n\tstr\tfp,[sp,#4]\n\tstr\tlr,[sp]\n\tldr\tr1,=")
+				x = u
+				:call(putint)
+				:raw("\n\tadd\tfp,sp,r1\n")
+			} else {
+				:if(x 1 == q &){ # x == end & q == 1 (inside function flag)
+					:raw("\tmov\tr0,#0\nFE")
+					x = f
+					:call(printIdent)
+					:raw(":\n\tldr\tfp,[sp,#4]\n\tldr\tlr,[sp]\n")
+					:load(x,i 2 +) # frame size
+					:raw("\tldr\tr1,=")
+					:call(putint)
+					:raw("\n\tadd\tsp,sp,r1\n\tbx\tlr\n")
+					q = 0
+				}
+			}
+		} else {
+			:call(codegen_extra)
+		}
+		i = i 5 +
+	}
+	:call(codegen_dataseg)
+}
+:fun(codegen_extra){
+	y = x 0 == # declaration
+	:load(x,i 2 +) # expr
+	:if(y x 0 1 - =! &){ # declaration that has an expression (x != -1)
+		y = 1
+		:call(codegen_expression)
+		:load(x,i 4 +)
+		:if(x 0 =!){
+			:raw("\tldr\tr1,=")
+			:call(putint)
+			:raw("\n\tsub\tr1,fp,r1\n")
+		} else {
+			:raw("\tldr\tr1,=V")
+			:load(x,i 3 +) # ident
+			:call(printIdent)
+			:raw("\n")
+		}
+		:load(x,i 1 +)
+		:call(memory_getTypeSize)
+		:if(y 1 ==){
+			:raw("\tstrb\tr0,[r1]\n")
+		} elif(y 4 ==){
+			:raw("\tstr\tr0,[r1]\n")
+		} else {
+			:call(errorInternal)
+		}
+	}
+}
+:fun(codegen_assign){
+	:load(v,i 2 +) # expr1
+	x = v
+	y = 0
+	:call(codegen_expression)
+	:raw("\tsub\tsp,sp,#4\n\tstr\tr0,[sp]\n")
+	:load(x,i 3 +) # expr2
+	y = 1
+	:call(codegen_expression)
+	:load(x,v 4 +) # expression type
+	:call(memory_getTypeSize)
+	v = y
+	:load(x,i 1 +) # type of assignment
+	:raw("\tldr\tr1,[sp],#4\n")
+	:if(v 1 =! v 4 =! &){
+		:call(errorInternal)
+	}
+	:if(v 1 == x 0 =! &){ # byte
+		:raw("\tldrb\tr2,[r1]\n")
+	} elif(v 4 == x 0 =! &){ # word
+		:raw("\tldr\tr2,[r1]\n")
+	}
+	:if(x 1 ==){
+		:raw("\tadd\tr0,r2,r0\n")
+	} elif(x 2 ==){
+		:raw("\tsub\tr0,r2,r0\n")
+	} elif(x 3 ==){
+		:raw("\tsdiv\tr0,r2,r0\n")
+	} elif(x 4 ==){
+		:raw("\tmul\tr0,r2,r0\n")
+	}
+	:if(v 1 ==){ # byte
+		:raw("\n\tstrb\tr0,[r1]\n")
+	} elif(v 4 ==){ # word
+		:raw("\n\tstr\tr0,[r1]\n")
+	}
+}
+:fun(codegen_dataseg){
+	:raw("\n.data\n")
+	i = h
+	:while(i j <){
+		:load(u,i)
+		:load(x,u)
+		:if(x 3 ==){ # string literal
+			:load(x,u 3 +)
+			:raw("S")
+			:call(putint)
+			:raw(": .asciz ")
+			:load(u,u 2 +) # start
+			:load(x,u)
+			:putchar(x) # this should be opening "
+			u = u 1 +
+			x = 0
+			:while(x 34 =!){ # break out after printing closing "
+				:load(x,u)
+				:putchar(x)
+				u = u 1 +
+			}
+		} elif(x 0 ==){ # declaration
+			:load(x,u 1 +) # declaration type
+			:load(v,x 1 +) # type type
+			:call(memory_getTypeSize)
+			w = y # save type size for later
+			:raw("V")
+			:load(x,u 3 +) # ident
+			:call(printIdent)
+			:if(v 6 == v 4 == |){ # name | array
+				:raw(": .space ")
+				x = w
+				:call(putint)
+			} elif(w 1 ==){ # byte
+				:raw(": .byte ")
+			} elif(w 4 ==){ # word
+				:raw(": .word ")
+			} else {
+			:call(errorInternal)
+			}
+			:load(x,u 2 +) # expression
+			:load(x,x 2 +) # expr1
+			:load(y,x 1 +) # constant type
+			:if(y 3 ==){ # string literal
+				x = x 3 + # string id
+				:raw("S")
+			} else {
+				x = x 2 + # value
+			}
+			:load(x,x)
+			:call(putint)
+		} else {
+			:call(errorInternal)
+		}
+		:raw("\n")
+		i = i 1 +
+	}
+}
+# x expression, y 0noload, 1load
+# expressions 0,1,2,3,24,25,28
+:fun(codegen_expression){
+	s = x
+	:call(push)
+	s = u
+	:call(push)
+	s = v
+	:call(push)
+	s = y
+	:call(push)
+	:load(u,x)
+	:if(u 2 ==){ # expression
+		:load(u,x 1 +)
+		# Postfix increment - Prefix decrement, array access, component access, pointer &
+		:if(u 0 => u 3 =< & u 24 == | u 25 == | u 28 == |){
+			v = x
+			:load(x,x 2 +)
+			y = 0
+			:call(codegen_expression) # result is in r0
+			x = v
+			:if(u 0 ==){ # postf ++
+				:load(x,x 4 +) # type
+				:load(y,x 1 +)
+				:if(y 5 ==){ # pointer
+					:load(x,x 2 +) # basetype
+					:call(memory_getTypeSize)
+					:raw("\tldr\tr1,[r0]\n\tldr\tr2,=")
+					x = y
+					:call(putint)
+					:raw("\n\tadd\tr2,r1,r2\n\tstr\tr2,[r0]\n\tmov\tr0,r1\n")
+				} else {
+					:call(memory_getTypeSize)
+					:if(y 1 ==){ # byte
+						:raw("\tldrb\tr1,[r0]\n\tadd\tr2,r1,#1\n\tstrb\tr2,[r0]\n\tmov\tr0,r1\n")
+					} elif(y 4 ==){ # word
+						:raw("\tldr\tr1,[r0]\n\tadd\tr2,r1,#1\n\tstr\tr2,[r0]\n\tmov\tr0,r1\n")
+					} else {
+						:call(errorInternal)
+					}
+				}
+			} elif(u 1 ==){ # postf --
+				:load(x,x 4 +) # type
+				:load(y,x 1 +) # type type
+				:if(y 5 ==){ # pointer
+					:load(x,x 2 +) # basetype
+					:call(memory_getTypeSize)
+					:raw("\tldr\tr1,[r0]\n\tldr\tr2,=")
+					x = y
+					:call(putint)
+					:raw("\nsub\tr2,r1,r2\n\tstr\tr2,[r0]\n\tmov\tr0,r1\n")
+				} else {
+					:call(memory_getTypeSize)
+					:if(y 1 ==){ # byte
+						:raw("\tldrb\tr1,[r0]\n\tsub\tr2,r1,#1\n\tstrb\tr2,[r0]\n\tmov\tr0,r1\n")
+					} elif(y 4 ==){ # word
+						:raw("\tldr\tr1,[r0]\n\tsub\tr2,r1,#1\n\tstr\tr2,[r0]\n\tmov\tr0,r1\n")
+					} else {
+						:call(errorInternal)
+					}
+				}
+			} elif(u 2 ==){ # pref ++
+				:load(x,x 4 +) # type
+				:load(y,x 1 +) # type type
+				:if(y 5 ==){ # pointer
+					:load(x,x 2 +) # basetype
+					:call(memory_getTypeSize)
+					:raw("\tldr\tr1,[r0]\n\tldr\tr2,=")
+					x = y
+					:call(putint)
+					:raw("\n\tadd\tr1,r1,r2\n\tstr\tr1,[r0]\n\tmov\tr0,r1\n")
+				} else {
+					:call(memory_getTypeSize)
+					:if(y 1 ==){ # byte
+						:raw("\tldrb\tr1,[r0]\n\tadd\tr1,r1,#1\n\tstrb\tr1,[r0]\n\tmov\tr0,r1\n")
+					} elif(y 4 ==){ # word
+						:raw("\tldr\tr1,[r0]\n\tadd\tr1,r1,#1\n\tstr\tr1,[r0]\n\tmov\tr0,r1\n")
+					} else {
+						:call(errorInternal)
+					}
+				}
+			} elif(u 3 ==){ # pref --
+				:load(x,x 4 +) # type
+				:load(y,x 1 +) # type type
+				:if(y 5 ==){ # pointer
+					:load(x,x 2 +) # basetype
+					:call(memory_getTypeSize)
+					:raw("\tldr\tr1,[r0]\n\tldr\tr2,=")
+					x = y
+					:call(putint)
+					:raw("\nsub\tr1,r1,r2\n\tstr\tr1,[r0]\n\tmov\tr0,r1\n")
+				} else {
+					:call(memory_getTypeSize)
+					:if(y 1 ==){ # byte
+						:raw("\tldrb\tr1,[r0]\n\sub\tr1,r1,#1\n\tstrb\tr1,[r0]\n\tmov\tr0,r1\n")
+					} elif(y 4 ==){ # word
+						:raw("\tldr\tr1,[r0]\n\tsub\tr1,r1,#1\n\tstr\tr1,[r0]\n\tmov\tr0,r1\n")
+					} else {
+						:call(errorInternal)
+					}
+				}
+			} elif(u 24 ==){ # array access
+				:load(v,x 2 +) # expr1
+				:load(v,v 4 +) # expr1 type
+				:load(v,v 1 +) # expr1 type type
+				:if(v 5 ==){ # pointer
+					:raw("\tldr\tr0,[r0]\n") # load pointer value
+				}
+				:raw("\tsub\tsp,sp,#4\n\tstr\tr0,[sp]\n")
+				:load(v,x 4 +) # expression type
+				:load(x,x 3 +) # expr2
+				y = 1
+				:call(codegen_expression)
+				x = v
+				:call(memory_getTypeSize)
+				x = y
+				:raw("\tldr\tr1,=")
+				:call(putint)
+				:raw("\n\tmul\tr0,r0,r1\n\tldr\tr1,[sp],#4\n\tadd\tr0,r1,r0\n")
+				:load(x,a 1 +) # check y on the stack if load is needed
+				:if(x){
+					:if(y 1 ==){ # byte
+						:raw("\tldrb\tr0,[r0]\n")
+					} elif(y 4 ==){ # word
+						:raw("\tldr\tr0,[r0]\n")
+					} else {
+						:call(errorInternal)
+					}
+				}
+			} elif(u 25 ==){ # component access
+				v = x
+				:load(x,x 3 +) # component
+				:load(x,x 4 +) # calculated offset
+				:raw("\tldr\tr1,=")
+				:call(putint)
+				:raw("\n\tadd\tr0,r0,r1\n")
+				:load(y,a 1 +) # inspect y on the stack if load is needed
+				:if(y){
+					:load(x,v 4 +)
+					:call(memory_getTypeSize)
+					:if(y 1 ==){ # byte
+						:raw("\n\tldrb\tr0,[r0]\n")
+					} elif(y 4 ==){ # word
+						:raw("\n\tldr\tr0,[r0]\n")
+					} else {
+						:call(errorInternal)
+					}
+				}
+			} elif(u 28 ==){ # pointer &
+				# no need to do anything, inner expression already called with y=1
+			}
+		} else {
+			:call(codegen_expression_2)
+		}
+	} else {
+		:call(codegen_call)
+	}
+	:call(pop)
+	:call(pop)
+	v = s
+	:call(pop)
+	u = s
+	:call(pop)
+	x = s
+}
+# expressions 4-21,26,27,29,30
+:fun(codegen_expression_2){
+	# unop +, unop -, unop !, unop ~, unop *, cast
+	:if(u 4 == u 5 == | u 6 == | u 27 == | u 29 == | u 30 == |){
+		v = x
+		:load(x,x 2 +) # expr1
+		y = 1
+		:call(codegen_expression)
+		:if(u 30 ==){ # cast
+			:load(x,v 4 +) # type
+			:load(x,x 1 +) # type type
+			:if(x 1 ==){ # char
+				:raw("\tmov\tr1,#256\n\tsdiv\tr2,r0,r1\n\tmls\tr0,r2,r1,r0\n")
+			}
+		} elif(u 5 ==){ # -
+			:raw("\tmov\tr1,#-1\n\tmul\tr0,r0,r1\n")
+		} elif(u 6 ==){ # !
+			:raw("\teor\tr0,r0,#1\n")
+		} elif(u 27 ==){ # ~
+			:raw("\tmvn\tr0,r0\n")
+		} else { # * (dereference)
+			:load(y,a 1 +) # inspect y on the stack if load is needed
+			:if(y){ 
+				:load(x,x 4 +) # type
+				:load(x,x 2 +) # basetype
+				:call(memory_getTypeSize)
+				:if(y 1 ==){ # byte
+					:raw("\tldrb\tr0,[r0]\n")
+				} elif(y 4 ==){ # word
+					:raw("\tldr\tr0,[r0]\n")
+				} else {
+					:call(errorInternal)
+				}
+			}
+		}
+	} elif(u 7 => u 21 =< & u 26 == |){ # binop * - binop ||, ^
+		v = x
+		:load(x,v 2 +)
+		y = 1
+		:call(codegen_expression)
+		:raw("\tsub\tsp,sp,#4\n\tstr\tr0,[sp]\n")
+		:load(x,v 3 +)
+		y = 1
+		:call(codegen_expression)
+		:raw("\tldr\tr1,[sp],#4\n")
+		:if(u 7 ==){ # binop *
+			:raw("\tmul\tr0,r1,r0\n")
+		} elif(u 8 ==){ # binop /
+			:raw("\tsdiv\tr0,r1,r0\n")
+		} elif(u 9 ==){ # binop %
+			:raw("\tsdiv\tr2,r1,r0\n\tmls\tr0,r2,r0,r1\n")
+		} elif(u 10 ==){ # binop +
+			:load(x,v 4 +) # expression type
+			:load(x,x 1 +) # type type
+			:if(x 5 ==){ # pointer
+				:load(x,v 2 +) # expr1
+				:load(x,x 4 +) # expr1 type 
+				:load(u,x 1 +) # expr1 type type
+				:if(u 5 ==){ # expr1 is pointer
+					x = x 2 + # basetype
+					:load(x,x)
+					:call(memory_getTypeSize)
+					:raw("\tldr\tr2,=")
+					x = y
+					:call(putint)
+					:raw("\n\tmul\tr0,r0,r2\n")
+				} else { # expr2 is pointer
+					:load(x,v 3 +) # expr2
+					:load(x,x 4 +) # type
+					:load(x,x 2 +) # basetype
+					:call(memory_getTypeSize)
+					:raw("\tldr\tr2,=")
+					x = y
+					:call(putint)
+					:raw("\n\tmul\tr1,r1,r2\n")
+				}
+			}
+			:raw("\tadd\tr0,r1,r0\n")
+		} elif(u 11 ==){ # binop -
+			:load(x,v 4 +) # expression type
+			:load(x,x 1 +) # type type
+			:if(x 5 ==){ # pointer
+				:load(x,v 2 +) # expr1
+				:load(x,x 4 +) # expr1 type
+				:load(u,x 1 +) # expr1 type type
+				:if(u 5 ==){ # expr1 is pointer
+					:load(x,x 2 +) # basetype
+					:call(memory_getTypeSize)
+					:raw("\tldr\tr2,=")
+					x = y
+					:call(putint)
+					:raw("\n\tmul\tr0,r0,r2\n")
+				} else { # expr2 is pointer
+					:load(x,v 3 +) # expr2
+					:load(x,x 4 +) # expr2 type
+					:load(x,x 2 +) # expr2 basetype
+					:call(memory_getTypeSize)
+					:raw("\tldr\tr2,=")
+					x = y
+					:call(putint)
+					:raw("\n\tmul\tr1,r1,r2\n")
+				}
+			}
+			:raw("\tsub\tr0,r1,r0\n")
+			:load(u,v 4 +) # expression type
+			:load(x,u 1 +) # expression type type
+			y = x 0 == # int
+			:load(x,v 2 +) # expr1
+			:load(u,x 4 +) # expr1 type
+			:load(x,u 1 +) # expr1 type type
+			:if(y x 5 == &){ # result is int, but operands are pointer
+				:load(x,u 2 +) # expr1 basetype
+				:call(memory_getTypeSize)
+				:raw("\tldr\tr1,=")
+				x = y
+				:call(putint)
+				:raw("\n\tsdiv\tr0,r0,r1\n")
+			}
+		} else {
+			:call(codegen_expression_2andahalf)
+		}
+	} else {
+		:call(codegen_expression_3)
+	}
+}
+:fun(codegen_expression_2andahalf){
+	:if(u 12 ==){ # binop <
+		:raw("\tcmp\tr1,r0\n\tmov\tr0,#0\n\tmovlt\tr0,#1\n")
+	} elif(u 13 ==){ # binop >
+		:raw("\tcmp\tr1,r0\n\tmov\tr0,#0\n\tmovgt\tr0,#1\n")
+	} elif(u 14 ==){ # binop <=
+		:raw("\tcmp\tr1,r0\n\tmov\tr0,#0\n\tmovle\tr0,#1\n")
+	} elif(u 15 ==){ # binop >=
+		:raw("\tcmp\tr1,r0\n\tmov\tr0,#0\n\tmovge\tr0,#1\n")
+	} elif(u 16 ==){ # binop ==
+		:raw("\tcmp\tr1,r0\n\tmov\tr0,#0\n\tmoveq\tr0,#1\n")
+	} elif(u 17 ==){ # binop !=
+		:raw("\tcmp\tr1,r0\n\tmov\tr0,#0\n\tmovne\tr0,#1\n")
+	} elif(u 18 == u 20 == |){ # binop &, binop &&
+		:raw("\tand\tr0,r1,r0\n")
+	} elif(u 19 == u 21 == |){ # binop |, binop ||
+		:raw("\torr\tr0,r1,r0\n")
+	} elif(u 26 ==){ # binop ^
+		:raw("\teor\tr0,r1,r0\n")
+	}
+}
+:fun(codegen_expression_3){
+	:if(u 31 ==){ # pointer component
+		v = x
+		:load(x,v 2 +) # expr1
+		y = 1
+		:call(codegen_expression)
+		:load(x,v 3 +) # component
+		:load(x,x 4 +) # calculated offset
+		:raw("\tldr\tr1,=")
+		:call(putint)
+		:load(x,a 1 +) # inspect y on the stack if load is needed
+		:if(x){
+			:load(x,v 4 +)
+			:call(memory_getTypeSize)
+			:if(y 1 ==){ # byte
+				:raw("\n\tldrb\tr0,[r0,r1]\n")
+			} elif(y 4 ==){ # word
+				:raw("\n\tldr\tr0,[r0,r1]\n")
+			} else {
+				:call(errorInternal)
+			}
+		} else {
+			:raw("\n\tadd\tr0,r0,r1\n")
+		}
+	} elif(u 23 ==){ # const
+		:load(x,x 2 +) # expr1 (const token object location)
+		:load(v,x 1 +) # const token id
+		:if(v 3 ==){ # string
+			:raw("\tldr\tr0,=S")
+			:load(x,x 3 +) # string id
+			:call(putint)
+			:raw("\n")
+		} else {
+			:raw("\tldr\tr0,=")
+			:load(x,x 2 +) # const value
+			:call(putint)
+			:raw("\n")
+		}
+	} elif(u 22 ==){ # ident
+		:load(x,x 3 +) # corresponding declaration
+		v = x
+		:load(x,v 4 +) # offset
+		:if(x 0 1 - =!){
+			:raw("\tldr\tr0,=")
+			:call(putint)
+			:raw("\n\tsub\tr0,fp,r0\n")
+		} else {
+			:raw("\tldr\tr0,=V")
+			:load(x,v 3 +) # ident
+			:call(printIdent)
+			:raw("\n")
+		}
+		:load(y,a 1 +) # inspect y on the stack if load is needed
+		:if(y){
+			:load(x,v 1 +) # type
+			:call(memory_getTypeSize)
+			:if(y 1 ==){ # byte
+				:raw("\tldrb\tr0,[r0]\n")
+			} elif(y 4 ==){ # word
+				:raw("\tldr\tr0,[r0]\n")
+			} else {
+				:call(errorInternal)
+			}
+		}
+	} elif(u 32 ==){ # sizeof
+		:load(x,x 2 +) # expr
+		:call(memory_getTypeSize)
+		:raw("\tldr\tr0,=")
+		x = y
+		:call(putint)
+		:raw("\n")
+	} else {
+		:call(errorInternal)
+	}
+}
+:fun(codegen_call){
+	s = c
+	:call(push)
+	s = z
+	:call(push)
+	:load(z,x 3 +) # call start addr
+	:load(s,z 2 +) # function decl addr
+	:load(s,s 2 +) # ident addr
+	:call(push)
+	z = z 5 +
+	:load(x,z) # next object in memory
+	:load(u,z 1 +) # possibly the end field of an object
+	c = 0
+	:while(x 10 =! u 1 =! | c 0 > |){ # x != call | u != end | c > 0
+		:if(x 11 == c 0 == &){ # arg for current call
+			:load(x,z 1 +) # arg expression
+			:load(v,x 4 +) # expression type
+			y = 1
+			:call(codegen_expression)
+			x = v
+			:call(memory_getTypeSize)
+			:if(y 1 ==){ # byte
+				:raw("\tsub\tsp,sp,#1\n\tstrb\tr0,[sp]\n")
+			} elif(y 4 ==){ # word
+				:raw("\tsub\tsp,sp,#4\n\tstr\tr0,[sp]\n")
+			} else {
+				:call(errorInternal)
+			}
+		} elif(x 10 ==){ # call
+			:load(x,z 1 +)
+			:if(x 0 ==){ # start
+				c = c 1 +
+			} else {
+				c = c 1 -
+			}
+		}
+		z = z 5 +
+		:load(x,z)
+		:load(u,z 1 +)
+	}
+	:raw("\tbl\tF")
+	:call(pop)
+	x = s
+	:call(printIdent)
+	:raw("\n")
+	:call(pop)
+	z = s
+	:call(pop)
+	c = s
+}
+:fun(codegen_isMain){
+	s = x
+	:call(push)
+	:load(u,x 2 +)
+	:if(u 4 ==){ # len(main)
+		:load(x,x 1 +)
+		:load(t,x)
+		:load(u,x 1 +)
+		:load(v,x 2 +)
+		:load(z,x 3 +)
+		y = t 109 == u 97 == & v 105 == & z 110 == & # tuvz == 'main'
+	}
+	:call(pop)
+	x = s
+}

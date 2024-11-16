@@ -11,7 +11,7 @@ endif
 all-tests = $(notdir $(basename $(wildcard test/src/*)))
 blacklist = inout server files
 
-.SILENT:
+.SILENT: $(addprefix bin/test/,  $(all-tests))
 .phony: test
 test: testdir | $(addprefix test/, $(filter-out $(blacklist), $(all-tests)))
 	@echo "All tests passed"
@@ -19,7 +19,7 @@ test: testdir | $(addprefix test/, $(filter-out $(blacklist), $(all-tests)))
 .phony: test/%
 test/%: FILE = $(notdir $@)
 test/%: test/src/%.p1 bin/test/%
-	echo "" | bin/test/$(FILE) | cmp -s test/out/$(FILE).out - \
+	@echo "" | bin/test/$(FILE) | cmp -s test/out/$(FILE).out - \
 		&& printf "%15s %b%s%b\n" $(FILE) $(GREEN) "PASS" $(CLEAR)\
 		|| printf "%15s %b%s%b\n" $(FILE) $(RED) "FAIL" $(CLEAR)
 
